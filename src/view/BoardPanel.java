@@ -19,35 +19,35 @@ public class BoardPanel extends JPanel {
     }
 
     @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-    
-        int cols = plateau.getLargeur();
-        int rows = plateau.getHauteur();
-    
-        int totalWidth = (int) (cols * HEX_WIDTH);
-        int totalHeight = (int) (rows * (HEX_HEIGHT * 3 / 4));
-    
-        int offsetX = (getWidth() - totalWidth) / 2;
-        int offsetY = (getHeight() - totalHeight) / 2;
-    
+protected void paintComponent(Graphics g) {
+    super.paintComponent(g);
+
+    int cols = plateau.getLargeur();
+    int rows = plateau.getHauteur();
+
+    int stepX = (int) (HEX_WIDTH * 0.90);  // 75% de la largeur
+    int stepY = (int) (HEX_HEIGHT * 0.85); // **!!! 75% de la hauteur !!!**
+
+    int totalWidth = stepX * cols;
+    int totalHeight = stepY * rows;
+
+    int offsetX = (getWidth() - totalWidth) / 2;
+    int offsetY = (getHeight() - totalHeight) / 2;
+
+    for (int col = 0; col < cols; col++) {
         for (int row = 0; row < rows; row++) {
-            for (int col = 0; col < cols; col++) {
-                int x = (int) (col * HEX_WIDTH);
-                int y = (int) (row * HEX_HEIGHT * 0.75);
-    
-                if (col % 2 != 0) {
-                    y += (HEX_HEIGHT * 0.75) / 2; // Décalage moitié de ligne pour colonnes impaires
-                }
-    
-                x += offsetX;
-                y += offsetY;
-    
-                drawHexagon(g, x, y, col, row);
+            int x = col * stepX + offsetX;
+            int y = row * stepY + offsetY;
+
+            if (col % 2 != 0) {
+                y += stepY / 2; // décalage pour colonnes impaires
             }
+
+            drawHexagon(g, x, y, col, row);
         }
     }
-    
+}
+
 
     private void drawHexagon(Graphics g, int centerX, int centerY, int col, int row) {
         Polygon hex = new Polygon();

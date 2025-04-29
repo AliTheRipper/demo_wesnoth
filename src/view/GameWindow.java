@@ -7,8 +7,8 @@ public class GameWindow extends JFrame {
         setTitle("Wargame - Plateau");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
-        setExtendedState(JFrame.MAXIMIZED_BOTH); // <<<<< ici : maximiser directement
-        setLocationRelativeTo(null); // centré
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
+        setLocationRelativeTo(null);
 
         BoardPanel board = new BoardPanel();
         JScrollPane scrollPane = new JScrollPane(board);

@@ -10,35 +10,42 @@ public class GameWindow extends JFrame {
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setLocationRelativeTo(null);
 
-        InfoPanel infoPanel = new InfoPanel();
-        infoPanel.setPreferredSize(new Dimension(260, 0));
+        // ➕ Demander les noms des joueurs
+        StartDialog dialog = new StartDialog(this);
+        dialog.setVisible(true);
+        String nomJoueur1 = dialog.getJoueur1();
+        String nomJoueur2 = dialog.getJoueur2();
+
+        // ✅ Créer les composants avec les noms
+        InfoPanel infoPanel = new InfoPanel(nomJoueur1, nomJoueur2);
+        infoPanel.setPreferredSize(new Dimension(240, 0));
         infoPanel.setBackground(Color.WHITE);
         infoPanel.setOpaque(true);
 
-        BoardPanel board = new BoardPanel(infoPanel);
+        BoardPanel board = new BoardPanel(infoPanel, nomJoueur1, nomJoueur2);
+        board.setPreferredSize(new Dimension(1400, 800)); // ou dynamique
 
         JScrollPane scrollPane = new JScrollPane(board);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setBorder(null);
 
-        // ✅ Utilise JSplitPane pour bien séparer les deux zones
+        // ✅ Séparation avec JSplitPane
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, scrollPane, infoPanel);
-        splitPane.setDividerSize(0); // pas de bord visible
-        splitPane.setEnabled(false); // l'utilisateur ne peut pas le déplacer
-        splitPane.setResizeWeight(1.0); // toute la taille dispo va au scroll
-        splitPane.setDividerLocation(-1); // sera forcé ensuite dans pack()
+        splitPane.setDividerSize(0);
+        splitPane.setEnabled(false);
+        splitPane.setResizeWeight(1.0); // scrollPane prend l’espace principal
 
         getContentPane().setLayout(new BorderLayout());
         getContentPane().add(splitPane, BorderLayout.CENTER);
 
-        // Déclenche les listeners après affichage
-        SwingUtilities.invokeLater(() -> splitPane.setDividerLocation(getWidth() - 320));
+        // Fixer la position du panneau de droite une fois visible
+        SwingUtilities.invokeLater(() -> splitPane.setDividerLocation(getWidth() - 210));
 
-        setVisible(true);
-
+        // Actions
         infoPanel.getFinTourButton().addActionListener(e -> board.passerAuTourSuivant());
         infoPanel.getAnnulerMouvementButton().addActionListener(e -> board.annulerDernierDeplacement());
+
+        setVisible(true);
     }
 }

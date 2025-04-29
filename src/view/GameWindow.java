@@ -10,30 +10,35 @@ public class GameWindow extends JFrame {
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setLocationRelativeTo(null);
 
-        InfoPanel infoPanel = new InfoPanel();
-        infoPanel.setPreferredSize(new Dimension(240, 0)); // Largeur fixe
+        // ➕ Saisie des noms au démarrage
+        StartDialog dialog = new StartDialog(this);
+        dialog.setVisible(true);
+
+        String nomJoueur1 = dialog.getJoueur1();
+        String nomJoueur2 = dialog.getJoueur2();
+
+        // ✅ Création des composants avec noms
+        InfoPanel infoPanel = new InfoPanel(nomJoueur1, nomJoueur2);
+        infoPanel.setPreferredSize(new Dimension(240, 0));
         infoPanel.setBackground(new Color(220, 220, 220));
         infoPanel.setOpaque(true);
 
+        BoardPanel board = new BoardPanel(infoPanel, nomJoueur1, nomJoueur2);
+        board.setPreferredSize(new Dimension(1400, 800)); // Ajustable selon taille map
 
-        BoardPanel board = new BoardPanel(infoPanel);
-
-        // Fixe la taille minimale du plateau pour qu’il ne déborde jamais
-        board.setPreferredSize(new Dimension(1400, 800)); // Ajuste si besoin
-
-        // On met juste le BoardPanel dans un JScrollPane
         JScrollPane scrollPane = new JScrollPane(board);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 
-        // Layout principal
+        // ➕ Agencement
         JPanel contentPanel = new JPanel(new BorderLayout());
-        contentPanel.add(scrollPane, BorderLayout.CENTER);   // Plateau au centre
-        contentPanel.add(infoPanel, BorderLayout.EAST);      // Barre à droite
+        contentPanel.add(scrollPane, BorderLayout.CENTER);
+        contentPanel.add(infoPanel, BorderLayout.EAST);
 
         setContentPane(contentPanel);
         pack();
-        infoPanel.getFinTourButton().addActionListener(e -> board.passerAuTourSuivant());
 
+        // 🔁 Bouton Fin du tour
+        infoPanel.getFinTourButton().addActionListener(e -> board.passerAuTourSuivant());
     }
 }

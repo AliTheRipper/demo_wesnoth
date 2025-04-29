@@ -6,7 +6,7 @@ import javax.swing.*;
 import java.awt.*;
 
 public class InfoPanel extends JPanel {
-    private JLabel joueurActifLabel = new JLabel("Joueur actif : 1", SwingConstants.CENTER);
+    private JLabel joueurActifLabel = new JLabel("Joueur actif : ", SwingConstants.CENTER);
     private JLabel nomLabel = new JLabel("Unité : -");
     private JLabel joueurLabel = new JLabel("Joueur : -");
     private JLabel pvLabel = new JLabel("PV : -");
@@ -15,7 +15,13 @@ public class InfoPanel extends JPanel {
 
     private JButton finTourButton = new JButton("Fin du tour");
 
-    public InfoPanel() {
+    private String nomJoueur1;
+    private String nomJoueur2;
+
+    public InfoPanel(String nomJoueur1, String nomJoueur2) {
+        this.nomJoueur1 = nomJoueur1;
+        this.nomJoueur2 = nomJoueur2;
+
         setLayout(new BorderLayout());
         setPreferredSize(new Dimension(260, 0));
         setBackground(new Color(240, 240, 240));
@@ -48,6 +54,8 @@ public class InfoPanel extends JPanel {
         basPanel.add(finTourButton, BorderLayout.CENTER);
 
         add(basPanel, BorderLayout.SOUTH);
+
+        majJoueurActif(1); // Afficher joueur 1 au lancement
     }
 
     public void majInfos(Unite u) {
@@ -67,7 +75,11 @@ public class InfoPanel extends JPanel {
     }
 
     public void majJoueurActif(int num) {
-        joueurActifLabel.setText("Joueur actif : " + num);
+        if (num == 1) {
+            joueurActifLabel.setText("Joueur actif : " + nomJoueur1);
+        } else {
+            joueurActifLabel.setText("Joueur actif : " + nomJoueur2);
+        }
     }
 
     public JButton getFinTourButton() {

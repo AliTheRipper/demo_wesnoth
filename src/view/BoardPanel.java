@@ -23,14 +23,18 @@ public class BoardPanel extends JPanel {
     private int selX = -1, selY = -1;
     private int joueurActif = 1;
     private InfoPanel infoPanel;
+    private String nomJoueur1;
+    private String nomJoueur2;
 
-    public BoardPanel(InfoPanel infoPanel) {
+
+    public BoardPanel(InfoPanel infoPanel, String joueur1, String joueur2) {
         this.infoPanel = infoPanel;
+        this.nomJoueur1 = joueur1;
+        this.nomJoueur2 = joueur2;
         this.plateau = new PlateauDeJeu("map/map.txt");
 
-        // Ajout manuel de quelques unités
-        plateau.getHexagone(2, 2).setUnite(new Unite("Archer", "resources/archer.png", 1, 10, 3, 3));
-        plateau.getHexagone(5, 5).setUnite(new Unite("Soldat", "resources/soldat.png", 2, 12, 4, 2));
+        // 👉 Ajout automatique des unités pour chaque joueur
+        placerUnitesParJoueur();
 
         addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
             @Override
@@ -45,6 +49,7 @@ public class BoardPanel extends JPanel {
                 handleClick(e.getX(), e.getY());
             }
         });
+
         addComponentListener(new java.awt.event.ComponentAdapter() {
             @Override
             public void componentResized(java.awt.event.ComponentEvent e) {
@@ -52,8 +57,30 @@ public class BoardPanel extends JPanel {
                 repaint();
             }
         });
-
     }
+
+    ////////////////////////////////////////////////////////////////////////////
+    private void placerUnitesParJoueur() {
+        // 🎯 Unités du joueur 1 (ex : coin haut gauche)
+        ajouterUnite("Archer", "resources/archer.png", 1, 1, 1);
+        ajouterUnite("Soldat", "resources/soldat.png", 1, 2, 2);
+        ajouterUnite("Cavalier", "resources/cavalier.png", 1, 3, 1);
+
+        // 🎯 Unités du joueur 2 (coin bas droit)
+        int h = plateau.getHauteur();
+        int l = plateau.getLargeur();
+        ajouterUnite("Archer", "resources/archer.png", 2, l - 2, h - 2);
+        ajouterUnite("Soldat", "resources/soldat.png", 2, l - 3, h - 3);
+        ajouterUnite("Cavalier", "resources/cavalier.png", 2, l - 4, h - 2);
+    }
+
+    private void ajouterUnite(String nom, String image, int joueur, int x, int y) {
+        Unite u = new Unite(nom, image, joueur, 10, 3, 3); // stats de base
+        plateau.getHexagone(x, y).setUnite(u);
+    }
+
+
+    /////////////////////////////////////////////////////////////////////////////////
 
     private void handleClick(int mouseX, int mouseY) {
         if (hoveredCol >= 0 && hoveredRow >= 0) {
@@ -324,21 +351,25 @@ public class BoardPanel extends JPanel {
             }
         }
 
+        // Désélectionner l’unité
         uniteSelectionnee = null;
         selX = selY = -1;
         accessibles.clear();
         visionActive = false;
 
+        // Tout rendre visible (ou gérer brouillard si tu veux)
         for (int y = 0; y < plateau.getHauteur(); y++) {
             for (int x = 0; x < plateau.getLargeur(); x++) {
                 plateau.getHexagone(x, y).setVisible(true);
             }
         }
 
-        infoPanel.majInfos(null);
-        infoPanel.majJoueurActif(joueurActif); // ✅ Mise à jour ici
+        infoPanel.majInfos(null); // vider les infos d’unité
+        infoPanel.majJoueurActif(joueurActif); // ✅ MET À JOUR LE NOM DU JOUEUR ACTIF
+
         repaint();
     }
+
 
 
     @Override

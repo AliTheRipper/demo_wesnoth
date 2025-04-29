@@ -11,29 +11,34 @@ public class GameWindow extends JFrame {
         setLocationRelativeTo(null);
 
         InfoPanel infoPanel = new InfoPanel();
-        infoPanel.setPreferredSize(new Dimension(240, 0)); // Largeur fixe
-        infoPanel.setBackground(new Color(220, 220, 220));
+        infoPanel.setPreferredSize(new Dimension(260, 0));
+        infoPanel.setBackground(Color.WHITE);
         infoPanel.setOpaque(true);
-
 
         BoardPanel board = new BoardPanel(infoPanel);
 
-        // Fixe la taille minimale du plateau pour qu’il ne déborde jamais
-        board.setPreferredSize(new Dimension(1400, 800)); // Ajuste si besoin
-
-        // On met juste le BoardPanel dans un JScrollPane
         JScrollPane scrollPane = new JScrollPane(board);
-        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setBorder(null);
 
-        // Layout principal
-        JPanel contentPanel = new JPanel(new BorderLayout());
-        contentPanel.add(scrollPane, BorderLayout.CENTER);   // Plateau au centre
-        contentPanel.add(infoPanel, BorderLayout.EAST);      // Barre à droite
+        // ✅ Utilise JSplitPane pour bien séparer les deux zones
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, scrollPane, infoPanel);
+        splitPane.setDividerSize(0); // pas de bord visible
+        splitPane.setEnabled(false); // l'utilisateur ne peut pas le déplacer
+        splitPane.setResizeWeight(1.0); // toute la taille dispo va au scroll
+        splitPane.setDividerLocation(-1); // sera forcé ensuite dans pack()
 
-        setContentPane(contentPanel);
-        pack();
+        getContentPane().setLayout(new BorderLayout());
+        getContentPane().add(splitPane, BorderLayout.CENTER);
+
+        // Déclenche les listeners après affichage
+        SwingUtilities.invokeLater(() -> splitPane.setDividerLocation(getWidth() - 320));
+
+        setVisible(true);
+
         infoPanel.getFinTourButton().addActionListener(e -> board.passerAuTourSuivant());
-
+        infoPanel.getAnnulerMouvementButton().addActionListener(e -> board.annulerDernierDeplacement());
     }
 }

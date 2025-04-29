@@ -8,6 +8,7 @@ import model.Unite;
 import javax.swing.*;
 import java.awt.*;
 import java.util.*;
+import java.util.Queue;
 
 public class BoardPanel extends JPanel {
     private final int HEX_SIZE = 30;
@@ -23,6 +24,48 @@ public class BoardPanel extends JPanel {
     private int selX = -1, selY = -1;
     private int joueurActif = 1;
     private InfoPanel infoPanel;
+private int dernierX = -1;
+private int dernierY = -1;
+private Unite uniteDernierMove = null;
+private final Image backgroundImage = new ImageIcon("resources/plaine.png").getImage();
+
+public void annulerDernierDeplacement() {
+    if (uniteDernierMove != null && dernierX != -1 && dernierY != -1) {
+        // Remettre l'unité à sa position d'origine
+        Hexagone actuel = plateau.getHexagone(selX, selY);
+        plateau.getHexagone(dernierX, dernierY).setUnite(uniteDernierMove);
+        actuel.setUnite(null);
+
+        // Réinitialiser déplacements
+        uniteDernierMove.resetDeplacement();
+
+        // Réinitialiser vision
+        for (int y = 0; y < plateau.getHauteur(); y++) {
+            for (int x = 0; x < plateau.getLargeur(); x++) {
+                plateau.getHexagone(x, y).setVisible(false);
+            }
+        }
+
+        // Recalculer la nouvelle sélection
+        selX = dernierX;
+        selY = dernierY;
+        uniteSelectionnee = uniteDernierMove;
+        accessibles = calculerCasesAccessibles(selX, selY, uniteSelectionnee.getDeplacementRestant());
+
+        // Marquer les nouvelles cases accessibles comme visibles
+        for (Hexagone h : accessibles) {
+            h.setVisible(true);
+        }
+
+        // Réinitialiser l'historique
+        dernierX = -1;
+        dernierY = -1;
+        uniteDernierMove = null;
+
+        repaint();
+    }
+}
+
 
     public BoardPanel(InfoPanel infoPanel) {
         this.infoPanel = infoPanel;
@@ -85,7 +128,10 @@ public class BoardPanel extends JPanel {
                 // Déplacement
                 int cout = plateau.getCoutDeplacement(hex.getTypeTerrain());
                 uniteSelectionnee.reduireDeplacement(cout);
-
+                dernierX = selX;
+                dernierY = selY;
+                uniteDernierMove = uniteSelectionnee;
+                
                 plateau.getHexagone(selX, selY).setUnite(null);
                 hex.setUnite(uniteSelectionnee);
 
@@ -196,27 +242,64 @@ public class BoardPanel extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
+// Use same grid offsets as hexagons
+int cols = plateau.getLargeur();
+int rows = plateau.getHauteur();
 
-        int cols = plateau.getLargeur();
-        int rows = plateau.getHauteur();
+int stepX = (int) (HEX_WIDTH * 0.9);
+int stepY = (int) (HEX_HEIGHT * 0.85);
 
-        int stepX = (int) (HEX_WIDTH * 0.9);
-        int stepY = (int) (HEX_HEIGHT * 0.85);
+int offsetX = (getWidth() - stepX * cols) / 2;
+int offsetY = (getHeight() - stepY * rows) / 2;
+for (int col = 0; col < cols; col++) {
+    for (int row = 0; row < rows; row++) {
+        int x = col * stepX + offsetX;
+        int y = row * stepY + offsetY;
+        if (col % 2 != 0) {
+            y += stepY / 2;
+        }
 
-        int offsetX = (getWidth() - stepX * cols) / 2;
-        int offsetY = (getHeight() - stepY * rows) / 2;
+        // Crée un hexagone pour la position (col, row)
+        Polygon hex = new Polygon();
+        for (int i = 0; i < 6; i++) {
+            double angle = Math.toRadians(60 * i);
+            int px = (int) (x + HEX_SIZE * Math.cos(angle));
+            int py = (int) (y + HEX_SIZE * Math.sin(angle));
+            hex.addPoint(px, py);
+        }
+
+        // Dessine l’image de fond "plaine" dans ce hexagone
+        Graphics2D gbg = (Graphics2D) g.create();
+        gbg.setClip(hex);
+        gbg.drawImage(backgroundImage, x - HEX_WIDTH / 2, y - HEX_HEIGHT / 2, HEX_WIDTH, HEX_HEIGHT, null);
+        gbg.dispose();
+    }
+}
+
+for (int col = 0; col < cols; col++) {
+    for (int row = 0; row < rows; row++) {
+        int x = col * stepX + offsetX;
+        int y = row * stepY + offsetY;
+        if (col % 2 != 0) {
+            y += stepY / 2;
+        }
+        g.drawImage(backgroundImage, x - backgroundImage.getWidth(null)/2, y - backgroundImage.getHeight(null)/2, null);
+    }
+}
+
+    Graphics2D g2d = (Graphics2D) g.create();
 
         for (int col = 0; col < cols; col++) {
             for (int row = 0; row < rows; row++) {
                 int x = col * stepX + offsetX;
                 int y = row * stepY + offsetY;
-                if (col % 2 != 0) {
-                    y += stepY / 2;
-                }
-
+        
+                if (col % 2 != 0) y += stepY / 2;
+        
                 drawHexagon(g, x, y, col, row);
             }
         }
+        g2d.dispose();
     }
 
     private void drawHexagon(Graphics g, int centerX, int centerY, int col, int row) {
@@ -347,10 +430,11 @@ public class BoardPanel extends JPanel {
         int stepY = (int) (HEX_HEIGHT * 0.85);
         int cols = plateau.getLargeur();
         int rows = plateau.getHauteur();
+    
         int width = stepX * cols + HEX_SIZE;
         int height = stepY * rows + HEX_SIZE;
-        return new Dimension(Math.max(width, getParent() != null ? getParent().getWidth() : width),
-                Math.max(height, getParent() != null ? getParent().getHeight() : height));
-    }
+    
+        return new Dimension(width, height + HEX_SIZE); // ← Add +HEX_SIZE to avoid bottom gaps
+    }    
 
 }

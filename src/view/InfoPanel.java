@@ -14,11 +14,12 @@ public class InfoPanel extends JPanel {
     private JLabel deplacementLabel = new JLabel("Déplacement : -");
 
     private JButton finTourButton = new JButton("Fin du tour");
+    private JButton annulerMouvementButton = new JButton("Annuler mouvement");
 
     public InfoPanel() {
         setLayout(new BorderLayout());
         setPreferredSize(new Dimension(260, 0));
-        setBackground(new Color(240, 240, 240));
+        setBackground(Color.WHITE);
         setOpaque(true);
 
         // Titre joueur actif
@@ -29,7 +30,7 @@ public class InfoPanel extends JPanel {
         // Partie centrale - infos unité
         JPanel infosPanel = new JPanel();
         infosPanel.setLayout(new BoxLayout(infosPanel, BoxLayout.Y_AXIS));
-        infosPanel.setBackground(new Color(240, 240, 240));
+        infosPanel.setBackground(Color.WHITE);
         infosPanel.setBorder(BorderFactory.createTitledBorder("Unité sélectionnée"));
 
         for (JLabel label : new JLabel[]{nomLabel, joueurLabel, pvLabel, attaqueLabel, deplacementLabel}) {
@@ -40,12 +41,13 @@ public class InfoPanel extends JPanel {
 
         add(infosPanel, BorderLayout.CENTER);
 
-        // Bouton en bas
+        // Bas - boutons
         JPanel basPanel = new JPanel();
-        basPanel.setBackground(new Color(240, 240, 240));
+        basPanel.setBackground(Color.WHITE);
         basPanel.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
-        basPanel.setLayout(new BorderLayout());
-        basPanel.add(finTourButton, BorderLayout.CENTER);
+        basPanel.setLayout(new GridLayout(2, 1, 10, 10));
+        basPanel.add(finTourButton);
+        basPanel.add(annulerMouvementButton);
 
         add(basPanel, BorderLayout.SOUTH);
     }
@@ -72,5 +74,9 @@ public class InfoPanel extends JPanel {
 
     public JButton getFinTourButton() {
         return finTourButton;
+    }
+
+    public JButton getAnnulerMouvementButton() {
+        return annulerMouvementButton;
     }
 }

@@ -8,8 +8,11 @@ public enum TypeTerrain {
     COLLINE("resources/colline.png"),
     MONTAGNE("resources/montagne.png"),
     VILLAGE("resources/village.png"),
+    CHATEAU("resources/chateau.png"),
     FORTERESSE("resources/forteresse.png"),
     EAU_PROFONDE("resources/eau.png");
+
+
 
     private final ImageIcon icon;
 

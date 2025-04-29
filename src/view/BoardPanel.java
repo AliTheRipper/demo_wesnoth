@@ -21,15 +21,16 @@ public class BoardPanel extends JPanel {
     private Unite uniteSelectionnee = null;
     private Set<Hexagone> accessibles = new HashSet<>();
     private int selX = -1, selY = -1;
+    private int joueurActif = 1;
+    private InfoPanel infoPanel;
 
-
-    public BoardPanel() {
+    public BoardPanel(InfoPanel infoPanel) {
+        this.infoPanel = infoPanel;
         this.plateau = new PlateauDeJeu("map/map.txt");
 
         // Ajout manuel de quelques unités
         plateau.getHexagone(2, 2).setUnite(new Unite("Archer", "resources/archer.png", 1, 10, 3, 3));
         plateau.getHexagone(5, 5).setUnite(new Unite("Soldat", "resources/soldat.png", 2, 12, 4, 2));
-
 
         addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
             @Override
@@ -44,6 +45,14 @@ public class BoardPanel extends JPanel {
                 handleClick(e.getX(), e.getY());
             }
         });
+        addComponentListener(new java.awt.event.ComponentAdapter() {
+            @Override
+            public void componentResized(java.awt.event.ComponentEvent e) {
+                revalidate();
+                repaint();
+            }
+        });
+
     }
 
     private void handleClick(int mouseX, int mouseY) {
@@ -51,7 +60,8 @@ public class BoardPanel extends JPanel {
             Hexagone hex = plateau.getHexagone(hoveredCol, hoveredRow);
             Unite unite = hex.getUnite();
 
-            if (unite != null) {
+            if (unite != null && unite.getJoueur() == joueurActif) {
+                // Sélection de l’unité
                 uniteSelectionnee = unite;
                 selX = hoveredCol;
                 selY = hoveredRow;
@@ -69,15 +79,16 @@ public class BoardPanel extends JPanel {
                     h.setVisible(true);
                 }
 
+                infoPanel.majInfos(unite);
+
             } else if (uniteSelectionnee != null && hex.getUnite() == null && accessibles.contains(hex)) {
-                // déplacement valide
+                // Déplacement
                 int cout = plateau.getCoutDeplacement(hex.getTypeTerrain());
                 uniteSelectionnee.reduireDeplacement(cout);
 
                 plateau.getHexagone(selX, selY).setUnite(null);
                 hex.setUnite(uniteSelectionnee);
 
-                // mettre à jour
                 selX = hoveredCol;
                 selY = hoveredRow;
 
@@ -93,8 +104,10 @@ public class BoardPanel extends JPanel {
                     h.setVisible(true);
                 }
 
+                infoPanel.majInfos(uniteSelectionnee);
+
             } else {
-                // clic ailleurs → annuler sélection
+                // Désélection
                 uniteSelectionnee = null;
                 selX = selY = -1;
                 visionActive = false;
@@ -105,13 +118,13 @@ public class BoardPanel extends JPanel {
                         plateau.getHexagone(x, y).setVisible(true);
                     }
                 }
+
+                infoPanel.majInfos(null);
             }
 
             repaint();
         }
     }
-
-
 
     private void updateHoveredHexagon(int mouseX, int mouseY) {
         int stepX = (int) (HEX_WIDTH * 0.9);
@@ -218,13 +231,11 @@ public class BoardPanel extends JPanel {
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setClip(hex);
 
-        // Dessin du terrain
         Image terrainImg = plateau.getHexagone(col, row).getTypeTerrain().getIcon().getImage();
         int imgWidth = (int) (HEX_WIDTH * 1.2);
         int imgHeight = HEX_HEIGHT;
         g2.drawImage(terrainImg, centerX - imgWidth / 2, centerY - imgHeight / 2, imgWidth, imgHeight, null);
 
-        // Dessin de l’unité (si visible ou vision désactivée)
         Unite unite = plateau.getHexagone(col, row).getUnite();
         if (unite != null && (!visionActive || plateau.getHexagone(col, row).isVisible())) {
             Image icone = unite.getIcone().getImage();
@@ -232,7 +243,6 @@ public class BoardPanel extends JPanel {
             g2.drawImage(icone, centerX - uniteTaille / 2, centerY - uniteTaille / 2, uniteTaille, uniteTaille, null);
         }
 
-        // Dessin du brouillard si activé
         if (visionActive && !plateau.getHexagone(col, row).isVisible()) {
             g2.setColor(new Color(0, 0, 0, 150));
             g2.fillPolygon(hex);
@@ -240,27 +250,24 @@ public class BoardPanel extends JPanel {
 
         g2.setClip(null);
 
-        // Contour si survolé
         if (col == hoveredCol && row == hoveredRow) {
             g2.setColor(Color.CYAN);
             g2.setStroke(new BasicStroke(2));
             g2.drawPolygon(hex);
         }
 
-        // Contour si unité sélectionnée
         if (col == selX && row == selY) {
             g2.setColor(Color.YELLOW);
             g2.setStroke(new BasicStroke(3));
             g2.drawPolygon(hex);
         }
 
-        g2.dispose();
-        // mettre en surbrillance les cases accessibles
         if (accessibles.contains(plateau.getHexagone(col, row))) {
-            g2.setColor(new Color(0, 255, 0, 100)); // vert transparent
+            g2.setColor(new Color(0, 255, 0, 100));
             g2.fillPolygon(hex);
         }
 
+        g2.dispose();
     }
 
     private Set<Hexagone> calculerCasesAccessibles(int x, int y, int pointsRestants) {
@@ -278,7 +285,6 @@ public class BoardPanel extends JPanel {
             Hexagone hex = plateau.getHexagone(cx, cy);
             accessibles.add(hex);
 
-            // Déplacements dans les 6 directions hexagonales
             int[][] directions = {
                     {1, 0}, {-1, 0}, {0, 1}, {0, -1},
                     {cx % 2 == 0 ? -1 : 1, 1}, {cx % 2 == 0 ? -1 : 1, -1}
@@ -305,6 +311,34 @@ public class BoardPanel extends JPanel {
         return accessibles;
     }
 
+    public void passerAuTourSuivant() {
+        joueurActif = (joueurActif == 1) ? 2 : 1;
+
+        // Réinitialiser les déplacements
+        for (int y = 0; y < plateau.getHauteur(); y++) {
+            for (int x = 0; x < plateau.getLargeur(); x++) {
+                Unite u = plateau.getHexagone(x, y).getUnite();
+                if (u != null && u.getJoueur() == joueurActif) {
+                    u.resetDeplacement();
+                }
+            }
+        }
+
+        uniteSelectionnee = null;
+        selX = selY = -1;
+        accessibles.clear();
+        visionActive = false;
+
+        for (int y = 0; y < plateau.getHauteur(); y++) {
+            for (int x = 0; x < plateau.getLargeur(); x++) {
+                plateau.getHexagone(x, y).setVisible(true);
+            }
+        }
+
+        infoPanel.majInfos(null);
+        infoPanel.majJoueurActif(joueurActif); // ✅ Mise à jour ici
+        repaint();
+    }
 
 
     @Override
@@ -315,6 +349,8 @@ public class BoardPanel extends JPanel {
         int rows = plateau.getHauteur();
         int width = stepX * cols + HEX_SIZE;
         int height = stepY * rows + HEX_SIZE;
-        return new Dimension(width, height);
+        return new Dimension(Math.max(width, getParent() != null ? getParent().getWidth() : width),
+                Math.max(height, getParent() != null ? getParent().getHeight() : height));
     }
+
 }

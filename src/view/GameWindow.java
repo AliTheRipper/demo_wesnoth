@@ -1,6 +1,7 @@
 package view;
 
 import javax.swing.*;
+import java.awt.*;
 
 public class GameWindow extends JFrame {
     public GameWindow() {
@@ -9,39 +10,30 @@ public class GameWindow extends JFrame {
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setLocationRelativeTo(null);
 
-        BoardPanel board = new BoardPanel();
+        InfoPanel infoPanel = new InfoPanel();
+        infoPanel.setPreferredSize(new Dimension(240, 0)); // Largeur fixe
+        infoPanel.setBackground(new Color(220, 220, 220));
+        infoPanel.setOpaque(true);
+
+
+        BoardPanel board = new BoardPanel(infoPanel);
+
+        // Fixe la taille minimale du plateau pour qu’il ne déborde jamais
+        board.setPreferredSize(new Dimension(1400, 800)); // Ajuste si besoin
+
+        // On met juste le BoardPanel dans un JScrollPane
         JScrollPane scrollPane = new JScrollPane(board);
-        add(scrollPane);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 
-        // === Barre de menu ===
-        JMenuBar menuBar = new JMenuBar();
+        // Layout principal
+        JPanel contentPanel = new JPanel(new BorderLayout());
+        contentPanel.add(scrollPane, BorderLayout.CENTER);   // Plateau au centre
+        contentPanel.add(infoPanel, BorderLayout.EAST);      // Barre à droite
 
-        JMenu menuFichier = new JMenu("Fichier");
-        JMenuItem quitter = new JMenuItem("Retour au Menu Principal");
+        setContentPane(contentPanel);
+        pack();
+        infoPanel.getFinTourButton().addActionListener(e -> board.passerAuTourSuivant());
 
-        quitter.addActionListener(e -> {
-            dispose();
-            new MainMenu().setVisible(true);
-        });
-        menuFichier.add(quitter);
-
-        JMenu menuAide = new JMenu("Aide");
-        JMenuItem regles = new JMenuItem("Règles du jeu");
-        JMenuItem apropos = new JMenuItem("À propos");
-
-        regles.addActionListener(e -> JOptionPane.showMessageDialog(this,
-                "But du jeu : détruire les unités ennemies ou survivre jusqu'au dernier tour.\n" +
-                        "Chaque unité a des caractéristiques propres (attaque, défense, déplacement).\n" +
-                        "Clique sur la carte pour afficher la zone de vision."));
-        apropos.addActionListener(e -> JOptionPane.showMessageDialog(this,
-                "Wargame Java v1.0\nRéalisé par Ilias H."));
-
-        menuAide.add(regles);
-        menuAide.add(apropos);
-
-        menuBar.add(menuFichier);
-        menuBar.add(menuAide);
-
-        setJMenuBar(menuBar);
     }
 }

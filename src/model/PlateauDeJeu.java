@@ -38,13 +38,14 @@ public class PlateauDeJeu {
             case 'P': return TypeTerrain.PLAINE;
             case 'F': return TypeTerrain.FORET;
             case 'M': return TypeTerrain.MONTAGNE;
-            case 'C': return TypeTerrain.COLLINE;
-            case 'V': return TypeTerrain.VILLAGE;
             case 'E': return TypeTerrain.EAU_PROFONDE;
+            case 'V': return TypeTerrain.VILLAGE;
             case 'T': return TypeTerrain.FORTERESSE;
+            case 'C': return TypeTerrain.CHATEAU; // nouveau
             default: return TypeTerrain.PLAINE;
         }
     }
+
 
     public Hexagone getHexagone(int x, int y) {
         return hexagones[y][x];

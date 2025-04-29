@@ -1,11 +1,13 @@
 package view;
 
-import model.PlateauDeJeu;
 import model.Hexagone;
+import model.PlateauDeJeu;
 import model.TypeTerrain;
+import model.Unite;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.*;
 
 public class BoardPanel extends JPanel {
     private final int HEX_SIZE = 30;
@@ -16,8 +18,18 @@ public class BoardPanel extends JPanel {
     private int hoveredRow = -1;
     private boolean visionActive = false;
 
+    private Unite uniteSelectionnee = null;
+    private Set<Hexagone> accessibles = new HashSet<>();
+    private int selX = -1, selY = -1;
+
+
     public BoardPanel() {
         this.plateau = new PlateauDeJeu("map/map.txt");
+
+        // Ajout manuel de quelques unités
+        plateau.getHexagone(2, 2).setUnite(new Unite("Archer", "resources/archer.png", 1, 10, 3, 3));
+        plateau.getHexagone(5, 5).setUnite(new Unite("Soldat", "resources/soldat.png", 2, 12, 4, 2));
+
 
         addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
             @Override
@@ -36,24 +48,61 @@ public class BoardPanel extends JPanel {
 
     private void handleClick(int mouseX, int mouseY) {
         if (hoveredCol >= 0 && hoveredRow >= 0) {
-            visionActive = true;
+            Hexagone hex = plateau.getHexagone(hoveredCol, hoveredRow);
+            Unite unite = hex.getUnite();
 
-            for (int y = 0; y < plateau.getHauteur(); y++) {
-                for (int x = 0; x < plateau.getLargeur(); x++) {
-                    plateau.getHexagone(x, y).setVisible(false);
+            if (unite != null) {
+                uniteSelectionnee = unite;
+                selX = hoveredCol;
+                selY = hoveredRow;
+                visionActive = true;
+
+                accessibles = calculerCasesAccessibles(selX, selY, unite.getDeplacementRestant());
+
+                for (int y = 0; y < plateau.getHauteur(); y++) {
+                    for (int x = 0; x < plateau.getLargeur(); x++) {
+                        plateau.getHexagone(x, y).setVisible(false);
+                    }
                 }
-            }
 
-            int rayon = 2;
-            for (int dy = -rayon; dy <= rayon; dy++) {
-                for (int dx = -rayon; dx <= rayon; dx++) {
-                    int nx = hoveredCol + dx;
-                    int ny = hoveredRow + dy;
-                    if (nx >= 0 && ny >= 0 && nx < plateau.getLargeur() && ny < plateau.getHauteur()) {
-                        double distance = Math.sqrt(dx * dx + dy * dy);
-                        if (distance <= rayon) {
-                            plateau.getHexagone(nx, ny).setVisible(true);
-                        }
+                for (Hexagone h : accessibles) {
+                    h.setVisible(true);
+                }
+
+            } else if (uniteSelectionnee != null && hex.getUnite() == null && accessibles.contains(hex)) {
+                // déplacement valide
+                int cout = plateau.getCoutDeplacement(hex.getTypeTerrain());
+                uniteSelectionnee.reduireDeplacement(cout);
+
+                plateau.getHexagone(selX, selY).setUnite(null);
+                hex.setUnite(uniteSelectionnee);
+
+                // mettre à jour
+                selX = hoveredCol;
+                selY = hoveredRow;
+
+                accessibles = calculerCasesAccessibles(selX, selY, uniteSelectionnee.getDeplacementRestant());
+
+                for (int y = 0; y < plateau.getHauteur(); y++) {
+                    for (int x = 0; x < plateau.getLargeur(); x++) {
+                        plateau.getHexagone(x, y).setVisible(false);
+                    }
+                }
+
+                for (Hexagone h : accessibles) {
+                    h.setVisible(true);
+                }
+
+            } else {
+                // clic ailleurs → annuler sélection
+                uniteSelectionnee = null;
+                selX = selY = -1;
+                visionActive = false;
+                accessibles.clear();
+
+                for (int y = 0; y < plateau.getHauteur(); y++) {
+                    for (int x = 0; x < plateau.getLargeur(); x++) {
+                        plateau.getHexagone(x, y).setVisible(true);
                     }
                 }
             }
@@ -61,6 +110,8 @@ public class BoardPanel extends JPanel {
             repaint();
         }
     }
+
+
 
     private void updateHoveredHexagon(int mouseX, int mouseY) {
         int stepX = (int) (HEX_WIDTH * 0.9);
@@ -167,26 +218,94 @@ public class BoardPanel extends JPanel {
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setClip(hex);
 
-        Image img = plateau.getHexagone(col, row).getTypeTerrain().getIcon().getImage();
+        // Dessin du terrain
+        Image terrainImg = plateau.getHexagone(col, row).getTypeTerrain().getIcon().getImage();
         int imgWidth = (int) (HEX_WIDTH * 1.2);
-        int imgHeight = (int) (HEX_HEIGHT);
-        g2.drawImage(img, centerX - imgWidth / 2, centerY - imgHeight / 2, imgWidth, imgHeight, null);
+        int imgHeight = HEX_HEIGHT;
+        g2.drawImage(terrainImg, centerX - imgWidth / 2, centerY - imgHeight / 2, imgWidth, imgHeight, null);
 
+        // Dessin de l’unité (si visible ou vision désactivée)
+        Unite unite = plateau.getHexagone(col, row).getUnite();
+        if (unite != null && (!visionActive || plateau.getHexagone(col, row).isVisible())) {
+            Image icone = unite.getIcone().getImage();
+            int uniteTaille = HEX_SIZE;
+            g2.drawImage(icone, centerX - uniteTaille / 2, centerY - uniteTaille / 2, uniteTaille, uniteTaille, null);
+        }
+
+        // Dessin du brouillard si activé
         if (visionActive && !plateau.getHexagone(col, row).isVisible()) {
-            g2.setColor(new Color(0, 0, 0, 150)); // semi-transparent
+            g2.setColor(new Color(0, 0, 0, 150));
             g2.fillPolygon(hex);
         }
 
         g2.setClip(null);
 
+        // Contour si survolé
         if (col == hoveredCol && row == hoveredRow) {
             g2.setColor(Color.CYAN);
             g2.setStroke(new BasicStroke(2));
             g2.drawPolygon(hex);
         }
 
+        // Contour si unité sélectionnée
+        if (col == selX && row == selY) {
+            g2.setColor(Color.YELLOW);
+            g2.setStroke(new BasicStroke(3));
+            g2.drawPolygon(hex);
+        }
+
         g2.dispose();
+        // mettre en surbrillance les cases accessibles
+        if (accessibles.contains(plateau.getHexagone(col, row))) {
+            g2.setColor(new Color(0, 255, 0, 100)); // vert transparent
+            g2.fillPolygon(hex);
+        }
+
     }
+
+    private Set<Hexagone> calculerCasesAccessibles(int x, int y, int pointsRestants) {
+        Set<Hexagone> accessibles = new HashSet<>();
+        Queue<int[]> file = new LinkedList<>();
+        Map<String, Integer> dejaVisites = new HashMap<>();
+
+        file.add(new int[]{x, y, pointsRestants});
+        dejaVisites.put(x + "," + y, pointsRestants);
+
+        while (!file.isEmpty()) {
+            int[] courant = file.poll();
+            int cx = courant[0], cy = courant[1], points = courant[2];
+
+            Hexagone hex = plateau.getHexagone(cx, cy);
+            accessibles.add(hex);
+
+            // Déplacements dans les 6 directions hexagonales
+            int[][] directions = {
+                    {1, 0}, {-1, 0}, {0, 1}, {0, -1},
+                    {cx % 2 == 0 ? -1 : 1, 1}, {cx % 2 == 0 ? -1 : 1, -1}
+            };
+
+            for (int[] dir : directions) {
+                int nx = cx + dir[0];
+                int ny = cy + dir[1];
+                if (nx < 0 || ny < 0 || nx >= plateau.getLargeur() || ny >= plateau.getHauteur()) continue;
+
+                Hexagone voisin = plateau.getHexagone(nx, ny);
+                int cout = plateau.getCoutDeplacement(voisin.getTypeTerrain());
+
+                if (cout <= points && voisin.getUnite() == null) {
+                    String key = nx + "," + ny;
+                    if (!dejaVisites.containsKey(key) || dejaVisites.get(key) < points - cout) {
+                        dejaVisites.put(key, points - cout);
+                        file.add(new int[]{nx, ny, points - cout});
+                    }
+                }
+            }
+        }
+
+        return accessibles;
+    }
+
+
 
     @Override
     public Dimension getPreferredSize() {

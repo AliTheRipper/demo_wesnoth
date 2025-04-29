@@ -57,4 +57,18 @@ public class PlateauDeJeu {
     public int getHauteur() {
         return hauteur;
     }
+
+    public int getCoutDeplacement(TypeTerrain terrain) {
+        switch (terrain) {
+            case PLAINE: return 1;
+            case FORET: return 2;
+            case MONTAGNE: return 3;
+            case EAU_PROFONDE: return 999; // infranchissable
+            case FORTERESSE: return 2;
+            case COLLINE: return 2;
+            case VILLAGE: return 1;
+            default: return 1;
+        }
+    }
+
 }

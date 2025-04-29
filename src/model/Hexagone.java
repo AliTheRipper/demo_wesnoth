@@ -5,6 +5,15 @@ public class Hexagone {
     private int y;
     private TypeTerrain typeTerrain;
     private boolean isVisible = false;
+    private Unite unite; // peut être null
+
+    public Unite getUnite() {
+        return unite;
+    }
+
+    public void setUnite(Unite unite) {
+        this.unite = unite;
+    }
 
     public Hexagone(int x, int y, TypeTerrain typeTerrain) {
         this.x = x;

@@ -18,7 +18,7 @@ public class PlateauDeJeu {
             while ((line = reader.readLine()) != null) {
                 if (hexagones == null) {
                     largeur = line.length();
-                    hexagones = new Hexagone[100][largeur]; // maximum 100 lignes au début
+                    hexagones = new Hexagone[100][largeur]; // max 100 lignes
                 }
                 for (int x = 0; x < line.length(); x++) {
                     TypeTerrain terrain = convertirSymbole(line.charAt(x));

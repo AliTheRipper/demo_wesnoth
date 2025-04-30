@@ -1,6 +1,8 @@
 package model;
 
-public class Hexagone {
+import java.io.Serializable;
+
+public class Hexagone implements Serializable {
     private int x;
     private int y;
     private TypeTerrain typeTerrain;

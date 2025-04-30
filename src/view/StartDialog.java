@@ -8,6 +8,7 @@ public class StartDialog extends JDialog {
 
     private String joueur1;
     private String joueur2;
+    private boolean validerClique = false;
 
     public StartDialog(JFrame parent) {
         super(parent, "Saisir les noms des joueurs", true);
@@ -28,13 +29,15 @@ public class StartDialog extends JDialog {
         valider.addActionListener(e -> {
             joueur1 = joueur1Field.getText().trim();
             joueur2 = joueur2Field.getText().trim();
-
+        
             if (joueur1.isEmpty() || joueur2.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Veuillez saisir les deux noms.");
             } else {
-                dispose(); // fermer la boîte
+                validerClique = true;  // ✅ important
+                dispose();
             }
         });
+        
 
         panel.add(valider);
         panel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
@@ -45,10 +48,11 @@ public class StartDialog extends JDialog {
     }
 
     public String getJoueur1() {
-        return joueur1;
+        return validerClique ? joueur1 : null;
     }
-
+    
     public String getJoueur2() {
-        return joueur2;
+        return validerClique ? joueur2 : null;
     }
+    
 }

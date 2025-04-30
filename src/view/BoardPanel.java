@@ -14,6 +14,7 @@ public class BoardPanel extends JPanel {
     private final int HEX_SIZE = 30;
     private final int HEX_WIDTH = (int) (Math.sqrt(3) * HEX_SIZE);
     private final int HEX_HEIGHT = 2 * HEX_SIZE;
+
     private PlateauDeJeu plateau;
     private int hoveredCol = -1;
     private int hoveredRow = -1;
@@ -24,77 +25,71 @@ public class BoardPanel extends JPanel {
     private int selX = -1, selY = -1;
     private int joueurActif = 1;
     private InfoPanel infoPanel;
-private int dernierX = -1;
-private int dernierY = -1;
-private Unite uniteDernierMove = null;
-private final Image backgroundImage = new ImageIcon("resources/plaine.png").getImage();
 
-public void annulerDernierDeplacement() {
-    if (uniteDernierMove != null && dernierX != -1 && dernierY != -1) {
-        // Remettre l'unité à sa position d'origine
-        Hexagone actuel = plateau.getHexagone(selX, selY);
-        plateau.getHexagone(dernierX, dernierY).setUnite(uniteDernierMove);
-        actuel.setUnite(null);
+    private int xDepart = -1;
+    private int yDepart = -1;
+    private Unite derniereUniteDeplacee = null;
+    private int derniereXDepart = -1;
+    private int derniereYDepart = -1;
+    
+    private final Image backgroundImage = new ImageIcon("resources/plaine.png").getImage();
 
-        // Réinitialiser déplacements
-        uniteDernierMove.resetDeplacement();
-
-        // Réinitialiser vision
-        for (int y = 0; y < plateau.getHauteur(); y++) {
-            for (int x = 0; x < plateau.getLargeur(); x++) {
-                plateau.getHexagone(x, y).setVisible(false);
+    public void annulerDernierDeplacement() {
+        if (derniereUniteDeplacee != null && derniereXDepart != -1 && derniereYDepart != -1) {
+            // Trouve sa position actuelle
+            for (int y = 0; y < plateau.getHauteur(); y++) {
+                for (int x = 0; x < plateau.getLargeur(); x++) {
+                    Hexagone hex = plateau.getHexagone(x, y);
+                    if (hex.getUnite() == derniereUniteDeplacee) {
+                        hex.setUnite(null); // on enlève de là
+                        break;
+                    }
+                }
             }
+    
+            // On la remet à sa position de départ
+            plateau.getHexagone(derniereXDepart, derniereYDepart).setUnite(derniereUniteDeplacee);
+            derniereUniteDeplacee.resetDeplacement();
+    
+            // Mise à jour affichage
+            uniteSelectionnee = derniereUniteDeplacee;
+            selX = derniereXDepart;
+            selY = derniereYDepart;
+    
+            accessibles = calculerCasesAccessibles(selX, selY, uniteSelectionnee.getDeplacementRestant());
+            setHexVisibility(accessibles);
+    
+            infoPanel.majInfos(uniteSelectionnee);
+            infoPanel.majDeplacement(uniteSelectionnee.getDeplacementRestant());
+    
+            // Réinitialise pour éviter d’annuler plusieurs fois
+            derniereUniteDeplacee = null;
+            derniereXDepart = -1;
+            derniereYDepart = -1;
+    
+            repaint();
         }
-
-        // Recalculer la nouvelle sélection
-        selX = dernierX;
-        selY = dernierY;
-        uniteSelectionnee = uniteDernierMove;
-        accessibles = calculerCasesAccessibles(selX, selY, uniteSelectionnee.getDeplacementRestant());
-
-        // Marquer les nouvelles cases accessibles comme visibles
-        for (Hexagone h : accessibles) {
-            h.setVisible(true);
-        }
-
-        // Réinitialiser l'historique
-        dernierX = -1;
-        dernierY = -1;
-        uniteDernierMove = null;
-
-        repaint();
     }
-}
-
-    private String nomJoueur1;
-    private String nomJoueur2;
-
+    
 
     public BoardPanel(InfoPanel infoPanel, String joueur1, String joueur2) {
         this.infoPanel = infoPanel;
-        this.nomJoueur1 = joueur1;
-        this.nomJoueur2 = joueur2;
         this.plateau = new PlateauDeJeu("map/map.txt");
-
-        // 👉 Ajout automatique des unités pour chaque joueur
         placerUnitesParJoueur();
 
         addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
-            @Override
             public void mouseMoved(java.awt.event.MouseEvent e) {
                 updateHoveredHexagon(e.getX(), e.getY());
             }
         });
 
         addMouseListener(new java.awt.event.MouseAdapter() {
-            @Override
             public void mouseClicked(java.awt.event.MouseEvent e) {
                 handleClick(e.getX(), e.getY());
             }
         });
 
         addComponentListener(new java.awt.event.ComponentAdapter() {
-            @Override
             public void componentResized(java.awt.event.ComponentEvent e) {
                 revalidate();
                 repaint();
@@ -103,12 +98,10 @@ public void annulerDernierDeplacement() {
     }
 
     private void placerUnitesParJoueur() {
-        // 🎯 Unités du joueur 1 (ex : coin haut gauche)
         ajouterUnite("Archer", "resources/archer.png", 1, 1, 1);
         ajouterUnite("Soldat", "resources/soldat.png", 1, 2, 2);
         ajouterUnite("Cavalier", "resources/cavalier.png", 1, 3, 1);
 
-        // 🎯 Unités du joueur 2 (coin bas droit)
         int h = plateau.getHauteur();
         int l = plateau.getLargeur();
         ajouterUnite("Archer", "resources/archer.png", 2, l - 2, h - 2);
@@ -117,11 +110,9 @@ public void annulerDernierDeplacement() {
     }
 
     private void ajouterUnite(String nom, String image, int joueur, int x, int y) {
-        Unite u = new Unite(nom, image, joueur, 10, 3, 3); // stats de base
+        Unite u = new Unite(nom, image, joueur, 10, 3, 5);
         plateau.getHexagone(x, y).setUnite(u);
     }
-
-
 
     private void handleClick(int mouseX, int mouseY) {
         if (hoveredCol >= 0 && hoveredRow >= 0) {
@@ -129,71 +120,64 @@ public void annulerDernierDeplacement() {
             Unite unite = hex.getUnite();
 
             if (unite != null && unite.getJoueur() == joueurActif) {
-                // Sélection de l’unité
                 uniteSelectionnee = unite;
                 selX = hoveredCol;
                 selY = hoveredRow;
+                xDepart = selX;
+                yDepart = selY;
                 visionActive = true;
 
-                accessibles = calculerCasesAccessibles(selX, selY, unite.getDeplacementRestant());
+                accessibles = calculerCasesAccessibles(selX, selY, uniteSelectionnee.getDeplacementRestant());
 
-                for (int y = 0; y < plateau.getHauteur(); y++) {
-                    for (int x = 0; x < plateau.getLargeur(); x++) {
-                        plateau.getHexagone(x, y).setVisible(false);
-                    }
-                }
+                setHexVisibility(accessibles);
 
-                for (Hexagone h : accessibles) {
-                    h.setVisible(true);
-                }
-
-                infoPanel.majInfos(unite);
+                infoPanel.majInfos(uniteSelectionnee);
+                infoPanel.majDeplacement(uniteSelectionnee.getDeplacementRestant());
 
             } else if (uniteSelectionnee != null && hex.getUnite() == null && accessibles.contains(hex)) {
-                // Déplacement
-                int cout = plateau.getCoutDeplacement(hex.getTypeTerrain());
-                uniteSelectionnee.reduireDeplacement(cout);
-                dernierX = selX;
-                dernierY = selY;
-                uniteDernierMove = uniteSelectionnee;
-                
-                plateau.getHexagone(selX, selY).setUnite(null);
-                hex.setUnite(uniteSelectionnee);
+                int distance = calculerDistanceHex(selX, selY, hoveredCol, hoveredRow);
+                uniteSelectionnee.reduireDeplacement(distance);
+                  // movement by number of steps
+
+
+                  plateau.getHexagone(selX, selY).setUnite(null);
+                  hex.setUnite(uniteSelectionnee);
+                  
+                  // Mémorise pour annuler plus tard
+                  derniereUniteDeplacee = uniteSelectionnee;
+                  derniereXDepart = xDepart;
+                  derniereYDepart = yDepart;
+                  
 
                 selX = hoveredCol;
                 selY = hoveredRow;
 
                 accessibles = calculerCasesAccessibles(selX, selY, uniteSelectionnee.getDeplacementRestant());
-
-                for (int y = 0; y < plateau.getHauteur(); y++) {
-                    for (int x = 0; x < plateau.getLargeur(); x++) {
-                        plateau.getHexagone(x, y).setVisible(false);
-                    }
-                }
-
-                for (Hexagone h : accessibles) {
-                    h.setVisible(true);
-                }
+                setHexVisibility(accessibles);
 
                 infoPanel.majInfos(uniteSelectionnee);
+                infoPanel.majDeplacement(uniteSelectionnee.getDeplacementRestant());
 
             } else {
-                // Désélection
                 uniteSelectionnee = null;
                 selX = selY = -1;
                 visionActive = false;
                 accessibles.clear();
-
-                for (int y = 0; y < plateau.getHauteur(); y++) {
-                    for (int x = 0; x < plateau.getLargeur(); x++) {
-                        plateau.getHexagone(x, y).setVisible(true);
-                    }
-                }
+                setHexVisibility(null);
 
                 infoPanel.majInfos(null);
+                infoPanel.majDeplacement(0);
             }
 
             repaint();
+        }
+    }
+
+    private void setHexVisibility(Set<Hexagone> visibles) {
+        for (int y = 0; y < plateau.getHauteur(); y++) {
+            for (int x = 0; x < plateau.getLargeur(); x++) {
+                plateau.getHexagone(x, y).setVisible(visibles != null && visibles.contains(plateau.getHexagone(x, y)));
+            }
         }
     }
 
@@ -213,24 +197,18 @@ public void annulerDernierDeplacement() {
         int col = adjustedX / stepX;
         int row = (col % 2 == 0) ? adjustedY / stepY : (adjustedY - stepY / 2) / stepY;
 
-        int[][] candidates = {
-                {col, row}, {col - 1, row}, {col + 1, row},
-                {col, row - 1}, {col, row + 1},
-                {col - 1, row - 1}, {col + 1, row - 1},
-                {col - 1, row + 1}, {col + 1, row + 1}
-        };
-
         hoveredCol = -1;
         hoveredRow = -1;
 
-        for (int[] candidate : candidates) {
-            int cCol = candidate[0];
-            int cRow = candidate[1];
-            if (cCol >= 0 && cRow >= 0 && cCol < cols && cRow < rows) {
-                Polygon hex = createHexagon(cCol, cRow);
-                if (hex.contains(mouseX, mouseY)) {
-                    hoveredCol = cCol;
-                    hoveredRow = cRow;
+        for (int[] c : new int[][]{
+                {col, row}, {col - 1, row}, {col + 1, row}, {col, row - 1},
+                {col, row + 1}, {col - 1, row - 1}, {col + 1, row - 1}, {col - 1, row + 1}, {col + 1, row + 1}
+        }) {
+            int cx = c[0], cy = c[1];
+            if (cx >= 0 && cy >= 0 && cx < cols && cy < rows) {
+                if (createHexagon(cx, cy).contains(mouseX, mouseY)) {
+                    hoveredCol = cx;
+                    hoveredRow = cy;
                     break;
                 }
             }
@@ -248,107 +226,61 @@ public void annulerDernierDeplacement() {
 
         int x = col * stepX + offsetX;
         int y = row * stepY + offsetY;
-
-        if (col % 2 != 0) {
-            y += stepY / 2;
-        }
+        if (col % 2 != 0) y += stepY / 2;
 
         Polygon hex = new Polygon();
         for (int i = 0; i < 6; i++) {
             double angle = Math.toRadians(60 * i);
-            int px = (int) (x + HEX_SIZE * Math.cos(angle));
-            int py = (int) (y + HEX_SIZE * Math.sin(angle));
-            hex.addPoint(px, py);
+            hex.addPoint((int) (x + HEX_SIZE * Math.cos(angle)), (int) (y + HEX_SIZE * Math.sin(angle)));
         }
-
         return hex;
     }
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-// Use same grid offsets as hexagons
-int cols = plateau.getLargeur();
-int rows = plateau.getHauteur();
 
-int stepX = (int) (HEX_WIDTH * 0.9);
-int stepY = (int) (HEX_HEIGHT * 0.85);
+        int cols = plateau.getLargeur();
+        int rows = plateau.getHauteur();
+        int stepX = (int) (HEX_WIDTH * 0.9);
+        int stepY = (int) (HEX_HEIGHT * 0.85);
+        int offsetX = (getWidth() - stepX * cols) / 2;
+        int offsetY = (getHeight() - stepY * rows) / 2;
 
-int offsetX = (getWidth() - stepX * cols) / 2;
-int offsetY = (getHeight() - stepY * rows) / 2;
-for (int col = 0; col < cols; col++) {
-    for (int row = 0; row < rows; row++) {
-        int x = col * stepX + offsetX;
-        int y = row * stepY + offsetY;
-        if (col % 2 != 0) {
-            y += stepY / 2;
-        }
-
-        // Crée un hexagone pour la position (col, row)
-        Polygon hex = new Polygon();
-        for (int i = 0; i < 6; i++) {
-            double angle = Math.toRadians(60 * i);
-            int px = (int) (x + HEX_SIZE * Math.cos(angle));
-            int py = (int) (y + HEX_SIZE * Math.sin(angle));
-            hex.addPoint(px, py);
-        }
-
-        // Dessine l’image de fond "plaine" dans ce hexagone
-        Graphics2D gbg = (Graphics2D) g.create();
-        gbg.setClip(hex);
-        gbg.drawImage(backgroundImage, x - HEX_WIDTH / 2, y - HEX_HEIGHT / 2, HEX_WIDTH, HEX_HEIGHT, null);
-        gbg.dispose();
-    }
-}
-
-for (int col = 0; col < cols; col++) {
-    for (int row = 0; row < rows; row++) {
-        int x = col * stepX + offsetX;
-        int y = row * stepY + offsetY;
-        if (col % 2 != 0) {
-            y += stepY / 2;
-        }
-        g.drawImage(backgroundImage, x - backgroundImage.getWidth(null)/2, y - backgroundImage.getHeight(null)/2, null);
-    }
-}
-
-    Graphics2D g2d = (Graphics2D) g.create();
+        Graphics2D g2 = (Graphics2D) g.create();
 
         for (int col = 0; col < cols; col++) {
             for (int row = 0; row < rows; row++) {
                 int x = col * stepX + offsetX;
                 int y = row * stepY + offsetY;
-        
                 if (col % 2 != 0) y += stepY / 2;
-        
-                drawHexagon(g, x, y, col, row);
+                drawHexagon(g2, x, y, col, row);
             }
         }
-        g2d.dispose();
+
+        g2.dispose();
     }
 
     private void drawHexagon(Graphics g, int centerX, int centerY, int col, int row) {
         Polygon hex = new Polygon();
         for (int i = 0; i < 6; i++) {
             double angle = Math.toRadians(60 * i);
-            int px = (int) (centerX + HEX_SIZE * Math.cos(angle));
-            int py = (int) (centerY + HEX_SIZE * Math.sin(angle));
-            hex.addPoint(px, py);
+            hex.addPoint((int) (centerX + HEX_SIZE * Math.cos(angle)), (int) (centerY + HEX_SIZE * Math.sin(angle)));
         }
 
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setClip(hex);
 
-        Image terrainImg = plateau.getHexagone(col, row).getTypeTerrain().getIcon().getImage();
+        Image terrain = plateau.getHexagone(col, row).getTypeTerrain().getIcon().getImage();
         int imgWidth = (int) (HEX_WIDTH * 1.2);
-        int imgHeight = HEX_HEIGHT;
-        g2.drawImage(terrainImg, centerX - imgWidth / 2, centerY - imgHeight / 2, imgWidth, imgHeight, null);
+int imgHeight = HEX_HEIGHT;
+g2.drawImage(terrain, centerX - imgWidth / 2, centerY - imgHeight / 2, imgWidth, imgHeight, null);
 
-        Unite unite = plateau.getHexagone(col, row).getUnite();
-        if (unite != null && (!visionActive || plateau.getHexagone(col, row).isVisible())) {
-            Image icone = unite.getIcone().getImage();
-            int uniteTaille = HEX_SIZE;
-            g2.drawImage(icone, centerX - uniteTaille / 2, centerY - uniteTaille / 2, uniteTaille, uniteTaille, null);
+
+        Unite u = plateau.getHexagone(col, row).getUnite();
+        if (u != null && (!visionActive || plateau.getHexagone(col, row).isVisible())) {
+            Image icon = u.getIcone().getImage();
+            g2.drawImage(icon, centerX - HEX_SIZE / 2, centerY - HEX_SIZE / 2, HEX_SIZE, HEX_SIZE, null);
         }
 
         if (visionActive && !plateau.getHexagone(col, row).isVisible()) {
@@ -357,7 +289,6 @@ for (int col = 0; col < cols; col++) {
         }
 
         g2.setClip(null);
-
         if (col == hoveredCol && row == hoveredRow) {
             g2.setColor(Color.CYAN);
             g2.setStroke(new BasicStroke(2));
@@ -378,51 +309,9 @@ for (int col = 0; col < cols; col++) {
         g2.dispose();
     }
 
-    private Set<Hexagone> calculerCasesAccessibles(int x, int y, int pointsRestants) {
-        Set<Hexagone> accessibles = new HashSet<>();
-        Queue<int[]> file = new LinkedList<>();
-        Map<String, Integer> dejaVisites = new HashMap<>();
-
-        file.add(new int[]{x, y, pointsRestants});
-        dejaVisites.put(x + "," + y, pointsRestants);
-
-        while (!file.isEmpty()) {
-            int[] courant = file.poll();
-            int cx = courant[0], cy = courant[1], points = courant[2];
-
-            Hexagone hex = plateau.getHexagone(cx, cy);
-            accessibles.add(hex);
-
-            int[][] directions = {
-                    {1, 0}, {-1, 0}, {0, 1}, {0, -1},
-                    {cx % 2 == 0 ? -1 : 1, 1}, {cx % 2 == 0 ? -1 : 1, -1}
-            };
-
-            for (int[] dir : directions) {
-                int nx = cx + dir[0];
-                int ny = cy + dir[1];
-                if (nx < 0 || ny < 0 || nx >= plateau.getLargeur() || ny >= plateau.getHauteur()) continue;
-
-                Hexagone voisin = plateau.getHexagone(nx, ny);
-                int cout = plateau.getCoutDeplacement(voisin.getTypeTerrain());
-
-                if (cout <= points && voisin.getUnite() == null) {
-                    String key = nx + "," + ny;
-                    if (!dejaVisites.containsKey(key) || dejaVisites.get(key) < points - cout) {
-                        dejaVisites.put(key, points - cout);
-                        file.add(new int[]{nx, ny, points - cout});
-                    }
-                }
-            }
-        }
-
-        return accessibles;
-    }
-
     public void passerAuTourSuivant() {
         joueurActif = (joueurActif == 1) ? 2 : 1;
 
-        // Réinitialiser les déplacements
         for (int y = 0; y < plateau.getHauteur(); y++) {
             for (int x = 0; x < plateau.getLargeur(); x++) {
                 Unite u = plateau.getHexagone(x, y).getUnite();
@@ -432,38 +321,116 @@ for (int col = 0; col < cols; col++) {
             }
         }
 
-        // Désélectionner l’unité
         uniteSelectionnee = null;
         selX = selY = -1;
         accessibles.clear();
         visionActive = false;
 
-        // Tout rendre visible (ou gérer brouillard si tu veux)
-        for (int y = 0; y < plateau.getHauteur(); y++) {
-            for (int x = 0; x < plateau.getLargeur(); x++) {
-                plateau.getHexagone(x, y).setVisible(true);
-            }
-        }
-
-        infoPanel.majInfos(null); // vider les infos d’unité
-        infoPanel.majJoueurActif(joueurActif); // ✅ MET À JOUR LE NOM DU JOUEUR ACTIF
+        setHexVisibility(null);
+        infoPanel.majInfos(null);
+        infoPanel.majDeplacement(0);
+        infoPanel.majJoueurActif(joueurActif);
 
         repaint();
     }
-
-
 
     @Override
     public Dimension getPreferredSize() {
         int stepX = (int) (HEX_WIDTH * 0.9);
         int stepY = (int) (HEX_HEIGHT * 0.85);
-        int cols = plateau.getLargeur();
-        int rows = plateau.getHauteur();
-    
-        int width = stepX * cols + HEX_SIZE;
-        int height = stepY * rows + HEX_SIZE;
-    
-        return new Dimension(width, height + HEX_SIZE); // ← Add +HEX_SIZE to avoid bottom gaps
-    }    
+        int width = stepX * plateau.getLargeur() + HEX_SIZE;
+        int height = stepY * plateau.getHauteur() + HEX_SIZE;
+        return new Dimension(width, height + HEX_SIZE);
+    }
 
+    private Set<Hexagone> calculerCasesAccessibles(int startX, int startY, int maxSteps) {
+        Set<Hexagone> accessibles = new HashSet<>();
+        Queue<int[]> queue = new LinkedList<>();
+        Set<String> visited = new HashSet<>();
+    
+        queue.add(new int[]{startX, startY, 0});
+        visited.add(startX + "," + startY);
+    
+        while (!queue.isEmpty()) {
+            int[] current = queue.poll();
+            int x = current[0], y = current[1], steps = current[2];
+    
+            if (steps > maxSteps) continue;
+    
+            Hexagone hex = plateau.getHexagone(x, y);
+            accessibles.add(hex);
+    
+            int[][] directions = {
+                {1, 0}, {-1, 0}, {0, 1}, {0, -1},
+                {x % 2 == 0 ? -1 : 1, 1}, {x % 2 == 0 ? -1 : 1, -1}
+            };
+    
+            for (int[] dir : directions) {
+                int nx = x + dir[0];
+                int ny = y + dir[1];
+    
+                if (nx < 0 || ny < 0 || nx >= plateau.getLargeur() || ny >= plateau.getHauteur()) continue;
+    
+                String key = nx + "," + ny;
+                if (!visited.contains(key)) {
+                    Hexagone voisin = plateau.getHexagone(nx, ny);
+                    if (voisin.getUnite() == null) {
+                        visited.add(key);
+                        queue.add(new int[]{nx, ny, steps + 1});
+                    }
+                }
+            }
+        }
+    
+        return accessibles;
+    }
+    
+        
+    private int calculerDistanceHex(int x1, int y1, int x2, int y2) {
+        // Conversion des coordonnées offset en coordonnées cubes
+        int[] cube1 = offsetToCube(x1, y1);
+        int[] cube2 = offsetToCube(x2, y2);
+    
+        return Math.max(Math.abs(cube1[0] - cube2[0]),
+               Math.max(Math.abs(cube1[1] - cube2[1]),
+                        Math.abs(cube1[2] - cube2[2])));
+    }
+    
+    private int[] offsetToCube(int col, int row) {
+        int x = col;
+        int z = row - (col - (col & 1)) / 2;
+        int y = -x - z;
+        return new int[]{x, y, z};
+    }
+    
+    public BoardPanel(InfoPanel infoPanel, PlateauManager manager) {
+        this.infoPanel = infoPanel;
+        this.plateau = manager.plateau;
+        this.joueurActif = manager.joueurActif;
+    
+        // Tu ne relances pas StartDialog ici, car les noms sont déjà dans manager
+        // Et les unités sont déjà placées si la partie est chargée
+        // Sinon ajoute cette ligne si nécessaire :
+        // placerUnitesParJoueur();
+    
+        addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+            public void mouseMoved(java.awt.event.MouseEvent e) {
+                updateHoveredHexagon(e.getX(), e.getY());
+            }
+        });
+    
+        addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                handleClick(e.getX(), e.getY());
+            }
+        });
+    
+        addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentResized(java.awt.event.ComponentEvent e) {
+                revalidate();
+                repaint();
+            }
+        });
+    }
+    
 }

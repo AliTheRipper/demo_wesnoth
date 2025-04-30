@@ -15,6 +15,8 @@ public class InfoPanel extends JPanel {
 
     private JButton finTourButton = new JButton("Fin du tour");
     private JButton annulerMouvementButton = new JButton("Annuler mouvement");
+    private JButton finPartieButton = new JButton("Fin de la partie");
+    private JButton sauvegarderButton = new JButton("Sauvegarder");
 
     private String nomJoueur1;
     private String nomJoueur2;
@@ -24,16 +26,15 @@ public class InfoPanel extends JPanel {
         this.nomJoueur2 = nomJoueur2;
 
         setLayout(new BorderLayout());
-        setPreferredSize(new Dimension(260, 0));
+        setPreferredSize(new Dimension(450, 0));
+
         setBackground(Color.WHITE);
         setOpaque(true);
 
-        // Titre joueur actif
         joueurActifLabel.setFont(new Font("SansSerif", Font.BOLD, 18));
         joueurActifLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         add(joueurActifLabel, BorderLayout.NORTH);
 
-        // Partie centrale - infos unité
         JPanel infosPanel = new JPanel();
         infosPanel.setLayout(new BoxLayout(infosPanel, BoxLayout.Y_AXIS));
         infosPanel.setBackground(Color.WHITE);
@@ -47,17 +48,18 @@ public class InfoPanel extends JPanel {
 
         add(infosPanel, BorderLayout.CENTER);
 
-        // Bas - boutons
         JPanel basPanel = new JPanel();
         basPanel.setBackground(Color.WHITE);
         basPanel.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
-        basPanel.setLayout(new GridLayout(2, 1, 10, 10));
+        basPanel.setLayout(new GridLayout(4, 1, 10, 10)); // Trois boutons maintenant
         basPanel.add(finTourButton);
         basPanel.add(annulerMouvementButton);
+        basPanel.add(sauvegarderButton);
+        basPanel.add(finPartieButton);
 
         add(basPanel, BorderLayout.SOUTH);
 
-        majJoueurActif(1); // Afficher joueur 1 au lancement
+        majJoueurActif(1);
     }
 
     public void majInfos(Unite u) {
@@ -76,12 +78,12 @@ public class InfoPanel extends JPanel {
         }
     }
 
+    public void majDeplacement(int valeur) {
+        deplacementLabel.setText("Déplacement : " + valeur);
+    }
+
     public void majJoueurActif(int num) {
-        if (num == 1) {
-            joueurActifLabel.setText("Joueur actif : " + nomJoueur1);
-        } else {
-            joueurActifLabel.setText("Joueur actif : " + nomJoueur2);
-        }
+        joueurActifLabel.setText("Joueur actif : " + (num == 1 ? nomJoueur1 : nomJoueur2));
     }
 
     public JButton getFinTourButton() {
@@ -90,5 +92,14 @@ public class InfoPanel extends JPanel {
 
     public JButton getAnnulerMouvementButton() {
         return annulerMouvementButton;
+    }
+
+    public JButton getSauvegarderButton() {
+        return sauvegarderButton;
+    }
+    
+
+    public JButton getFinPartieButton() {
+        return finPartieButton;
     }
 }

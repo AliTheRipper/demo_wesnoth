@@ -1,10 +1,13 @@
 package model;
 
+import java.io.Serializable;
+
 import javax.swing.*;
 
-public class Unite {
+public class Unite implements Serializable {
     private String nom;
-    private ImageIcon icone;
+    private transient ImageIcon icone;
+    private String cheminImage;
     private int joueur;
     private int pointsVie;
     private int attaque;
@@ -13,7 +16,8 @@ public class Unite {
 
     public Unite(String nom, String cheminImage, int joueur, int pv, int attaque, int deplacement) {
         this.nom = nom;
-        this.icone = new ImageIcon(cheminImage);
+        this.cheminImage = cheminImage;
+        this.icone = new ImageIcon(cheminImage); 
         this.joueur = joueur;
         this.pointsVie = pv;
         this.attaque = attaque;
@@ -22,7 +26,6 @@ public class Unite {
     }
 
     public String getNom() { return nom; }
-    public ImageIcon getIcone() { return icone; }
     public int getJoueur() { return joueur; }
     public int getPointsVie() { return pointsVie; }
     public int getAttaque() { return attaque; }
@@ -45,5 +48,11 @@ public class Unite {
 
     public boolean estEnVie() {
         return pointsVie > 0;
+    }
+    public ImageIcon getIcone() {
+        if (icone == null && cheminImage != null) {
+            icone = new ImageIcon(cheminImage);
+        }
+        return icone;
     }
 }

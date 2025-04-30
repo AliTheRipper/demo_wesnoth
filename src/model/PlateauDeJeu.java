@@ -1,10 +1,11 @@
 package model;
+import java.io.Serializable;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
-public class PlateauDeJeu {
+public class PlateauDeJeu implements Serializable {
     private int largeur;
     private int hauteur;
     private Hexagone[][] hexagones;

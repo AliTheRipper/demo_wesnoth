@@ -14,13 +14,18 @@ public enum TypeTerrain {
 
 
 
-    private final ImageIcon icon;
+    private transient ImageIcon icon;
+private String cheminImage;
 
     TypeTerrain(String imagePath) {
         this.icon = new ImageIcon(imagePath);
     }
 
     public ImageIcon getIcon() {
+        if (icon == null && cheminImage != null) {
+            icon = new ImageIcon(cheminImage);
+        }
         return icon;
     }
+    
 }

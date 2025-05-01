@@ -264,53 +264,6 @@ joueurActifLabel.setOpaque(true);                // nouvelle ligne
     }
     
     
-    public static boolean showStyledConfirmDialog(JFrame parentFrame) {
-        JDialog dialog = new JDialog(parentFrame, "Confirmation", true);
-        dialog.setUndecorated(true);
-        dialog.setSize(400, 130);
-        dialog.setLocationRelativeTo(parentFrame);
-        dialog.setLayout(new BorderLayout());
-    
-        JPanel content = new JPanel();
-        content.setBackground(new Color(20, 20, 30));
-        content.setBorder(BorderFactory.createLineBorder(new Color(212, 175, 55), 2));
-        content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
-    
-        JLabel label = new JLabel("Êtes-vous sûr de vouloir terminer la partie ?", SwingConstants.CENTER);
-        label.setAlignmentX(Component.CENTER_ALIGNMENT);
-        label.setForeground(Color.WHITE);
-        label.setFont(new Font("Serif", Font.BOLD, 16));
-        label.setBorder(BorderFactory.createEmptyBorder(20, 20, 10, 20));
-        content.add(label);
-    
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.setBackground(new Color(20, 20, 30));
-        buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 30, 10));
-    
-        JButton yesBtn = createStyledButton("Oui");
-        JButton noBtn = createStyledButton("Annuler");
-    
-        final boolean[] result = new boolean[1];
-    
-        yesBtn.addActionListener(e -> {
-            result[0] = true;
-            dialog.dispose();
-        });
-    
-        noBtn.addActionListener(e -> {
-            result[0] = false;
-            dialog.dispose();
-        });
-    
-        buttonPanel.add(yesBtn);
-        buttonPanel.add(noBtn);
-        content.add(buttonPanel);
-    
-        dialog.setContentPane(content);
-        dialog.setVisible(true);
-    
-        return result[0];
-    }
     
     private static JButton createStyledButton(String text) {
         JButton b = new JButton(text);

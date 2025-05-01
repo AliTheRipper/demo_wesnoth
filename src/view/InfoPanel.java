@@ -15,47 +15,76 @@ public class InfoPanel extends JPanel {
 
     private JButton finTourButton = new JButton("Fin du tour");
     private JButton annulerMouvementButton = new JButton("Annuler mouvement");
-    private JButton finPartieButton = new JButton("Fin de la partie");
     private JButton sauvegarderButton = new JButton("Sauvegarder");
+    private JButton finPartieButton = new JButton("Fin de la partie");
 
     private String nomJoueur1;
     private String nomJoueur2;
+
+    private final Color backgroundColor = new Color(20, 20, 30);
+    private final Color borderGold = new Color(212, 175, 55);
+    private final Color textColor = Color.WHITE;
+    private final Color buttonBg = new Color(30, 40, 60);
+    private final Color hoverColor = new Color(60, 90, 150);
 
     public InfoPanel(String nomJoueur1, String nomJoueur2) {
         this.nomJoueur1 = nomJoueur1;
         this.nomJoueur2 = nomJoueur2;
 
         setLayout(new BorderLayout());
-        setPreferredSize(new Dimension(450, 0));
-
-        setBackground(Color.WHITE);
-        setOpaque(true);
+        setPreferredSize(new Dimension(300, 0));
+        setBackground(backgroundColor);
 
         joueurActifLabel.setFont(new Font("SansSerif", Font.BOLD, 18));
-        joueurActifLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        joueurActifLabel.setBackground(backgroundColor); // nouvelle ligne
+joueurActifLabel.setOpaque(true);                // nouvelle ligne
+
+        joueurActifLabel.setForeground(textColor);
+        joueurActifLabel.setBorder(BorderFactory.createEmptyBorder(20, 10, 10, 10));
         add(joueurActifLabel, BorderLayout.NORTH);
 
+        // -------- Info Panel Center --------
         JPanel infosPanel = new JPanel();
         infosPanel.setLayout(new BoxLayout(infosPanel, BoxLayout.Y_AXIS));
-        infosPanel.setBackground(Color.WHITE);
-        infosPanel.setBorder(BorderFactory.createTitledBorder("Unité sélectionnée"));
-
+        infosPanel.setBackground(backgroundColor);
+        infosPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(borderGold), "Unité sélectionnée"));
+        
         for (JLabel label : new JLabel[]{nomLabel, joueurLabel, pvLabel, attaqueLabel, deplacementLabel}) {
             label.setFont(new Font("SansSerif", Font.PLAIN, 14));
+            label.setForeground(textColor);
             label.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
             infosPanel.add(label);
         }
 
         add(infosPanel, BorderLayout.CENTER);
 
+        // -------- Bottom Buttons --------
         JPanel basPanel = new JPanel();
-        basPanel.setBackground(Color.WHITE);
+        basPanel.setLayout(new GridLayout(4, 1, 0, 10));
         basPanel.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
-        basPanel.setLayout(new GridLayout(4, 1, 10, 10)); // Trois boutons maintenant
-        basPanel.add(finTourButton);
-        basPanel.add(annulerMouvementButton);
-        basPanel.add(sauvegarderButton);
-        basPanel.add(finPartieButton);
+        basPanel.setBackground(backgroundColor);
+
+        for (JButton b : new JButton[]{finTourButton, annulerMouvementButton, sauvegarderButton, finPartieButton}) {
+            b.setFont(new Font("SansSerif", Font.BOLD, 13));
+            b.setForeground(Color.WHITE);
+            b.setBackground(buttonBg);
+            b.setFocusPainted(false);
+            b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            b.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(borderGold),
+                BorderFactory.createEmptyBorder(8, 12, 8, 12)
+            ));
+            // Hover effect
+            b.addMouseListener(new java.awt.event.MouseAdapter() {
+                public void mouseEntered(java.awt.event.MouseEvent evt) {
+                    b.setBackground(hoverColor);
+                }
+                public void mouseExited(java.awt.event.MouseEvent evt) {
+                    b.setBackground(buttonBg);
+                }
+            });
+            basPanel.add(b);
+        }
 
         add(basPanel, BorderLayout.SOUTH);
 
@@ -97,9 +126,147 @@ public class InfoPanel extends JPanel {
     public JButton getSauvegarderButton() {
         return sauvegarderButton;
     }
-    
 
     public JButton getFinPartieButton() {
         return finPartieButton;
     }
+    public static String showCustomInputDialog(Component parent) {
+        JTextField inputField = new JTextField();
+        inputField.setForeground(Color.WHITE);
+        inputField.setBackground(new Color(30, 40, 60));
+        inputField.setCaretColor(Color.WHITE);
+        inputField.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+    
+        JLabel label = new JLabel("Nom de la sauvegarde :");
+        label.setForeground(Color.WHITE);
+        label.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+    
+        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
+        mainPanel.setBackground(new Color(20, 20, 30));
+        mainPanel.setBorder(BorderFactory.createLineBorder(new Color(212, 175, 55), 1));
+        mainPanel.add(label, BorderLayout.NORTH);
+        mainPanel.add(inputField, BorderLayout.CENTER);
+    
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
+        buttonPanel.setBackground(new Color(20, 20, 30));
+    
+        JButton ok = new JButton("OK");
+        JButton cancel = new JButton("Annuler");
+    
+        for (JButton b : new JButton[]{ok, cancel}) {
+            b.setForeground(Color.WHITE);
+            b.setBackground(new Color(30, 40, 60));
+            b.setFocusPainted(false);
+            b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            b.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(212, 175, 55)),
+                BorderFactory.createEmptyBorder(5, 15, 5, 15)
+            ));
+        }
+    
+        final String[] result = new String[1];
+    
+        ok.addActionListener(e -> {
+            result[0] = inputField.getText();
+            ((Window) SwingUtilities.getWindowAncestor(ok)).dispose();
+        });
+    
+        cancel.addActionListener(e -> {
+            result[0] = null;
+            ((Window) SwingUtilities.getWindowAncestor(cancel)).dispose();
+        });
+    
+        buttonPanel.add(ok);
+        buttonPanel.add(cancel);
+    
+        JPanel content = new JPanel(new BorderLayout());
+        content.setBackground(new Color(20, 20, 30));
+        content.add(mainPanel, BorderLayout.CENTER);
+        content.add(buttonPanel, BorderLayout.SOUTH);
+    
+        // Now create undecorated dialog BEFORE packing or showing
+        JDialog dialog = new JDialog((Frame) null, "Sauvegarde", true);
+        dialog.setUndecorated(true);
+dialog.setContentPane(content);
+dialog.setPreferredSize(new Dimension(400, 160)); // More spacious
+dialog.pack();
+dialog.setLocationRelativeTo(parent); // Center on game window
+dialog.setVisible(true);
+
+    
+        return result[0];
+    }
+    
+    
+    public static boolean showStyledConfirmDialog(JFrame parentFrame) {
+        JDialog dialog = new JDialog(parentFrame, "Confirmation", true);
+        dialog.setUndecorated(true);
+        dialog.setSize(400, 130);
+        dialog.setLocationRelativeTo(parentFrame);
+        dialog.setLayout(new BorderLayout());
+    
+        JPanel content = new JPanel();
+        content.setBackground(new Color(20, 20, 30));
+        content.setBorder(BorderFactory.createLineBorder(new Color(212, 175, 55), 2));
+        content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
+    
+        JLabel label = new JLabel("Êtes-vous sûr de vouloir terminer la partie ?", SwingConstants.CENTER);
+        label.setAlignmentX(Component.CENTER_ALIGNMENT);
+        label.setForeground(Color.WHITE);
+        label.setFont(new Font("Serif", Font.BOLD, 16));
+        label.setBorder(BorderFactory.createEmptyBorder(20, 20, 10, 20));
+        content.add(label);
+    
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setBackground(new Color(20, 20, 30));
+        buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 30, 10));
+    
+        JButton yesBtn = createStyledButton("Oui");
+        JButton noBtn = createStyledButton("Annuler");
+    
+        final boolean[] result = new boolean[1];
+    
+        yesBtn.addActionListener(e -> {
+            result[0] = true;
+            dialog.dispose();
+        });
+    
+        noBtn.addActionListener(e -> {
+            result[0] = false;
+            dialog.dispose();
+        });
+    
+        buttonPanel.add(yesBtn);
+        buttonPanel.add(noBtn);
+        content.add(buttonPanel);
+    
+        dialog.setContentPane(content);
+        dialog.setVisible(true);
+    
+        return result[0];
+    }
+    
+    private static JButton createStyledButton(String text) {
+        JButton b = new JButton(text);
+        b.setFocusPainted(false);
+        b.setForeground(Color.WHITE);
+        b.setBackground(new Color(30, 40, 60));
+        b.setFont(new Font("SansSerif", Font.BOLD, 13));
+        b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        b.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(212, 175, 55)),
+            BorderFactory.createEmptyBorder(8, 15, 8, 15)
+        ));
+        b.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                b.setBackground(new Color(60, 90, 150));
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                b.setBackground(new Color(30, 40, 60));
+            }
+        });
+        return b;
+    }
+    
+        
 }

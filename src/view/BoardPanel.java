@@ -4,6 +4,9 @@ import model.Hexagone;
 import model.PlateauDeJeu;
 import model.TypeTerrain;
 import model.Unite;
+import javax.swing.Timer;
+import java.awt.event.MouseMotionAdapter;
+import java.awt.event.MouseEvent;
 
 import javax.swing.*;
 import java.awt.*;
@@ -115,6 +118,12 @@ public class BoardPanel extends JPanel {
     }
 
     private void handleClick(int mouseX, int mouseY) {
+        if (hoveredCol <= 0 || hoveredRow <= 0 ||
+    hoveredCol >= plateau.getLargeur() - 1 ||
+    hoveredRow >= plateau.getHauteur() - 1) {
+    return; // Ignore clicks on border cells
+}
+
         if (hoveredCol >= 0 && hoveredRow >= 0) {
             Hexagone hex = plateau.getHexagone(hoveredCol, hoveredRow);
             Unite unite = hex.getUnite();
@@ -184,28 +193,28 @@ public class BoardPanel extends JPanel {
     private void updateHoveredHexagon(int mouseX, int mouseY) {
         int stepX = (int) (HEX_WIDTH * 0.9);
         int stepY = (int) (HEX_HEIGHT * 0.85);
-
+    
         int cols = plateau.getLargeur();
         int rows = plateau.getHauteur();
-
+    
         int offsetX = (getWidth() - stepX * cols) / 2;
         int offsetY = (getHeight() - stepY * rows) / 2;
-
+    
         int adjustedX = mouseX - offsetX;
         int adjustedY = mouseY - offsetY;
-
+    
         int col = adjustedX / stepX;
         int row = (col % 2 == 0) ? adjustedY / stepY : (adjustedY - stepY / 2) / stepY;
-
+    
         hoveredCol = -1;
         hoveredRow = -1;
-
+    
         for (int[] c : new int[][]{
                 {col, row}, {col - 1, row}, {col + 1, row}, {col, row - 1},
                 {col, row + 1}, {col - 1, row - 1}, {col + 1, row - 1}, {col - 1, row + 1}, {col + 1, row + 1}
         }) {
             int cx = c[0], cy = c[1];
-            if (cx >= 0 && cy >= 0 && cx < cols && cy < rows) {
+            if (cx >= 1 && cy >= 1 && cx < cols - 1 && cy < rows - 1) {
                 if (createHexagon(cx, cy).contains(mouseX, mouseY)) {
                     hoveredCol = cx;
                     hoveredRow = cy;
@@ -213,9 +222,10 @@ public class BoardPanel extends JPanel {
                 }
             }
         }
-
+    
         repaint();
     }
+    
 
     private Polygon createHexagon(int col, int row) {
         int stepX = (int) (HEX_WIDTH * 0.9);
@@ -278,15 +288,12 @@ g2.drawImage(terrain, centerX - imgWidth / 2, centerY - imgHeight / 2, imgWidth,
 
 
         Unite u = plateau.getHexagone(col, row).getUnite();
-        if (u != null && (!visionActive || plateau.getHexagone(col, row).isVisible())) {
+        if (u != null) {
             Image icon = u.getIcone().getImage();
             g2.drawImage(icon, centerX - HEX_SIZE / 2, centerY - HEX_SIZE / 2, HEX_SIZE, HEX_SIZE, null);
         }
+        
 
-        if (visionActive && !plateau.getHexagone(col, row).isVisible()) {
-            g2.setColor(new Color(0, 0, 0, 150));
-            g2.fillPolygon(hex);
-        }
 
         g2.setClip(null);
         if (col == hoveredCol && row == hoveredRow) {
@@ -305,7 +312,11 @@ g2.drawImage(terrain, centerX - imgWidth / 2, centerY - imgHeight / 2, imgWidth,
             g2.setColor(new Color(0, 255, 0, 100));
             g2.fillPolygon(hex);
         }
-
+        if (visionActive && !plateau.getHexagone(col, row).isVisible()) {
+            g2.setColor(new Color(0, 0, 0, 100)); // brouillard semi-transparent
+            g2.fillPolygon(hex);
+        }
+        
         g2.dispose();
     }
 
@@ -338,10 +349,12 @@ g2.drawImage(terrain, centerX - imgWidth / 2, centerY - imgHeight / 2, imgWidth,
     public Dimension getPreferredSize() {
         int stepX = (int) (HEX_WIDTH * 0.9);
         int stepY = (int) (HEX_HEIGHT * 0.85);
-        int width = stepX * plateau.getLargeur() + HEX_SIZE;
-        int height = stepY * plateau.getHauteur() + HEX_SIZE;
-        return new Dimension(width, height + HEX_SIZE);
+        int width = stepX * plateau.getLargeur();
+        int height = stepY * plateau.getHauteur() + (HEX_SIZE / 2) - 80;
+        return new Dimension(width, height);
     }
+    
+
 
     private Set<Hexagone> calculerCasesAccessibles(int startX, int startY, int maxSteps) {
         Set<Hexagone> accessibles = new HashSet<>();
@@ -354,6 +367,10 @@ g2.drawImage(terrain, centerX - imgWidth / 2, centerY - imgHeight / 2, imgWidth,
         while (!queue.isEmpty()) {
             int[] current = queue.poll();
             int x = current[0], y = current[1], steps = current[2];
+    
+            // Skip border tiles completely
+            if (x <= 0 || y <= 0 || x >= plateau.getLargeur() - 1 || y >= plateau.getHauteur() - 1)
+                continue;
     
             if (steps > maxSteps) continue;
     
@@ -369,7 +386,9 @@ g2.drawImage(terrain, centerX - imgWidth / 2, centerY - imgHeight / 2, imgWidth,
                 int nx = x + dir[0];
                 int ny = y + dir[1];
     
-                if (nx < 0 || ny < 0 || nx >= plateau.getLargeur() || ny >= plateau.getHauteur()) continue;
+                // Skip border tiles as neighbors too
+                if (nx <= 0 || ny <= 0 || nx >= plateau.getLargeur() - 1 || ny >= plateau.getHauteur() - 1)
+                    continue;
     
                 String key = nx + "," + ny;
                 if (!visited.contains(key)) {
@@ -384,6 +403,7 @@ g2.drawImage(terrain, centerX - imgWidth / 2, centerY - imgHeight / 2, imgWidth,
     
         return accessibles;
     }
+    
     
         
     private int calculerDistanceHex(int x1, int y1, int x2, int y2) {
@@ -407,11 +427,7 @@ g2.drawImage(terrain, centerX - imgWidth / 2, centerY - imgHeight / 2, imgWidth,
         this.infoPanel = infoPanel;
         this.plateau = manager.plateau;
         this.joueurActif = manager.joueurActif;
-    
-        // Tu ne relances pas StartDialog ici, car les noms sont déjà dans manager
-        // Et les unités sont déjà placées si la partie est chargée
-        // Sinon ajoute cette ligne si nécessaire :
-        // placerUnitesParJoueur();
+
     
         addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
             public void mouseMoved(java.awt.event.MouseEvent e) {
@@ -431,6 +447,31 @@ g2.drawImage(terrain, centerX - imgWidth / 2, centerY - imgHeight / 2, imgWidth,
                 repaint();
             }
         });
+        MouseMotionAdapter scrollAdapter = new MouseMotionAdapter() {
+    public void mouseMoved(MouseEvent e) {
+        PointerInfo pointerInfo = MouseInfo.getPointerInfo();
+        if (pointerInfo == null) return;
+
+        Point screenPoint = pointerInfo.getLocation();
+        SwingUtilities.convertPointFromScreen(screenPoint, BoardPanel.this);
+
+        JScrollPane scrollPane = (JScrollPane) SwingUtilities.getAncestorOfClass(JScrollPane.class, BoardPanel.this);
+        if (scrollPane != null) {
+            JViewport viewport = scrollPane.getViewport();
+            Rectangle view = viewport.getViewRect();
+
+            if (screenPoint.y < 30) {
+                int newY = Math.max(view.y - 20, 0);
+                viewport.setViewPosition(new Point(view.x, newY));
+            } else if (screenPoint.y > getHeight() - 30) {
+                int newY = Math.min(view.y + 20, getHeight() - view.height);
+                viewport.setViewPosition(new Point(view.x, newY));
+            }
+        }
+    }
+};
+addMouseMotionListener(scrollAdapter);
+
     }
     
 }

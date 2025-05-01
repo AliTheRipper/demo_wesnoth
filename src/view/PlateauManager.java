@@ -11,17 +11,12 @@ public class PlateauManager implements Serializable {
     public int joueurActif = 1;
 
     public static PlateauManager initialiserNouvellePartie() {
-        StartDialog dialog = new StartDialog(null);
-        dialog.setVisible(true);
-
         PlateauManager m = new PlateauManager();
-        m.nomJoueur1 = dialog.getJoueur1();
-        m.nomJoueur2 = dialog.getJoueur2();
         m.plateau = new PlateauDeJeu("map/map.txt");
         placerUnitesParJoueur(m.plateau);
-        // Appelle ici une méthode pour placer les unités
         return m;
     }
+    
 
     public static void sauvegarderDansFichier(PlateauManager data, String nom) {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("sauvegardes/" + nom + ".save"))) {

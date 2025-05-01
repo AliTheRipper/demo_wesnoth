@@ -393,11 +393,14 @@ g2.drawImage(terrain, centerX - imgWidth / 2, centerY - imgHeight / 2, imgWidth,
                 String key = nx + "," + ny;
                 if (!visited.contains(key)) {
                     Hexagone voisin = plateau.getHexagone(nx, ny);
-                    if (voisin.getUnite() == null) {
+                    int cout = voisin.getTypeTerrain().getCoutDeplacement();
+
+                    if (voisin.getUnite() == null && steps + cout <= maxSteps && cout < 999) {
                         visited.add(key);
-                        queue.add(new int[]{nx, ny, steps + 1});
+                        queue.add(new int[]{nx, ny, steps + cout});
                     }
                 }
+
             }
         }
     

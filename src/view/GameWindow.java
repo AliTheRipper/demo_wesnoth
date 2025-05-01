@@ -26,22 +26,25 @@ public class GameWindow extends JPanel {
     private void lancerUIAvec(PlateauManager manager, MainMenu menu) {
         setLayout(new BorderLayout());
 
-        InfoPanel infoPanel = new InfoPanel(manager.nomJoueur1, manager.nomJoueur2);
-        infoPanel.setPreferredSize(new Dimension(250, 0));
-        
-infoPanel.setOpaque(true);
-infoPanel.setBackground(new Color(20, 20, 30)); // même fond que les autres parties
+        // Utilisez simplement le paramètre 'manager' sans le redéclarer
+        //PlateauManager manager = new PlateauManager();  // Cette ligne doit être supprimée.
 
+        InfoPanel infoPanel = new InfoPanel("Joueur1", "Joueur2", manager.plateau);
+
+        infoPanel.setPreferredSize(new Dimension(250, 0));
+
+        infoPanel.setOpaque(true);
+        infoPanel.setBackground(new Color(20, 20, 30)); // même fond que les autres parties
 
         BoardPanel board = new BoardPanel(infoPanel, manager);
         board.setPreferredSize(new Dimension(1400, 800));
 
         JScrollPane scrollPane = new JScrollPane(board);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
-scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-scrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(0, 0));
-scrollPane.getHorizontalScrollBar().setPreferredSize(new Dimension(0, 0));
-scrollPane.setWheelScrollingEnabled(false); // optional, prevents accidental wheel scroll
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(0, 0));
+        scrollPane.getHorizontalScrollBar().setPreferredSize(new Dimension(0, 0));
+        scrollPane.setWheelScrollingEnabled(false); // optional, prevents accidental wheel scroll
 
         scrollPane.setBorder(null);
         Timer autoScrollTimer = new Timer(30, e -> {
@@ -61,25 +64,32 @@ scrollPane.setWheelScrollingEnabled(false); // optional, prevents accidental whe
                 }
             }
         });
-        autoScrollTimer.start(); 
+        autoScrollTimer.start();
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, scrollPane, infoPanel);
         splitPane.setComponentZOrder(infoPanel, 0); // Force infoPanel devant
         splitPane.setDividerSize(0);
         splitPane.setEnabled(false);
         splitPane.setResizeWeight(1.0);
 
-
-
         infoPanel.getFinPartieButton().addActionListener(e -> {
             boolean confirmed = InfoPanel.showStyledConfirmDialog((JFrame) SwingUtilities.getWindowAncestor(this));
             if (confirmed) {
-                SwingUtilities.getWindowAncestor(this).dispose(); // Close current game window
-new MainMenu(); // Open a fresh MainMenu window
+                Container parent = getParent();
+                while (parent != null && !(parent instanceof JFrame)) {
+                    parent = parent.getParent();
+                }
+                if (parent instanceof JFrame) {
+                    JFrame frame = (JFrame) parent;
+                    frame.getContentPane().removeAll();
+                    MainMenu menuPanel = new MainMenu(); 
+                    frame.setContentPane(menuPanel);     
+                    frame.revalidate();
+                    frame.repaint();
+                }
                 
             }
         });
-        
-        
+
         infoPanel.getFinTourButton().addActionListener(e -> board.passerAuTourSuivant());
         infoPanel.getAnnulerMouvementButton().addActionListener(e -> board.annulerDernierDeplacement());
 
@@ -92,7 +102,6 @@ new MainMenu(); // Open a fresh MainMenu window
             }
         });
         
-        
 
         add(splitPane, BorderLayout.CENTER);
 
@@ -101,5 +110,6 @@ new MainMenu(); // Open a fresh MainMenu window
             splitPane.setDividerLocation(getWidth() - infoWidth);
         });
     }
-    
+
+
 }

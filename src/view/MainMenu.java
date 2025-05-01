@@ -175,7 +175,7 @@ for (JButton b : new JButton[]{prev, next}) {
 
 
         buttons[2].addActionListener(e -> {
-            JDialog dialog = new JDialog(this, "À propos du jeu", true);
+            JDialog dialog = new JDialog(this, "A propos du jeu", true);
             dialog.setUndecorated(true);
             dialog.setSize(400, 180);
             dialog.setLocationRelativeTo(this);
@@ -189,7 +189,7 @@ for (JButton b : new JButton[]{prev, next}) {
             panel.setBackground(bg);
             panel.setBorder(BorderFactory.createLineBorder(borderColor, 2));
         
-            JLabel message = new JLabel("<html><center>Jeu de stratégie au tour par tour.<br>Créé par Yahya.</center></html>", SwingConstants.CENTER);
+            JLabel message = new JLabel("<html><center>Jeu de stratégie au tour par tour.<br>Créé par Yahya et Ilias.</center></html>", SwingConstants.CENTER);
             message.setFont(font);
             message.setForeground(fg);
             message.setBorder(BorderFactory.createEmptyBorder(20, 20, 10, 20));

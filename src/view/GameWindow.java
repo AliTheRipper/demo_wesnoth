@@ -80,11 +80,9 @@ public class GameWindow extends JPanel {
                 }
                 if (parent instanceof JFrame) {
                     JFrame frame = (JFrame) parent;
-                    frame.getContentPane().removeAll();
-                    MainMenu menuPanel = new MainMenu(); 
-                    frame.setContentPane(menuPanel);     
-                    frame.revalidate();
-                    frame.repaint();
+                    Window w = SwingUtilities.getWindowAncestor(this);
+if (w != null) w.dispose();  // Close the current GameWindow frame
+new MainMenu();              
                 }
                 
             }

@@ -48,13 +48,15 @@ public class StartDialog extends JDialog {
         JLabel label2 = new JLabel("Nom du joueur 2 :");
         label1.setForeground(Color.LIGHT_GRAY);
         label2.setForeground(Color.LIGHT_GRAY);
+label1.setFont(gothicFont.deriveFont(Font.PLAIN, 12));
 
+label2.setFont(gothicFont.deriveFont(Font.PLAIN, 12));
         form.add(label1);
         form.add(joueur1Field);
         form.add(label2);
         form.add(joueur2Field);
 
-        JButton valider = createStyledButton("Démarrer la partie");
+        JButton valider = createStyledButton("Demarrer la partie");
         JButton annuler = createStyledButton("Annuler");
 
         valider.addActionListener(e -> {

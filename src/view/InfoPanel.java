@@ -4,6 +4,7 @@ import model.Unite;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
 
 public class InfoPanel extends JPanel {
     private JLabel joueurActifLabel = new JLabel("Joueur actif : ", SwingConstants.CENTER);
@@ -26,6 +27,17 @@ public class InfoPanel extends JPanel {
     private final Color textColor = Color.WHITE;
     private final Color buttonBg = new Color(30, 40, 60);
     private final Color hoverColor = new Color(60, 90, 150);
+private static Font gothicFont;
+
+static {
+    try {
+        gothicFont = Font.createFont(Font.TRUETYPE_FONT, new File("resources/fonts/UnifrakturCook-Bold.ttf")).deriveFont(16f);
+        GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(gothicFont);
+    } catch (Exception e) {
+        gothicFont = new Font("Serif", Font.PLAIN, 16);
+        System.err.println("Erreur chargement police gothique : " + e.getMessage());
+    }
+}
 
     public InfoPanel(String nomJoueur1, String nomJoueur2) {
         this.nomJoueur1 = nomJoueur1;
@@ -35,7 +47,9 @@ public class InfoPanel extends JPanel {
         setPreferredSize(new Dimension(300, 0));
         setBackground(backgroundColor);
 
-        joueurActifLabel.setFont(new Font("SansSerif", Font.BOLD, 18));
+        
+        joueurActifLabel.setFont(gothicFont.deriveFont(Font.BOLD, 18f));
+
         joueurActifLabel.setBackground(backgroundColor); // nouvelle ligne
 joueurActifLabel.setOpaque(true);                // nouvelle ligne
 
@@ -47,10 +61,10 @@ joueurActifLabel.setOpaque(true);                // nouvelle ligne
         JPanel infosPanel = new JPanel();
         infosPanel.setLayout(new BoxLayout(infosPanel, BoxLayout.Y_AXIS));
         infosPanel.setBackground(backgroundColor);
-        infosPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(borderGold), "Unité sélectionnée"));
+        infosPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(borderGold), "Unite selectionnee"));
         
         for (JLabel label : new JLabel[]{nomLabel, joueurLabel, pvLabel, attaqueLabel, deplacementLabel}) {
-            label.setFont(new Font("SansSerif", Font.PLAIN, 14));
+            label.setFont(gothicFont.deriveFont(Font.PLAIN, 14f));
             label.setForeground(textColor);
             label.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
             infosPanel.add(label);
@@ -65,7 +79,7 @@ joueurActifLabel.setOpaque(true);                // nouvelle ligne
         basPanel.setBackground(backgroundColor);
 
         for (JButton b : new JButton[]{finTourButton, annulerMouvementButton, sauvegarderButton, finPartieButton}) {
-            b.setFont(new Font("SansSerif", Font.BOLD, 13));
+            b.setFont(gothicFont.deriveFont(Font.BOLD, 13f));
             b.setForeground(Color.WHITE);
             b.setBackground(buttonBg);
             b.setFocusPainted(false);
@@ -93,22 +107,22 @@ joueurActifLabel.setOpaque(true);                // nouvelle ligne
 
     public void majInfos(Unite u) {
         if (u == null) {
-            nomLabel.setText("Unité : -");
+            nomLabel.setText("Unite : -");
             joueurLabel.setText("Joueur : -");
             pvLabel.setText("PV : -");
             attaqueLabel.setText("Attaque : -");
-            deplacementLabel.setText("Déplacement : -");
+            deplacementLabel.setText("Deplacement : -");
         } else {
-            nomLabel.setText("Unité : " + u.getNom());
+            nomLabel.setText("Unite : " + u.getNom());
             joueurLabel.setText("Joueur : " + u.getJoueur());
             pvLabel.setText("PV : " + u.getPointsVie());
             attaqueLabel.setText("Attaque : " + u.getAttaque());
-            deplacementLabel.setText("Déplacement : " + u.getDeplacementRestant());
+            deplacementLabel.setText("Deplacement : " + u.getDeplacementRestant());
         }
     }
 
     public void majDeplacement(int valeur) {
-        deplacementLabel.setText("Déplacement : " + valeur);
+        deplacementLabel.setText("Deplacement : " + valeur);
     }
 
     public void majJoueurActif(int num) {
@@ -136,10 +150,12 @@ joueurActifLabel.setOpaque(true);                // nouvelle ligne
         inputField.setBackground(new Color(30, 40, 60));
         inputField.setCaretColor(Color.WHITE);
         inputField.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-    
+        inputField.setPreferredSize(new Dimension(300, 25));
+
         JLabel label = new JLabel("Nom de la sauvegarde :");
         label.setForeground(Color.WHITE);
         label.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+        label.setFont(gothicFont.deriveFont(Font.BOLD, 14f));
     
         JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
         mainPanel.setBackground(new Color(20, 20, 30));
@@ -158,6 +174,7 @@ joueurActifLabel.setOpaque(true);                // nouvelle ligne
             b.setBackground(new Color(30, 40, 60));
             b.setFocusPainted(false);
             b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            b.setFont(gothicFont.deriveFont(Font.BOLD, 12f));
             b.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(212, 175, 55)),
                 BorderFactory.createEmptyBorder(5, 15, 5, 15)
@@ -201,7 +218,7 @@ dialog.setVisible(true);
     public static boolean showStyledConfirmDialog(JFrame parentFrame) {
         JDialog dialog = new JDialog(parentFrame, "Confirmation", true);
         dialog.setUndecorated(true);
-        dialog.setSize(400, 130);
+        dialog.setSize(550, 120);
         dialog.setLocationRelativeTo(parentFrame);
         dialog.setLayout(new BorderLayout());
     
@@ -210,10 +227,10 @@ dialog.setVisible(true);
         content.setBorder(BorderFactory.createLineBorder(new Color(212, 175, 55), 2));
         content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
     
-        JLabel label = new JLabel("Êtes-vous sûr de vouloir terminer la partie ?", SwingConstants.CENTER);
+        JLabel label = new JLabel("Etes-vous sur de vouloir terminer la partie ?", SwingConstants.CENTER);
         label.setAlignmentX(Component.CENTER_ALIGNMENT);
         label.setForeground(Color.WHITE);
-        label.setFont(new Font("Serif", Font.BOLD, 16));
+        label.setFont(gothicFont.deriveFont(Font.BOLD, 16f));;
         label.setBorder(BorderFactory.createEmptyBorder(20, 20, 10, 20));
         content.add(label);
     
@@ -251,7 +268,7 @@ dialog.setVisible(true);
         b.setFocusPainted(false);
         b.setForeground(Color.WHITE);
         b.setBackground(new Color(30, 40, 60));
-        b.setFont(new Font("SansSerif", Font.BOLD, 13));
+        b.setFont(gothicFont.deriveFont(Font.BOLD, 14f));;
         b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         b.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(new Color(212, 175, 55)),

@@ -408,8 +408,12 @@ requestFocusInWindow();
             String selected = list.getSelectedValue();
             if (selected != null) {
                 dialog.dispose();
-                setVisible(false);
-                currentGame = new GameWindow(this, selected); // ← Load selected save
+                getContentPane().removeAll();
+currentGame = new GameWindow(this, selected);
+getContentPane().add(currentGame, BorderLayout.CENTER);
+revalidate();
+repaint();
+
             }
         });
     

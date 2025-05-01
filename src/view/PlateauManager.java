@@ -19,12 +19,18 @@ public class PlateauManager implements Serializable {
     
 
     public static void sauvegarderDansFichier(PlateauManager data, String nom) {
+        File folder = new File("sauvegardes");
+        if (!folder.exists()) folder.mkdirs();
+        
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("sauvegardes/" + nom + ".save"))) {
             oos.writeObject(data);
+            System.out.println("Partie sauvegardée sous : " + nom);
         } catch (IOException e) {
+            System.err.println("Erreur lors de la sauvegarde : " + e.getMessage());
             e.printStackTrace();
         }
     }
+    
 
     public static PlateauManager chargerDepuisFichier(String nom) {
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("sauvegardes/" + nom + ".save"))) {

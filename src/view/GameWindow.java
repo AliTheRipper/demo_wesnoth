@@ -73,18 +73,8 @@ scrollPane.setWheelScrollingEnabled(false); // optional, prevents accidental whe
         infoPanel.getFinPartieButton().addActionListener(e -> {
             boolean confirmed = InfoPanel.showStyledConfirmDialog((JFrame) SwingUtilities.getWindowAncestor(this));
             if (confirmed) {
-                Container parent = getParent();
-                while (parent != null && !(parent instanceof JFrame)) {
-                    parent = parent.getParent();
-                }
-                if (parent instanceof JFrame) {
-                    JFrame frame = (JFrame) parent;
-                    frame.getContentPane().removeAll();
-                    MainMenu menuPanel = new MainMenu(); 
-                    frame.setContentPane(menuPanel);     
-                    frame.revalidate();
-                    frame.repaint();
-                }
+                SwingUtilities.getWindowAncestor(this).dispose(); // Close current game window
+new MainMenu(); // Open a fresh MainMenu window
                 
             }
         });
@@ -94,12 +84,14 @@ scrollPane.setWheelScrollingEnabled(false); // optional, prevents accidental whe
         infoPanel.getAnnulerMouvementButton().addActionListener(e -> board.annulerDernierDeplacement());
 
         infoPanel.getSauvegarderButton().addActionListener(e -> {
-            String nom = InfoPanel.showCustomInputDialog(infoPanel);
+            // Parent should be the GameWindow (this), not infoPanel, to center the dialog correctly
+            String nom = InfoPanel.showCustomInputDialog(this);
             if (nom != null && !nom.isEmpty()) {
-                // → Call your save logic here with `nom`
-                System.out.println("Nom de la sauvegarde: " + nom);
+                PlateauManager.sauvegarderDansFichier(manager, nom);
+                JOptionPane.showMessageDialog(this, "Partie sauvegardée avec succès !");
             }
         });
+        
         
 
         add(splitPane, BorderLayout.CENTER);

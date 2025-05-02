@@ -1,3 +1,4 @@
+
 package view;
 
 import model.Hexagone;
@@ -43,7 +44,7 @@ public class InfoPanel extends JPanel {
             System.err.println("Erreur chargement police gothique : " + e.getMessage());
         }
     }
-    
+
     public InfoPanel(String nomJoueur1, String nomJoueur2, PlateauDeJeu plateau) {
         this.nomJoueur1 = nomJoueur1;
         this.nomJoueur2 = nomJoueur2;
@@ -222,13 +223,13 @@ public class InfoPanel extends JPanel {
         inputField.setForeground(Color.WHITE);
         inputField.setBackground(new Color(30, 40, 60));
         inputField.setCaretColor(Color.WHITE);
-        
+
         inputField.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         JLabel label = new JLabel("Nom de la sauvegarde :");
         label.setForeground(Color.WHITE);
         label.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
-        
+
         label.setFont(gothicFont.deriveFont(Font.BOLD, 16f));
         JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
         mainPanel.setBackground(new Color(20, 20, 30));

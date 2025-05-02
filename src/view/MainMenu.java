@@ -1,12 +1,10 @@
 package view;
-import javax.sound.sampled.*;
-import javax.swing.*;
 import java.awt.*;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.util.List;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
+import javax.sound.sampled.*;
+import javax.swing.*;
 
 
 public class MainMenu extends JFrame {
@@ -166,7 +164,7 @@ for (JButton b : new JButton[]{prev, next}) {
         
                 revalidate();
                 repaint();
-                requestFocusInWindow(); // Important for ESC key later
+                requestFocusInWindow();
             }
         });
         
@@ -334,6 +332,7 @@ requestFocusInWindow();
         }
     
         JDialog dialog = new JDialog(this, "Choisir une sauvegarde", true);
+        dialog.setUndecorated(true);
         dialog.setSize(400, 350);
         dialog.setLocationRelativeTo(this);
         dialog.setLayout(new BorderLayout(10, 10));

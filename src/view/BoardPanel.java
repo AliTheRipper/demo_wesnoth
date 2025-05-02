@@ -1,17 +1,14 @@
 package view;
 
+import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
+import java.util.*;
+import javax.swing.*;
 import model.Hexagone;
 import model.PlateauDeJeu;
 import model.TypeTerrain;
 import model.Unite;
-import javax.swing.Timer;
-import java.awt.event.MouseMotionAdapter;
-import java.awt.event.MouseEvent;
-
-import javax.swing.*;
-import java.awt.*;
-import java.util.*;
-import java.util.Queue;
 
 public class BoardPanel extends JPanel {
     private final int HEX_SIZE = 30;
@@ -281,12 +278,12 @@ public class BoardPanel extends JPanel {
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setClip(hex);
 
-        Image terrain = plateau.getHexagone(col, row).getTypeTerrain().getIcon().getImage();
+        TypeTerrain terrainType = plateau.getHexagone(col, row).getTypeTerrain();
+Image terrainImage = terrainType.getIcon().getImage();
+
         int imgWidth = (int) (HEX_WIDTH * 1.2);
 int imgHeight = HEX_HEIGHT;
-g2.drawImage(terrain, centerX - imgWidth / 2, centerY - imgHeight / 2, imgWidth, imgHeight, null);
-
-
+g2.drawImage(terrainImage, centerX - imgWidth / 2, centerY - imgHeight / 2, imgWidth, imgHeight, null);
         Unite u = plateau.getHexagone(col, row).getUnite();
         if (u != null) {
             Image icon = u.getIcone().getImage();
@@ -312,6 +309,22 @@ g2.drawImage(terrain, centerX - imgWidth / 2, centerY - imgHeight / 2, imgWidth,
             g2.setColor(new Color(0, 255, 0, 100));
             g2.fillPolygon(hex);
         }
+        // Draw defense bonus if hovered and accessible
+if (col == hoveredCol && row == hoveredRow && accessibles.contains(plateau.getHexagone(col, row))) {
+   
+    int bonus = terrainType.getBonusDefense();
+
+    String text = bonus + "%";
+    g2.setFont(new Font("Serif", Font.BOLD, 16));
+
+    g2.setColor(new Color(212, 175, 55)); // gold color
+    FontMetrics fm = g2.getFontMetrics();
+    int textWidth = fm.stringWidth(text);
+    int textHeight = fm.getAscent(); // better vertical alignment
+
+    g2.drawString(text, centerX - textWidth / 2, centerY + textHeight / 2);
+}
+
         if (visionActive && !plateau.getHexagone(col, row).isVisible()) {
             g2.setColor(new Color(0, 0, 0, 100)); // brouillard semi-transparent
             g2.fillPolygon(hex);

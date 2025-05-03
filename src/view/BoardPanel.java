@@ -5,6 +5,8 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.util.*;
+import java.util.Queue;
+
 import javax.swing.*;
 import model.Decoration;
 import model.Hexagone;
@@ -314,27 +316,110 @@ public class BoardPanel extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-
+    
         int cols = plateau.getLargeur();
         int rows = plateau.getHauteur();
         int stepX = (int) (HEX_WIDTH * 0.9);
         int stepY = (int) (HEX_HEIGHT * 0.85);
         int offsetX = (getWidth() - stepX * cols) / 2;
         int offsetY = (getHeight() - stepY * rows) / 2;
-
+    
         Graphics2D g2 = (Graphics2D) g.create();
-
+    
+        // PASS 1: Draw terrain and units (but no decoration, no overlays)
         for (int col = 0; col < cols; col++) {
             for (int row = 0; row < rows; row++) {
                 int x = col * stepX + offsetX;
                 int y = row * stepY + offsetY;
                 if (col % 2 != 0) y += stepY / 2;
-                drawHexagon(g2, x, y, col, row);
+                drawTerrainAndUnit(g2, x, y, col, row);
             }
         }
-
+    
+        // PASS 2: Draw decorations on top of terrain and units
+        for (int col = 0; col < cols; col++) {
+            for (int row = 0; row < rows; row++) {
+                int x = col * stepX + offsetX;
+                int y = row * stepY + offsetY;
+                if (col % 2 != 0) y += stepY / 2;
+                drawDecoration(g2, x, y, col, row);
+            }
+        }
+    
+        // PASS 3: Draw overlays (highlight, selection, fog...) on top of everything
+        for (int col = 0; col < cols; col++) {
+            for (int row = 0; row < rows; row++) {
+                int x = col * stepX + offsetX;
+                int y = row * stepY + offsetY;
+                if (col % 2 != 0) y += stepY / 2;
+                drawOverlays(g2, x, y, col, row);
+            }
+        }
+    
         g2.dispose();
     }
+    private void drawTerrainAndUnit(Graphics2D g2, int centerX, int centerY, int col, int row) {
+        Polygon hex = createHexagon(col, row);
+        g2.setClip(hex);
+    
+        // 1. Terrain
+        TypeTerrain terrainType = plateau.getHexagone(col, row).getTypeTerrain();
+        Image terrainImage = terrainType.getIcon().getImage();
+        int imgWidth = (int) (HEX_WIDTH * 1.2);
+        int imgHeight = HEX_HEIGHT;
+        g2.drawImage(terrainImage, centerX - imgWidth / 2, centerY - imgHeight / 2, imgWidth, imgHeight, null);
+    
+        // 2. Unit
+        Unite u = plateau.getHexagone(col, row).getUnite();
+        if (u != null) {
+            Image icon = u.getIcone().getImage();
+            g2.drawImage(icon, centerX - HEX_SIZE / 2, centerY - HEX_SIZE / 2, HEX_SIZE, HEX_SIZE, null);
+        }
+    
+        g2.setClip(null);
+    }
+    private void drawOverlays(Graphics2D g2, int centerX, int centerY, int col, int row) {
+        Polygon hex = createHexagon(col, row);
+    
+        // 1. Accessible overlay
+        if (accessibles.contains(plateau.getHexagone(col, row))) {
+            g2.setColor(new Color(0, 255, 0, 100));
+            g2.fillPolygon(hex);
+        }
+    
+        // 2. Selection and hover outlines
+        if (col == hoveredCol && row == hoveredRow) {
+            g2.setColor(Color.CYAN);
+            g2.setStroke(new BasicStroke(2));
+            g2.drawPolygon(hex);
+        }
+    
+        if (col == selX && row == selY) {
+            g2.setColor(Color.YELLOW);
+            g2.setStroke(new BasicStroke(3));
+            g2.drawPolygon(hex);
+        }
+    
+        // 3. Defense bonus text
+        if (col == hoveredCol && row == hoveredRow && accessibles.contains(plateau.getHexagone(col, row))) {
+            int bonus = plateau.getHexagone(col, row).getTypeTerrain().getBonusDefense();
+            String text = bonus + "%";
+            g2.setFont(new Font("Serif", Font.BOLD, 16));
+            g2.setColor(new Color(212, 175, 55));
+            FontMetrics fm = g2.getFontMetrics();
+            int textWidth = fm.stringWidth(text);
+            int textHeight = fm.getAscent();
+            g2.drawString(text, centerX - textWidth / 2, centerY + textHeight / 2);
+        }
+    
+        // 4. Fog
+        if (visionActive && !plateau.getHexagone(col, row).isVisible()) {
+            g2.setColor(new Color(0, 0, 0, 100));
+            g2.fillPolygon(hex);
+        }
+    }
+            
+    
 
     private void drawHexagon(Graphics g, int centerX, int centerY, int col, int row) {
         Polygon hex = new Polygon();
@@ -342,64 +427,69 @@ public class BoardPanel extends JPanel {
             double angle = Math.toRadians(60 * i);
             hex.addPoint((int) (centerX + HEX_SIZE * Math.cos(angle)), (int) (centerY + HEX_SIZE * Math.sin(angle)));
         }
-
+    
         Graphics2D g2 = (Graphics2D) g.create();
+    
+        // 1. Terrain
         g2.setClip(hex);
-
         TypeTerrain terrainType = plateau.getHexagone(col, row).getTypeTerrain();
         Image terrainImage = terrainType.getIcon().getImage();
-
         int imgWidth = (int) (HEX_WIDTH * 1.2);
-int imgHeight = HEX_HEIGHT;
-g2.drawImage(terrainImage, centerX - imgWidth / 2, centerY - imgHeight / 2, imgWidth, imgHeight, null);
+        int imgHeight = HEX_HEIGHT;
+        g2.drawImage(terrainImage, centerX - imgWidth / 2, centerY - imgHeight / 2, imgWidth, imgHeight, null);
+    
+        // 2. Unit
         Unite u = plateau.getHexagone(col, row).getUnite();
         if (u != null) {
             Image icon = u.getIcone().getImage();
             g2.drawImage(icon, centerX - HEX_SIZE / 2, centerY - HEX_SIZE / 2, HEX_SIZE, HEX_SIZE, null);
         }
-
-
-
+    
         g2.setClip(null);
+    
+        // 3. Decoration (always drawn on top)
+        
+    
+        // 4. Accessible overlay
+        if (accessibles.contains(plateau.getHexagone(col, row))) {
+            g2.setColor(new Color(0, 255, 0, 100));
+            g2.fillPolygon(hex);
+        }
+    
+        // 5. Selection and hover outlines
         if (col == hoveredCol && row == hoveredRow) {
             g2.setColor(Color.CYAN);
             g2.setStroke(new BasicStroke(2));
             g2.drawPolygon(hex);
         }
-
+    
         if (col == selX && row == selY) {
             g2.setColor(Color.YELLOW);
             g2.setStroke(new BasicStroke(3));
             g2.drawPolygon(hex);
         }
-
-        if (accessibles.contains(plateau.getHexagone(col, row))) {
-            g2.setColor(new Color(0, 255, 0, 100));
-            g2.fillPolygon(hex);
-        }
-        // Draw defense bonus if hovered and accessible
+    
+        // 6. Defense bonus
         if (col == hoveredCol && row == hoveredRow && accessibles.contains(plateau.getHexagone(col, row))) {
-
             int bonus = terrainType.getBonusDefense();
-
             String text = bonus + "%";
             g2.setFont(new Font("Serif", Font.BOLD, 16));
-
-            g2.setColor(new Color(212, 175, 55)); // gold color
+            g2.setColor(new Color(212, 175, 55));
             FontMetrics fm = g2.getFontMetrics();
             int textWidth = fm.stringWidth(text);
-            int textHeight = fm.getAscent(); // better vertical alignment
-
+            int textHeight = fm.getAscent();
             g2.drawString(text, centerX - textWidth / 2, centerY + textHeight / 2);
         }
-
+        // 7. Fog (drawn last)
         if (visionActive && !plateau.getHexagone(col, row).isVisible()) {
-            g2.setColor(new Color(0, 0, 0, 100)); // brouillard semi-transparent
+            
+            g2.setColor(new Color(0, 0, 0, 100));
             g2.fillPolygon(hex);
         }
-
+    
         g2.dispose();
     }
+    
 
     public void passerAuTourSuivant() {
         joueurActif = (joueurActif == 1) ? 2 : 1;
@@ -567,6 +657,24 @@ g2.drawImage(terrainImage, centerX - imgWidth / 2, centerY - imgHeight / 2, imgW
             return (dx == 1 && (dy == 0 || y2 == y1 + 1)) || (dx == 0 && dy == 1);
         }
     }
+
+    private void drawDecoration(Graphics2D g2, int centerX, int centerY, int col, int row) {
+        Decoration decor = plateau.getHexagone(col, row).getDecoration();
+        if (decor != Decoration.NONE) {
+            Image decorImg = decor.getIcon().getImage();
+    
+            int decorWidth = HEX_SIZE * 2; // make it larger if needed
+            int decorHeight = HEX_SIZE * 2;
+    
+            Point offset = plateau.getHexagone(col, row).getDecorOffset();
+            int dx = centerX + offset.x - decorWidth / 2;
+            int dy = centerY + offset.y - decorHeight / 2;
+    
+            g2.drawImage(decorImg, dx, dy, decorWidth, decorHeight, null);
+        }
+    }
+    
+    
 
 
 }

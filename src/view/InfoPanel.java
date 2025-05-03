@@ -1,12 +1,12 @@
 package view;
 
+import java.awt.*;
+import java.io.File;
+import javax.swing.*;
 import model.Hexagone;
 import model.PlateauDeJeu;
 import model.TypeTerrain;
 import model.Unite;
-import java.io.File;
-import javax.swing.*;
-import java.awt.*;
 
 public class InfoPanel extends JPanel {
     private JLabel joueurActifLabel = new JLabel("Joueur actif : ", SwingConstants.CENTER);

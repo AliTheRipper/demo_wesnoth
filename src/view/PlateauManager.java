@@ -1,8 +1,7 @@
 package view;
 
-import model.*;
-
 import java.io.*;
+import model.*;
 
 public class PlateauManager implements Serializable {
     public PlateauDeJeu plateau;
@@ -12,7 +11,8 @@ public class PlateauManager implements Serializable {
 
     public static PlateauManager initialiserNouvellePartie() {
         PlateauManager m = new PlateauManager();
-        m.plateau = new PlateauDeJeu("map/map.txt");
+        m.plateau = new PlateauDeJeu("map/map.txt", "map/decor.txt");
+
         placerUnitesParJoueur(m.plateau);
         return m;
     }

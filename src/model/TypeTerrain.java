@@ -38,5 +38,27 @@ public enum TypeTerrain {
     public int getBonusDefense() {
         return bonusDefense;
     }
+public enum Decoration {
+    NONE(null),
+    ROCK("resources/decors/rock.png"),
+    BUSH("resources/decors/bush.png"),
+    SKULL("resources/decors/skull.png"),
+    STUMP("resources/decors/stump.png");
+
+    private final String path;
+    private transient ImageIcon icon;
+
+    Decoration(String path) {
+        this.path = path;
+        this.icon = path == null ? null : new ImageIcon(path);
+    }
+
+    public ImageIcon getIcon() {
+        if (icon == null && path != null) {
+            icon = new ImageIcon(path);
+        }
+        return icon;
+    }
+}
 
 }

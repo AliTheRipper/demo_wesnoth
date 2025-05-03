@@ -5,10 +5,12 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.util.*;
 import javax.swing.*;
+import model.Decoration;
 import model.Hexagone;
 import model.PlateauDeJeu;
 import model.TypeTerrain;
 import model.Unite;
+
 
 public class BoardPanel extends JPanel {
     private final int HEX_SIZE = 30;
@@ -74,7 +76,8 @@ public class BoardPanel extends JPanel {
 
     public BoardPanel(InfoPanel infoPanel, String joueur1, String joueur2) {
         this.infoPanel = infoPanel;
-        this.plateau = new PlateauDeJeu("map/map.txt");
+        this.plateau = new PlateauDeJeu("map/map.txt", "map/decor.txt");
+
         placerUnitesParJoueur();
 
         addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
@@ -284,6 +287,21 @@ Image terrainImage = terrainType.getIcon().getImage();
         int imgWidth = (int) (HEX_WIDTH * 1.2);
 int imgHeight = HEX_HEIGHT;
 g2.drawImage(terrainImage, centerX - imgWidth / 2, centerY - imgHeight / 2, imgWidth, imgHeight, null);
+// Draw decoration on top of terrain
+Decoration decor = plateau.getHexagone(col, row).getDecoration();
+
+
+if (decor != null && decor != Decoration.NONE) {
+    Image decorImg = decor.getIcon().getImage();
+    int decorSize = (int)(HEX_SIZE * 1.8);
+    Point offset = plateau.getHexagone(col, row).getDecorOffset();
+
+    int dx = centerX + offset.x - decorSize / 2;
+    int dy = centerY + offset.y - decorSize / 2;
+
+    g2.drawImage(decorImg, dx, dy, decorSize, decorSize, null);
+}
+
         Unite u = plateau.getHexagone(col, row).getUnite();
         if (u != null) {
             Image icon = u.getIcone().getImage();

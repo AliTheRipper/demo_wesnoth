@@ -1,9 +1,7 @@
 package view;
 
-import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import javax.swing.*;
 
 public class GameWindow extends JPanel {
     private PlateauManager manager;
@@ -31,7 +29,7 @@ public class GameWindow extends JPanel {
 
         InfoPanel infoPanel = new InfoPanel("Joueur1", "Joueur2", manager.plateau);
 
-        infoPanel.setPreferredSize(new Dimension(250, 0));
+        infoPanel.setPreferredSize(new Dimension(200, 0));
 
         infoPanel.setOpaque(true);
         infoPanel.setBackground(new Color(20, 20, 30)); // même fond que les autres parties

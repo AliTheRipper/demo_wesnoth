@@ -6,7 +6,8 @@ public class Hexagone implements Serializable {
     private int x;
     private int y;
     private TypeTerrain typeTerrain;
-    private boolean isVisible = false;
+    private boolean visibleParJoueur1 = false;
+    private boolean visibleParJoueur2 = false;
     private Unite unite; // peut être null
 
     public Unite getUnite() {
@@ -27,6 +28,23 @@ public class Hexagone implements Serializable {
     public int getY() { return y; }
     public TypeTerrain getTypeTerrain() { return typeTerrain; }
 
-    public boolean isVisible() { return isVisible; }
-    public void setVisible(boolean visible) { this.isVisible = visible; }
+    // public boolean isVisible() { return isVisible; }
+    // public void setVisible(boolean visible) { this.isVisible = visible; }
+
+    public void setVisiblePourJoueur(int joueur, boolean visible) {
+        if (joueur == 1) visibleParJoueur1 = visible;
+        if (joueur == 2) visibleParJoueur2 = visible;
+    }
+    
+    public boolean estVisiblePourJoueur(int joueur) {
+        if (joueur == 1) return visibleParJoueur1;
+        if (joueur == 2) return visibleParJoueur2;
+        return false;
+    }
+    
+    public void resetVisibilite() {
+        visibleParJoueur1 = false;
+        visibleParJoueur2 = false;
+    }
+    
 }

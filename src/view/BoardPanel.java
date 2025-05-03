@@ -5,6 +5,8 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.util.*;
+import java.util.Queue;
+
 import javax.swing.*;
 import model.Hexagone;
 import model.PlateauDeJeu;
@@ -391,17 +393,23 @@ public class BoardPanel extends JPanel {
             g2.drawString(text, centerX - textWidth / 2, centerY + textHeight / 2);
         }
 
-        if (visionActive && !plateau.getHexagone(col, row).isVisible()) {
-            g2.setColor(new Color(0, 0, 0, 100)); // brouillard semi-transparent
+        Hexagone hexagone = plateau.getHexagone(col, row);
+        if (!hexagone.estVisiblePourJoueur(joueurActif)) {
+            g2.setColor(new Color(0, 0, 0, 120)); // voile plus opaque
             g2.fillPolygon(hex);
         }
 
         g2.dispose();
     }
-
+    
     public void passerAuTourSuivant() {
+        if (manager.partie != null) {
+            manager.partie.passerAuTourSuivant(); // logique de tour
+            manager.partie.mettreAJourBrouillard(); // 🔥 MAJ visibilité
+        }
+    
         joueurActif = (joueurActif == 1) ? 2 : 1;
-
+    
         for (int y = 0; y < plateau.getHauteur(); y++) {
             for (int x = 0; x < plateau.getLargeur(); x++) {
                 Unite u = plateau.getHexagone(x, y).getUnite();
@@ -410,20 +418,20 @@ public class BoardPanel extends JPanel {
                 }
             }
         }
-
+    
         uniteSelectionnee = null;
         selX = selY = -1;
         accessibles.clear();
         visionActive = false;
-
+    
         setHexVisibility(null);
         infoPanel.majInfos(null);
         infoPanel.majDeplacement(0);
         infoPanel.majJoueurActif(joueurActif);
-
-        repaint();
+    
+        repaint(); // 🔁 rafraîchit l'affichage avec le bon brouillard
     }
-
+    
     @Override
     public Dimension getPreferredSize() {
         int stepX = (int) (HEX_WIDTH * 0.9);
@@ -505,10 +513,13 @@ public class BoardPanel extends JPanel {
         return new int[]{x, y, z};
     }
 
+    private PlateauManager manager;
+
     public BoardPanel(InfoPanel infoPanel, PlateauManager manager) {
         this.infoPanel = infoPanel;
         this.plateau = manager.plateau;
         this.joueurActif = manager.joueurActif;
+        this.manager = manager;
 
 
         addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {

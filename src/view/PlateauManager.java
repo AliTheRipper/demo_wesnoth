@@ -4,6 +4,7 @@ import model.*;
 
 import java.io.*;
 import java.util.Arrays;
+import java.util.List;
 
 public class PlateauManager implements Serializable {
     public PlateauDeJeu plateau;
@@ -11,11 +12,47 @@ public class PlateauManager implements Serializable {
     public String nomJoueur2;
     public int joueurActif = 1;
 
+    public Partie partie;
+
     public static PlateauManager initialiserNouvellePartie() {
-        PlateauManager m = new PlateauManager();
-        m.plateau = new PlateauDeJeu("map/map.txt");
-        placerUnitesParJoueur(m.plateau);
-        return m;
+    PlateauManager m = new PlateauManager();
+    m.plateau = new PlateauDeJeu("map/map.txt");
+    placerUnitesParJoueur(m.plateau);
+
+    // Création des joueurs (à adapter à ton système)
+    Joueur joueur1 = new Joueur("IA Rouge", true, "rouge");
+    Joueur joueur2 = new Joueur("Bleu", false, "bleu");
+
+    // Lier les unités aux joueurs
+    for (int x = 0; x < m.plateau.getLargeur(); x++) {
+        for (int y = 0; y < m.plateau.getHauteur(); y++) {
+            Unite u = m.plateau.getHexagone(x, y).getUnite();
+            if (u != null) {
+                if (u.getJoueurID() == 1) {
+                    joueur1.ajouterUnite(u);
+                    u.setJoueur(joueur1);
+                } else if (u.getJoueurID() == 2) {
+                    joueur2.ajouterUnite(u);
+                    u.setJoueur(joueur2);
+                }
+            }
+        }
+    }
+
+    // Créer scénario avec conditions de victoire
+    List<Joueur> joueurs = List.of(joueur1, joueur2);
+    List<ConditionVictoire> conditions = List.of(
+        new ConditionVictoireDestructionArmee(),
+        new ConditionVictoireDefenseTourMax(15)
+    );
+    Scenario scenario = new Scenario("Test", conditions, 15);
+
+    // Initialiser la partie
+    m.partie = new Partie("Partie test", joueurs, m.plateau, scenario);
+    PartieCourante.getInstance().setPartie(m.partie);
+    m.partie.demarrerPartie();
+
+    return m;
     }
 
     public static void sauvegarderDansFichier(PlateauManager data, String nom) {

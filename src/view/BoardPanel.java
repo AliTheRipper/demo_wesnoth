@@ -1,3 +1,4 @@
+
 package view;
 
 import java.awt.*;
@@ -33,7 +34,7 @@ public class BoardPanel extends JPanel {
     private Unite derniereUniteDeplacee = null;
     private int derniereXDepart = -1;
     private int derniereYDepart = -1;
-    
+
     private final Image backgroundImage = new ImageIcon("resources/plaine.png").getImage();
 
     public void annulerDernierDeplacement() {
@@ -48,31 +49,31 @@ public class BoardPanel extends JPanel {
                     }
                 }
             }
-    
+
             // On la remet à sa position de départ
             plateau.getHexagone(derniereXDepart, derniereYDepart).setUnite(derniereUniteDeplacee);
             derniereUniteDeplacee.resetDeplacement();
-    
+
             // Mise à jour affichage
             uniteSelectionnee = derniereUniteDeplacee;
             selX = derniereXDepart;
             selY = derniereYDepart;
-    
+
             accessibles = calculerCasesAccessibles(selX, selY, uniteSelectionnee.getDeplacementRestant());
             setHexVisibility(accessibles);
-    
+
             infoPanel.majInfos(uniteSelectionnee);
             infoPanel.majDeplacement(uniteSelectionnee.getDeplacementRestant());
-    
+
             // Réinitialise pour éviter d’annuler plusieurs fois
             derniereUniteDeplacee = null;
             derniereXDepart = -1;
             derniereYDepart = -1;
-    
+
             repaint();
         }
     }
-    
+
 
     public BoardPanel(InfoPanel infoPanel, String joueur1, String joueur2) {
         this.infoPanel = infoPanel;
@@ -101,33 +102,83 @@ public class BoardPanel extends JPanel {
     }
 
     private void placerUnitesParJoueur() {
+        // Joueur 1 (en haut à gauche)
         ajouterUnite("Archer", "resources/archer.png", 1, 1, 1);
         ajouterUnite("Soldat", "resources/soldat.png", 1, 2, 2);
         ajouterUnite("Cavalier", "resources/cavalier.png", 1, 3, 1);
+        ajouterUnite("Mage", "resources/mage.png", 1, 4, 2);
+        ajouterUnite("Fantassin", "resources/fantassin.png", 1, 1, 3);
+        ajouterUnite("Voleur", "resources/voleur.png", 1, 2, 4);
 
+        // Joueur 2 (en bas à droite)
         int h = plateau.getHauteur();
         int l = plateau.getLargeur();
+
         ajouterUnite("Archer", "resources/archer.png", 2, l - 2, h - 2);
         ajouterUnite("Soldat", "resources/soldat.png", 2, l - 3, h - 3);
         ajouterUnite("Cavalier", "resources/cavalier.png", 2, l - 4, h - 2);
+        ajouterUnite("Mage", "resources/mage.png", 2, l - 5, h - 3);
+        ajouterUnite("Fantassin", "resources/fantassin.png", 2, l - 2, h - 4);
+        ajouterUnite("Voleur", "resources/voleur.png", 2, l - 3, h - 5);
     }
 
+
     private void ajouterUnite(String nom, String image, int joueur, int x, int y) {
-        Unite u = new Unite(nom, image, joueur, 10, 3, 5);
+        int pv = 30;
+        int att = 5;
+        int dep = 5;
+
+        // tu peux ajuster par nom pour différencier les stats
+        switch (nom) {
+            case "Mage" -> {
+                pv = 24;
+                att = 7;
+                dep = 5;
+            }
+            case "Fantassin" -> {
+                pv = 38;
+                att = 11;
+                dep = 4;
+            }
+            case "Voleur" -> {
+                pv = 24;
+                att = 6;
+                dep = 6;
+            }
+            case "Cavalier" -> {
+                pv = 38;
+                att = 9;
+                dep = 8;
+            }
+            case "Archer" -> {
+                pv = 33;
+                att = 6;
+                dep = 5;
+            }
+            case "Soldat" -> {
+                pv = 35;
+                att = 8;
+                dep = 5;
+            }
+        }
+
+        Unite u = new Unite(nom, image, joueur, pv, att, dep);
         plateau.getHexagone(x, y).setUnite(u);
     }
 
+
     private void handleClick(int mouseX, int mouseY) {
         if (hoveredCol <= 0 || hoveredRow <= 0 ||
-    hoveredCol >= plateau.getLargeur() - 1 ||
-    hoveredRow >= plateau.getHauteur() - 1) {
-    return; // Ignore clicks on border cells
-}
+                hoveredCol >= plateau.getLargeur() - 1 ||
+                hoveredRow >= plateau.getHauteur() - 1) {
+            return; // Ignore les cases en bordure
+        }
 
         if (hoveredCol >= 0 && hoveredRow >= 0) {
             Hexagone hex = plateau.getHexagone(hoveredCol, hoveredRow);
             Unite unite = hex.getUnite();
 
+            // Cas 1 : Sélection d'une unité alliée
             if (unite != null && unite.getJoueur() == joueurActif) {
                 uniteSelectionnee = unite;
                 selX = hoveredCol;
@@ -137,26 +188,36 @@ public class BoardPanel extends JPanel {
                 visionActive = true;
 
                 accessibles = calculerCasesAccessibles(selX, selY, uniteSelectionnee.getDeplacementRestant());
-
                 setHexVisibility(accessibles);
 
                 infoPanel.majInfos(uniteSelectionnee);
                 infoPanel.majDeplacement(uniteSelectionnee.getDeplacementRestant());
 
-            } else if (uniteSelectionnee != null && hex.getUnite() == null && accessibles.contains(hex)) {
+                // 👉 Affichage fiche d'unité (avec stats, armes...)
+                JFrame parent = (JFrame) SwingUtilities.getWindowAncestor(this);
+
+            }
+
+            // Cas 2 : Unité ennemie voisine → Afficher fiche de combat
+            else if (uniteSelectionnee != null && unite != null && unite.getJoueur() != joueurActif) {
+                if (estVoisin(selX, selY, hoveredCol, hoveredRow)) {
+                    JFrame parent = (JFrame) SwingUtilities.getWindowAncestor(this);
+                    CombatPopup.afficher(parent, uniteSelectionnee, unite);
+                    // Tu peux ajouter ici un bouton "Attaquer" si tu veux aller plus loin
+                }
+            }
+
+            // Cas 3 : Déplacement vers une case accessible
+            else if (uniteSelectionnee != null && hex.getUnite() == null && accessibles.contains(hex)) {
                 int distance = calculerDistanceHex(selX, selY, hoveredCol, hoveredRow);
                 uniteSelectionnee.reduireDeplacement(distance);
-                  // movement by number of steps
 
+                plateau.getHexagone(selX, selY).setUnite(null);
+                hex.setUnite(uniteSelectionnee);
 
-                  plateau.getHexagone(selX, selY).setUnite(null);
-                  hex.setUnite(uniteSelectionnee);
-                  
-                  // Mémorise pour annuler plus tard
-                  derniereUniteDeplacee = uniteSelectionnee;
-                  derniereXDepart = xDepart;
-                  derniereYDepart = yDepart;
-                  
+                derniereUniteDeplacee = uniteSelectionnee;
+                derniereXDepart = xDepart;
+                derniereYDepart = yDepart;
 
                 selX = hoveredCol;
                 selY = hoveredRow;
@@ -166,8 +227,10 @@ public class BoardPanel extends JPanel {
 
                 infoPanel.majInfos(uniteSelectionnee);
                 infoPanel.majDeplacement(uniteSelectionnee.getDeplacementRestant());
+            }
 
-            } else {
+            // Cas 4 : Clic ailleurs = désélection
+            else {
                 uniteSelectionnee = null;
                 selX = selY = -1;
                 visionActive = false;
@@ -182,6 +245,8 @@ public class BoardPanel extends JPanel {
         }
     }
 
+
+
     private void setHexVisibility(Set<Hexagone> visibles) {
         for (int y = 0; y < plateau.getHauteur(); y++) {
             for (int x = 0; x < plateau.getLargeur(); x++) {
@@ -193,22 +258,22 @@ public class BoardPanel extends JPanel {
     private void updateHoveredHexagon(int mouseX, int mouseY) {
         int stepX = (int) (HEX_WIDTH * 0.9);
         int stepY = (int) (HEX_HEIGHT * 0.85);
-    
+
         int cols = plateau.getLargeur();
         int rows = plateau.getHauteur();
-    
+
         int offsetX = (getWidth() - stepX * cols) / 2;
         int offsetY = (getHeight() - stepY * rows) / 2;
-    
+
         int adjustedX = mouseX - offsetX;
         int adjustedY = mouseY - offsetY;
-    
+
         int col = adjustedX / stepX;
         int row = (col % 2 == 0) ? adjustedY / stepY : (adjustedY - stepY / 2) / stepY;
-    
+
         hoveredCol = -1;
         hoveredRow = -1;
-    
+
         for (int[] c : new int[][]{
                 {col, row}, {col - 1, row}, {col + 1, row}, {col, row - 1},
                 {col, row + 1}, {col - 1, row - 1}, {col + 1, row - 1}, {col - 1, row + 1}, {col + 1, row + 1}
@@ -222,10 +287,10 @@ public class BoardPanel extends JPanel {
                 }
             }
         }
-    
+
         repaint();
     }
-    
+
 
     private Polygon createHexagon(int col, int row) {
         int stepX = (int) (HEX_WIDTH * 0.9);
@@ -282,32 +347,17 @@ public class BoardPanel extends JPanel {
         g2.setClip(hex);
 
         TypeTerrain terrainType = plateau.getHexagone(col, row).getTypeTerrain();
-Image terrainImage = terrainType.getIcon().getImage();
+        Image terrainImage = terrainType.getIcon().getImage();
 
         int imgWidth = (int) (HEX_WIDTH * 1.2);
 int imgHeight = HEX_HEIGHT;
 g2.drawImage(terrainImage, centerX - imgWidth / 2, centerY - imgHeight / 2, imgWidth, imgHeight, null);
-// Draw decoration on top of terrain
-Decoration decor = plateau.getHexagone(col, row).getDecoration();
-
-
-if (decor != null && decor != Decoration.NONE) {
-    Image decorImg = decor.getIcon().getImage();
-    int decorSize = (int)(HEX_SIZE * 1.8);
-    Point offset = plateau.getHexagone(col, row).getDecorOffset();
-
-    int dx = centerX + offset.x - decorSize / 2;
-    int dy = centerY + offset.y - decorSize / 2;
-
-    g2.drawImage(decorImg, dx, dy, decorSize, decorSize, null);
-}
-
         Unite u = plateau.getHexagone(col, row).getUnite();
         if (u != null) {
             Image icon = u.getIcone().getImage();
             g2.drawImage(icon, centerX - HEX_SIZE / 2, centerY - HEX_SIZE / 2, HEX_SIZE, HEX_SIZE, null);
         }
-        
+
 
 
         g2.setClip(null);
@@ -328,26 +378,26 @@ if (decor != null && decor != Decoration.NONE) {
             g2.fillPolygon(hex);
         }
         // Draw defense bonus if hovered and accessible
-if (col == hoveredCol && row == hoveredRow && accessibles.contains(plateau.getHexagone(col, row))) {
-   
-    int bonus = terrainType.getBonusDefense();
+        if (col == hoveredCol && row == hoveredRow && accessibles.contains(plateau.getHexagone(col, row))) {
 
-    String text = bonus + "%";
-    g2.setFont(new Font("Serif", Font.BOLD, 16));
+            int bonus = terrainType.getBonusDefense();
 
-    g2.setColor(new Color(212, 175, 55)); // gold color
-    FontMetrics fm = g2.getFontMetrics();
-    int textWidth = fm.stringWidth(text);
-    int textHeight = fm.getAscent(); // better vertical alignment
+            String text = bonus + "%";
+            g2.setFont(new Font("Serif", Font.BOLD, 16));
 
-    g2.drawString(text, centerX - textWidth / 2, centerY + textHeight / 2);
-}
+            g2.setColor(new Color(212, 175, 55)); // gold color
+            FontMetrics fm = g2.getFontMetrics();
+            int textWidth = fm.stringWidth(text);
+            int textHeight = fm.getAscent(); // better vertical alignment
+
+            g2.drawString(text, centerX - textWidth / 2, centerY + textHeight / 2);
+        }
 
         if (visionActive && !plateau.getHexagone(col, row).isVisible()) {
             g2.setColor(new Color(0, 0, 0, 100)); // brouillard semi-transparent
             g2.fillPolygon(hex);
         }
-        
+
         g2.dispose();
     }
 
@@ -384,43 +434,43 @@ if (col == hoveredCol && row == hoveredRow && accessibles.contains(plateau.getHe
         int height = stepY * plateau.getHauteur() + (HEX_SIZE / 2) - 80;
         return new Dimension(width, height);
     }
-    
+
 
 
     private Set<Hexagone> calculerCasesAccessibles(int startX, int startY, int maxSteps) {
         Set<Hexagone> accessibles = new HashSet<>();
         Queue<int[]> queue = new LinkedList<>();
         Set<String> visited = new HashSet<>();
-    
+
         queue.add(new int[]{startX, startY, 0});
         visited.add(startX + "," + startY);
-    
+
         while (!queue.isEmpty()) {
             int[] current = queue.poll();
             int x = current[0], y = current[1], steps = current[2];
-    
+
             // Skip border tiles completely
             if (x <= 0 || y <= 0 || x >= plateau.getLargeur() - 1 || y >= plateau.getHauteur() - 1)
                 continue;
-    
+
             if (steps > maxSteps) continue;
-    
+
             Hexagone hex = plateau.getHexagone(x, y);
             accessibles.add(hex);
-    
+
             int[][] directions = {
-                {1, 0}, {-1, 0}, {0, 1}, {0, -1},
-                {x % 2 == 0 ? -1 : 1, 1}, {x % 2 == 0 ? -1 : 1, -1}
+                    {1, 0}, {-1, 0}, {0, 1}, {0, -1},
+                    {x % 2 == 0 ? -1 : 1, 1}, {x % 2 == 0 ? -1 : 1, -1}
             };
-    
+
             for (int[] dir : directions) {
                 int nx = x + dir[0];
                 int ny = y + dir[1];
-    
+
                 // Skip border tiles as neighbors too
                 if (nx <= 0 || ny <= 0 || nx >= plateau.getLargeur() - 1 || ny >= plateau.getHauteur() - 1)
                     continue;
-    
+
                 String key = nx + "," + ny;
                 if (!visited.contains(key)) {
                     Hexagone voisin = plateau.getHexagone(nx, ny);
@@ -434,47 +484,47 @@ if (col == hoveredCol && row == hoveredRow && accessibles.contains(plateau.getHe
 
             }
         }
-    
+
         return accessibles;
     }
-    
-    
-        
+
+
+
     private int calculerDistanceHex(int x1, int y1, int x2, int y2) {
         // Conversion des coordonnées offset en coordonnées cubes
         int[] cube1 = offsetToCube(x1, y1);
         int[] cube2 = offsetToCube(x2, y2);
-    
+
         return Math.max(Math.abs(cube1[0] - cube2[0]),
-               Math.max(Math.abs(cube1[1] - cube2[1]),
+                Math.max(Math.abs(cube1[1] - cube2[1]),
                         Math.abs(cube1[2] - cube2[2])));
     }
-    
+
     private int[] offsetToCube(int col, int row) {
         int x = col;
         int z = row - (col - (col & 1)) / 2;
         int y = -x - z;
         return new int[]{x, y, z};
     }
-    
+
     public BoardPanel(InfoPanel infoPanel, PlateauManager manager) {
         this.infoPanel = infoPanel;
         this.plateau = manager.plateau;
         this.joueurActif = manager.joueurActif;
 
-    
+
         addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
             public void mouseMoved(java.awt.event.MouseEvent e) {
                 updateHoveredHexagon(e.getX(), e.getY());
             }
         });
-    
+
         addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent e) {
                 handleClick(e.getX(), e.getY());
             }
         });
-    
+
         addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentResized(java.awt.event.ComponentEvent e) {
                 revalidate();
@@ -482,30 +532,41 @@ if (col == hoveredCol && row == hoveredRow && accessibles.contains(plateau.getHe
             }
         });
         MouseMotionAdapter scrollAdapter = new MouseMotionAdapter() {
-    public void mouseMoved(MouseEvent e) {
-        PointerInfo pointerInfo = MouseInfo.getPointerInfo();
-        if (pointerInfo == null) return;
+            public void mouseMoved(MouseEvent e) {
+                PointerInfo pointerInfo = MouseInfo.getPointerInfo();
+                if (pointerInfo == null) return;
 
-        Point screenPoint = pointerInfo.getLocation();
-        SwingUtilities.convertPointFromScreen(screenPoint, BoardPanel.this);
+                Point screenPoint = pointerInfo.getLocation();
+                SwingUtilities.convertPointFromScreen(screenPoint, BoardPanel.this);
 
-        JScrollPane scrollPane = (JScrollPane) SwingUtilities.getAncestorOfClass(JScrollPane.class, BoardPanel.this);
-        if (scrollPane != null) {
-            JViewport viewport = scrollPane.getViewport();
-            Rectangle view = viewport.getViewRect();
+                JScrollPane scrollPane = (JScrollPane) SwingUtilities.getAncestorOfClass(JScrollPane.class, BoardPanel.this);
+                if (scrollPane != null) {
+                    JViewport viewport = scrollPane.getViewport();
+                    Rectangle view = viewport.getViewRect();
 
-            if (screenPoint.y < 30) {
-                int newY = Math.max(view.y - 20, 0);
-                viewport.setViewPosition(new Point(view.x, newY));
-            } else if (screenPoint.y > getHeight() - 30) {
-                int newY = Math.min(view.y + 20, getHeight() - view.height);
-                viewport.setViewPosition(new Point(view.x, newY));
+                    if (screenPoint.y < 30) {
+                        int newY = Math.max(view.y - 20, 0);
+                        viewport.setViewPosition(new Point(view.x, newY));
+                    } else if (screenPoint.y > getHeight() - 30) {
+                        int newY = Math.min(view.y + 20, getHeight() - view.height);
+                        viewport.setViewPosition(new Point(view.x, newY));
+                    }
+                }
             }
+        };
+        addMouseMotionListener(scrollAdapter);
+
+    }
+    private boolean estVoisin(int x1, int y1, int x2, int y2) {
+        int dx = Math.abs(x1 - x2);
+        int dy = Math.abs(y1 - y2);
+
+        if (x1 % 2 == 0) {
+            return (dx == 1 && (dy == 0 || y2 == y1 - 1)) || (dx == 0 && dy == 1);
+        } else {
+            return (dx == 1 && (dy == 0 || y2 == y1 + 1)) || (dx == 0 && dy == 1);
         }
     }
-};
-addMouseMotionListener(scrollAdapter);
 
-    }
-    
+
 }

@@ -1,9 +1,8 @@
 package model;
-import java.io.Serializable;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.Serializable;
 
 public class PlateauDeJeu implements Serializable {
     private int largeur;
@@ -71,6 +70,10 @@ public class PlateauDeJeu implements Serializable {
             case VILLAGE: return 1;
             default: return 1;
         }
+    }
+
+    public Hexagone obtenirHexagone(int x, int y) {
+        return getHexagone(x, y);
     }
 
 }

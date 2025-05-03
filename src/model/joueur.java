@@ -9,6 +9,17 @@ public class Joueur {
     private List<Unite> unites;
     private String couleur;
 
+    private int id; // à déclarer
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+
     public Joueur(String nom, boolean estIA, String couleur) {
         this.nom = nom;
         this.estIA = estIA;

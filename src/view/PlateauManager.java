@@ -1,10 +1,8 @@
 package view;
 
-import model.*;
-
 import java.io.*;
-import java.util.Arrays;
 import java.util.List;
+import model.*;
 
 public class PlateauManager implements Serializable {
     public PlateauDeJeu plateau;
@@ -23,6 +21,10 @@ public class PlateauManager implements Serializable {
     Joueur joueur1 = new Joueur("IA Rouge", true, "rouge");
     Joueur joueur2 = new Joueur("Bleu", false, "bleu");
 
+    joueur1.setId(1);
+    joueur2.setId(2);
+
+
     // Lier les unités aux joueurs
     for (int x = 0; x < m.plateau.getLargeur(); x++) {
         for (int y = 0; y < m.plateau.getHauteur(); y++) {
@@ -31,9 +33,11 @@ public class PlateauManager implements Serializable {
                 if (u.getJoueurID() == 1) {
                     joueur1.ajouterUnite(u);
                     u.setJoueur(joueur1);
+                    u.setJoueurID(1); 
                 } else if (u.getJoueurID() == 2) {
                     joueur2.ajouterUnite(u);
                     u.setJoueur(joueur2);
+                    u.setJoueurID(2); 
                 }
             }
         }

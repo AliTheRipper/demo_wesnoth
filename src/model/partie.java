@@ -1,5 +1,9 @@
 package model;
 
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+
+
 import java.util.List;
 
 public class Partie {

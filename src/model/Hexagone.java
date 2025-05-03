@@ -46,5 +46,10 @@ public class Hexagone implements Serializable {
         visibleParJoueur1 = false;
         visibleParJoueur2 = false;
     }
+
+    public boolean estAccessible() {
+    return getUnite() == null && typeTerrain.getCoutDeplacement() < 999;
+}
+
     
 }

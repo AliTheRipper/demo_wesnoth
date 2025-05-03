@@ -5,8 +5,6 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.util.*;
-import java.util.Queue;
-
 import javax.swing.*;
 import model.Hexagone;
 import model.PlateauDeJeu;
@@ -61,7 +59,6 @@ public class BoardPanel extends JPanel {
             selY = derniereYDepart;
 
             accessibles = calculerCasesAccessibles(selX, selY, uniteSelectionnee.getDeplacementRestant());
-            setHexVisibility(accessibles);
 
             infoPanel.majInfos(uniteSelectionnee);
             infoPanel.majDeplacement(uniteSelectionnee.getDeplacementRestant());
@@ -179,7 +176,7 @@ public class BoardPanel extends JPanel {
             Unite unite = hex.getUnite();
 
             // Cas 1 : Sélection d'une unité alliée
-            if (unite != null && unite.getJoueur() == joueurActif) {
+            if (unite != null && unite.getJoueurID() == joueurActif) {
                 uniteSelectionnee = unite;
                 selX = hoveredCol;
                 selY = hoveredRow;
@@ -188,7 +185,7 @@ public class BoardPanel extends JPanel {
                 visionActive = true;
 
                 accessibles = calculerCasesAccessibles(selX, selY, uniteSelectionnee.getDeplacementRestant());
-                setHexVisibility(accessibles);
+            
 
                 infoPanel.majInfos(uniteSelectionnee);
                 infoPanel.majDeplacement(uniteSelectionnee.getDeplacementRestant());
@@ -199,7 +196,7 @@ public class BoardPanel extends JPanel {
             }
 
             // Cas 2 : Unité ennemie voisine → Afficher fiche de combat
-            else if (uniteSelectionnee != null && unite != null && unite.getJoueur() != joueurActif) {
+            else if (uniteSelectionnee != null && unite != null && unite.getJoueurID() != joueurActif) {
                 if (estVoisin(selX, selY, hoveredCol, hoveredRow)) {
                     JFrame parent = (JFrame) SwingUtilities.getWindowAncestor(this);
                     CombatPopup.afficher(parent, uniteSelectionnee, unite);
@@ -223,7 +220,7 @@ public class BoardPanel extends JPanel {
                 selY = hoveredRow;
 
                 accessibles = calculerCasesAccessibles(selX, selY, uniteSelectionnee.getDeplacementRestant());
-                setHexVisibility(accessibles);
+                
 
                 infoPanel.majInfos(uniteSelectionnee);
                 infoPanel.majDeplacement(uniteSelectionnee.getDeplacementRestant());
@@ -235,7 +232,7 @@ public class BoardPanel extends JPanel {
                 selX = selY = -1;
                 visionActive = false;
                 accessibles.clear();
-                setHexVisibility(null);
+                
 
                 infoPanel.majInfos(null);
                 infoPanel.majDeplacement(0);
@@ -247,13 +244,7 @@ public class BoardPanel extends JPanel {
 
 
 
-    private void setHexVisibility(Set<Hexagone> visibles) {
-        for (int y = 0; y < plateau.getHauteur(); y++) {
-            for (int x = 0; x < plateau.getLargeur(); x++) {
-                plateau.getHexagone(x, y).setVisible(visibles != null && visibles.contains(plateau.getHexagone(x, y)));
-            }
-        }
-    }
+    
 
     private void updateHoveredHexagon(int mouseX, int mouseY) {
         int stepX = (int) (HEX_WIDTH * 0.9);
@@ -401,7 +392,7 @@ public class BoardPanel extends JPanel {
 
         g2.dispose();
     }
-    
+
     public void passerAuTourSuivant() {
         if (manager.partie != null) {
             manager.partie.passerAuTourSuivant(); // logique de tour
@@ -413,7 +404,7 @@ public class BoardPanel extends JPanel {
         for (int y = 0; y < plateau.getHauteur(); y++) {
             for (int x = 0; x < plateau.getLargeur(); x++) {
                 Unite u = plateau.getHexagone(x, y).getUnite();
-                if (u != null && u.getJoueur() == joueurActif) {
+                if (u != null && u.getJoueurID() == joueurActif) {
                     u.resetDeplacement();
                 }
             }
@@ -424,7 +415,6 @@ public class BoardPanel extends JPanel {
         accessibles.clear();
         visionActive = false;
     
-        setHexVisibility(null);
         infoPanel.majInfos(null);
         infoPanel.majDeplacement(0);
         infoPanel.majJoueurActif(joueurActif);

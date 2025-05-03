@@ -34,4 +34,9 @@ public class Scenario {
     public String getNom() {
         return nom;
     }
+
+    public List<ConditionVictoire> getConditionsVictoire() {
+        return conditionsVictoire;
+    }
+    
 }

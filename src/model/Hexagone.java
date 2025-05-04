@@ -18,4 +18,12 @@ public class Hexagone {
 
     public boolean isVisible() { return isVisible; }
     public void setVisible(boolean visible) { this.isVisible = visible; }
+
+    public int getCoutDeplacement() {
+        return typeTerrain.getCoutDeplacement();
+    }
+
+    public boolean estAccessible() {
+        return typeTerrain != TypeTerrain.EAU_PROFONDE;
+    }
 }

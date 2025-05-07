@@ -9,6 +9,7 @@ import java.util.*;
 import java.util.List;
 import java.util.Queue;
 import javax.sound.sampled.*; // pour lire le son
+import javax.swing.Timer;
 
 import javax.swing.*;
 import model.Decoration;
@@ -19,6 +20,8 @@ import model.TypeTerrain;
 import model.Unite;
 
 public class BoardPanel extends JPanel {
+    private final Timer damageTimer;
+
     private final int HEX_SIZE = 30;
     private final int HEX_WIDTH = (int) (Math.sqrt(3) * HEX_SIZE);
     private final int HEX_HEIGHT = 2 * HEX_SIZE;
@@ -91,6 +94,14 @@ public class BoardPanel extends JPanel {
         joueurActif = j1;
         placerUnitesParJoueur();
 
+        plateau.getToutesLesUnites().forEach(u -> {
+            u.addPropertyChangeListener(evt -> {
+                if ("pv".equals(evt.getPropertyName())) {
+                    infoPanel.majInfos((Unite) evt.getSource());
+                }
+            });
+        });
+
         addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
             public void mouseMoved(java.awt.event.MouseEvent e) {
                 updateHoveredHexagon(e.getX(), e.getY());
@@ -109,11 +120,13 @@ public class BoardPanel extends JPanel {
                 repaint();
             }
         });
-        new javax.swing.Timer(30, e -> { // 30 ms ≈ 33 FPS
-            splash.forEach(DamageText::tick); // monte & fait baisser alpha
-            splash.removeIf(DamageText::isDead); // <= même nom que la méthode
-            repaint();
-        }).start();
+
+        damageTimer = new Timer(30, e -> {
+            splash.forEach(DamageText::tick); // fait bouger les textes
+            splash.removeIf(DamageText::isDead); // supprime ceux qui sont "morts"
+            repaint(); // redessine l'écran
+        });
+        damageTimer.start();
 
     }
 
@@ -689,6 +702,13 @@ public class BoardPanel extends JPanel {
         };
         addMouseMotionListener(scrollAdapter);
 
+        damageTimer = new Timer(30, e -> {
+            splash.forEach(DamageText::tick);
+            splash.removeIf(DamageText::isDead);
+            repaint();
+        });
+        damageTimer.start();
+
     }
 
     private boolean estVoisin(int x1, int y1, int x2, int y2) {
@@ -728,14 +748,16 @@ public class BoardPanel extends JPanel {
             this.dmg = dmg;
         }
 
-        void tick() { // appelé toutes les 30 ms
-            y -= 1; // remonte
-            alpha -= 0.02f; // 0.03 × (1000/30) ≈ 1 s de vie
+        // intérieur de DamageText
+        void tick() {
+            y -= 1;
+            alpha = Math.max(0f, alpha - 0.025f); // 40 ticks ≈ 1 s
         }
 
         boolean isDead() {
             return alpha <= 0f;
         }
+
     }
 
     private void playHitSound() {

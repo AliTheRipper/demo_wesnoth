@@ -1,6 +1,9 @@
 package model;
 
 import javax.swing.ImageIcon;
+
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.Serializable;
 import java.util.*;
 
@@ -27,6 +30,8 @@ public class Unite implements Serializable {
     private final int champDeVision;
     private Hexagone position; // null = pas encore placée
     private final List<Arme> armes = new ArrayList<>();
+
+    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
     /* Références “joueur”  */
     private final Joueur joueur; // ← keep only this
@@ -175,13 +180,18 @@ public class Unite implements Serializable {
         int degats = arme.getDegats() + variation - (int) (defense * bonus);
         degats = Math.max(0, degats);
 
+        int oldPv = cible.pointsVie;
         cible.pointsVie = Math.max(0, cible.pointsVie - degats);
+        cible.pcs.firePropertyChange("pv", oldPv, cible.pointsVie);
         return degats;
+
     }
 
     public boolean frapper(Unite cible, TypeTerrain terrain) {
         int degats = calculDegats(cible, terrain); // ↙︎ extraction du calcul
+        int oldPv = cible.pointsVie;
         cible.pointsVie = Math.max(0, cible.pointsVie - degats);
+        cible.pcs.firePropertyChange("pv", oldPv, cible.pointsVie);
         return cible.pointsVie == 0;
     }
 
@@ -201,6 +211,10 @@ public class Unite implements Serializable {
         pointsDeplacement -= cout;
         this.position = destination;
         return true;
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        pcs.addPropertyChangeListener(l);
     }
 
 }

@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 
 public class PlateauDeJeu implements Serializable {
@@ -149,39 +150,17 @@ public class PlateauDeJeu implements Serializable {
         }
     }
 
+    public List<Unite> getToutesLesUnites() {
+        List<Unite> unites = new ArrayList<>();
+        for (int y = 0; y < getHauteur(); y++) {
+            for (int x = 0; x < getLargeur(); x++) {
+                Unite u = getHexagone(x, y).getUnite();
+                if (u != null) {
+                    unites.add(u);
+                }
+            }
+        }
+        return unites;
+    }
+
 }
-
-    
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-
-    
-                
-                 
-                 
-                 
-                 
-                 
-                 
-
-    
-
-    
-                
-                
-                
-                
-                
-                
-                
-                

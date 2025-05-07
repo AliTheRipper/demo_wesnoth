@@ -32,7 +32,7 @@ public class InfoPanel extends JPanel {
     private final JLabel deplacementLabel = new JLabel("Déplacement : -");
 
     /* ───────────────── DESCRIPTION & ARMES ───────────────── */
-    private final JLabel descriptionLabel = new JLabel("Description : -");
+    private final JTextArea descriptionLabel = new JTextArea("Description : -");
     private final JLabel attaqueDetailsLabel = new JLabel("Armes : -");
 
     /* ───────────────── BOUTONS DE CONTRÔLE ───────────────── */
@@ -73,7 +73,11 @@ public class InfoPanel extends JPanel {
         this.plateau = plateau;
 
         setLayout(new BorderLayout());
-        setPreferredSize(new Dimension(310, 0)); // +10 px pour éviter coupures
+        // setPreferredSize(new Dimension(310, 0)); // +10 px pour éviter coupures
+        setPreferredSize(null); // → laisse le layout gérer
+        setMinimumSize(new Dimension(250, 0));
+        setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+
         setBackground(BACKGROUND);
 
         /* ---------- En‑tête ---------- */
@@ -116,12 +120,25 @@ public class InfoPanel extends JPanel {
         center.add(stats);
 
         // Description + armes
-        for (JLabel l : new JLabel[] { descriptionLabel, attaqueDetailsLabel }) {
+        // Appliquer les styles aux JLabel
+        for (JLabel l : new JLabel[] { attaqueDetailsLabel }) {
             l.setFont(gothic.deriveFont(Font.PLAIN, 12f));
             l.setForeground(TEXT);
         }
+
+        // Appliquer les styles au JTextArea
+        descriptionLabel.setFont(gothic.deriveFont(Font.PLAIN, 12f));
+        descriptionLabel.setForeground(TEXT);
+
         descriptionLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 2, 10));
         attaqueDetailsLabel.setBorder(BorderFactory.createEmptyBorder(5, 10, 10, 10));
+        descriptionLabel.setEditable(false);
+        descriptionLabel.setOpaque(false);
+        descriptionLabel.setLineWrap(true);
+        descriptionLabel.setWrapStyleWord(true);
+        descriptionLabel.setForeground(TEXT);
+        descriptionLabel.setFont(gothic.deriveFont(Font.PLAIN, 12f));
+
         center.add(descriptionLabel);
         center.add(attaqueDetailsLabel);
 
@@ -178,7 +195,8 @@ public class InfoPanel extends JPanel {
             terrainEtDefenseLabel.setText("? : ?");
         }
 
-        descriptionLabel.setText("Description : Un combattant redoutable.");
+        descriptionLabel.setText(
+                "Description : Un combattant redoutable.\nSes compétences sont redoutées sur tous les champs de bataille.");
         attaqueDetailsLabel.setText("Armes : " + u.getArmes().stream()
                 .map(arme -> arme.getNom())
                 .reduce((a, b) -> a + ", " + b).orElse("-"));

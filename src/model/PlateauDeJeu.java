@@ -6,24 +6,18 @@ import java.nio.file.*;
 import java.util.*;
 
 public class PlateauDeJeu implements Serializable {
+    private static final long serialVersionUID = 1L;
     private int largeur;
     private int hauteur;
     private Hexagone[][] hexagones;
     public PlateauDeJeu(String terrainFile) {
         this(terrainFile, null); // Réintroduit ici
     }
+
     public PlateauDeJeu(String terrainFile, String decorFile) {
         try {
             List<String> terrainLines = Files.readAllLines(Paths.get(terrainFile));
             List<String> decorLines = decorFile != null ? Files.readAllLines(Paths.get(decorFile)) : null;
-            if (decorFile != null) {
-                System.out.println("Lecture de décor depuis: " + decorFile);
-                if (!Files.exists(Paths.get(decorFile))) {
-                    System.out.println("❌ Fichier decor.txt non trouvé !");
-                } else {
-                    System.out.println("✅ Fichier decor.txt trouvé, nombre de lignes: " + decorLines.size());
-                }
-            }
             
             hauteur = terrainLines.size();
             largeur = terrainLines.get(0).length(); // suppose toutes les lignes ont la même largeur

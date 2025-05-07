@@ -25,30 +25,27 @@ public class Hexagone implements Serializable {
         this.y = y;
         this.typeTerrain = typeTerrain;
     }
-
-    public int getX() { return x; }
-    public int getY() { return y; }
     public TypeTerrain getTypeTerrain() { return typeTerrain; }
 
     public boolean isVisible() { return isVisible; }
     public void setVisible(boolean visible) { this.isVisible = visible; }
 
 
-public Decoration getDecoration() {
-    return decoration;
-}
+    public Decoration getDecoration() {
+        return decoration;
+    }
 
-public void setDecoration(Decoration decoration) {
-    this.decoration = decoration;
-}
+    public void setDecoration(Decoration decoration) {
+        this.decoration = decoration;
+    }
 
-public void setDecorOffset(Point p) {
-    this.decorOffset = p;
-}
+    public void setDecorOffset(Point p) {
+        this.decorOffset = p;
+    }
 
-public Point getDecorOffset() {
-    return decorOffset;
-}
+    public Point getDecorOffset() {
+        return decorOffset;
+    }
 
 
 }

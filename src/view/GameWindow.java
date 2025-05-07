@@ -29,7 +29,10 @@ public class GameWindow extends JPanel {
 
         InfoPanel infoPanel = new InfoPanel("Joueur1", "Joueur2", manager.plateau);
 
-        infoPanel.setPreferredSize(new Dimension(200, 0));
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        int infoPanelWidth = (int) (screenSize.width * 0.15); // 25% de la largeur de l'écran
+        infoPanel.setPreferredSize(new Dimension(infoPanelWidth, 0));
+
 
         infoPanel.setOpaque(true);
         infoPanel.setBackground(new Color(20, 20, 30)); // même fond que les autres parties
@@ -100,6 +103,10 @@ new MainMenu();
         
 
         add(splitPane, BorderLayout.CENTER);
+        SwingUtilities.invokeLater(() -> {
+            splitPane.setDividerLocation(1.0 - (infoPanelWidth / (double) getWidth()));
+        });
+
 
         SwingUtilities.invokeLater(() -> {
             int infoWidth = infoPanel.getPreferredSize().width;

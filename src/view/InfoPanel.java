@@ -20,8 +20,8 @@ public class InfoPanel extends JPanel {
     private JLabel attaqueLabel = new JLabel("Attaque : -");
     private JLabel deplacementLabel = new JLabel("Déplacement : -");
 
-    private JLabel descriptionLabel = new JLabel("Description : -");
-    private JLabel attaqueDetailsLabel = new JLabel("Armes : -");
+    private JTextArea descriptionArea = new JTextArea("Description : -");
+    private JTextArea attaqueDetailsArea = new JTextArea("Armes : -");
 
     private JButton finTourButton = new JButton("Fin du tour");
     private JButton annulerMouvementButton = new JButton("Annuler mouvement");
@@ -38,6 +38,7 @@ public class InfoPanel extends JPanel {
     private final Color buttonBg = new Color(30, 40, 60);
     private final Color hoverColor = new Color(60, 90, 150);
     private static Font gothicFont;
+
 
     static {
         try {
@@ -65,7 +66,7 @@ public class InfoPanel extends JPanel {
         joueurActifLabel.setBackground(backgroundColor);
         add(joueurActifLabel, BorderLayout.NORTH);
 
-        // Panel principal centré
+        // Scrollable central panel
         JPanel centerPanel = new JPanel();
         centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
         centerPanel.setBackground(backgroundColor);
@@ -75,49 +76,58 @@ public class InfoPanel extends JPanel {
         terrainEtDefenseLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         centerPanel.add(terrainEtDefenseLabel);
 
-        // Image + stats
-        // Image + stats côte à côte bien alignés
-JPanel statsPanel = new JPanel();
-statsPanel.setLayout(new BoxLayout(statsPanel, BoxLayout.X_AXIS));
-statsPanel.setBackground(backgroundColor);
+        // Image + stats côte à côte
+        JPanel statsPanel = new JPanel();
+        statsPanel.setLayout(new BoxLayout(statsPanel, BoxLayout.X_AXIS));
+        statsPanel.setBackground(backgroundColor);
 
-uniteImageLabel.setPreferredSize(new Dimension(64, 64));
-uniteImageLabel.setAlignmentY(Component.TOP_ALIGNMENT); // Aligner en haut
-statsPanel.add(Box.createRigidArea(new Dimension(10, 0))); // marge gauche
-statsPanel.add(uniteImageLabel);
+        uniteImageLabel.setPreferredSize(new Dimension(64, 64));
+        uniteImageLabel.setAlignmentY(Component.TOP_ALIGNMENT);
+        statsPanel.add(Box.createRigidArea(new Dimension(10, 0)));
+        statsPanel.add(uniteImageLabel);
 
-JPanel rightStats = new JPanel();
-rightStats.setLayout(new BoxLayout(rightStats, BoxLayout.Y_AXIS));
-rightStats.setBackground(backgroundColor);
-rightStats.setAlignmentY(Component.TOP_ALIGNMENT); // Aligner en haut
+        JPanel rightStats = new JPanel();
+        rightStats.setLayout(new BoxLayout(rightStats, BoxLayout.Y_AXIS));
+        rightStats.setBackground(backgroundColor);
+        rightStats.setAlignmentY(Component.TOP_ALIGNMENT);
 
-for (JLabel label : new JLabel[]{nomLabel, joueurLabel, pvLabel, attaqueLabel, deplacementLabel}) {
-    label.setFont(gothicFont.deriveFont(Font.PLAIN, 13f));
-    label.setForeground(textColor);
-    label.setBorder(BorderFactory.createEmptyBorder(2, 10, 2, 5));
-    rightStats.add(label);
-}
+        for (JLabel label : new JLabel[]{nomLabel, joueurLabel, pvLabel, attaqueLabel, deplacementLabel}) {
+            label.setFont(gothicFont.deriveFont(Font.PLAIN, 13f));
+            label.setForeground(textColor);
+            label.setBorder(BorderFactory.createEmptyBorder(2, 10, 2, 5));
+            rightStats.add(label);
+        }
 
-statsPanel.add(Box.createRigidArea(new Dimension(10, 0))); // marge entre image et texte
-statsPanel.add(rightStats);
-centerPanel.add(statsPanel);
+        statsPanel.add(Box.createRigidArea(new Dimension(10, 0)));
+        statsPanel.add(rightStats);
+        centerPanel.add(statsPanel);
 
+        // Zones de texte dynamiques
+        for (JTextArea area : new JTextArea[]{descriptionArea, attaqueDetailsArea}) {
+            area.setFont(gothicFont.deriveFont(Font.PLAIN, 12f));
+            area.setForeground(textColor);
+            area.setBackground(backgroundColor);
+            area.setWrapStyleWord(true);
+            area.setLineWrap(true);
+            area.setEditable(false);
+            area.setOpaque(false);
+            area.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+            area.setAlignmentX(Component.CENTER_ALIGNMENT);
+        }
 
-        // Description et armes
-        descriptionLabel.setFont(gothicFont.deriveFont(Font.PLAIN, 12f));
-        descriptionLabel.setForeground(textColor);
-        descriptionLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 2, 10));
+        centerPanel.add(descriptionArea);
+        centerPanel.add(attaqueDetailsArea);
+        centerPanel.add(Box.createVerticalGlue()); // espace extensible
 
-        attaqueDetailsLabel.setFont(gothicFont.deriveFont(Font.PLAIN, 12f));
-        attaqueDetailsLabel.setForeground(textColor);
-        attaqueDetailsLabel.setBorder(BorderFactory.createEmptyBorder(5, 10, 10, 10));
+        JScrollPane scroll = new JScrollPane(centerPanel);
+        scroll.setBorder(null);
+        scroll.setOpaque(false);
+        scroll.getViewport().setOpaque(false);
+        scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+        add(scroll, BorderLayout.CENTER);
 
-        centerPanel.add(descriptionLabel);
-        centerPanel.add(attaqueDetailsLabel);
-
-        add(centerPanel, BorderLayout.CENTER);
-
-        // Bas
+        // Boutons du bas
         JPanel basPanel = new JPanel(new GridLayout(4, 1, 0, 10));
         basPanel.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
         basPanel.setBackground(backgroundColor);
@@ -136,7 +146,6 @@ centerPanel.add(statsPanel);
                 public void mouseEntered(java.awt.event.MouseEvent evt) {
                     b.setBackground(hoverColor);
                 }
-
                 public void mouseExited(java.awt.event.MouseEvent evt) {
                     b.setBackground(buttonBg);
                 }
@@ -157,8 +166,8 @@ centerPanel.add(statsPanel);
             attaqueLabel.setText("Attaque : -");
             deplacementLabel.setText("Déplacement : -");
             terrainEtDefenseLabel.setText("- : -");
-            descriptionLabel.setText("Description : -");
-            attaqueDetailsLabel.setText("Armes : -");
+            descriptionArea.setText("Description : -");
+            attaqueDetailsArea.setText("Armes : -");
         } else {
             nomLabel.setText("Nom : " + u.getNom());
             joueurLabel.setText("Joueur : " + u.getJoueur());
@@ -177,8 +186,8 @@ centerPanel.add(statsPanel);
                 terrainEtDefenseLabel.setText("? : ?");
             }
 
-            descriptionLabel.setText("Description : Un combattant redoutable.");
-            attaqueDetailsLabel.setText("Armes : Épée, Bouclier");
+            descriptionArea.setText("Description : Un combattant redoutable avec une longue biographie adaptée à tous les écrans.");
+            attaqueDetailsArea.setText("Armes : Épée longue, Bouclier renforcé, Lance de feu, Arc mystique");
         }
     }
 
@@ -246,6 +255,7 @@ centerPanel.add(statsPanel);
     }
 
     public static String showCustomInputDialog(Component parent) {
+        final String[] result = new String[1]; // store result her
         JTextField inputField = new JTextField();
         inputField.setForeground(Color.WHITE);
         inputField.setBackground(new Color(30, 40, 60));
@@ -266,6 +276,21 @@ centerPanel.add(statsPanel);
         JButton ok = createStyledButton("OK");
         JButton cancel = createStyledButton("Annuler");
 
+        JDialog dialog = new JDialog((Frame) null, "Sauvegarde", true);
+        dialog.setUndecorated(true);
+        dialog.setPreferredSize(new Dimension(400, 160));
+        dialog.setLayout(new BorderLayout());
+
+        ok.addActionListener(e -> {
+            result[0] = inputField.getText().trim();
+            dialog.dispose();
+        });
+
+        cancel.addActionListener(e -> {
+            result[0] = null;
+            dialog.dispose();
+        });
+
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
         buttonPanel.setBackground(new Color(20, 20, 30));
         buttonPanel.add(ok);
@@ -276,15 +301,13 @@ centerPanel.add(statsPanel);
         content.add(mainPanel, BorderLayout.CENTER);
         content.add(buttonPanel, BorderLayout.SOUTH);
 
-        JDialog dialog = new JDialog((Frame) null, "Sauvegarde", true);
-        dialog.setUndecorated(true);
         dialog.setContentPane(content);
-        dialog.setPreferredSize(new Dimension(400, 160));
         dialog.pack();
         dialog.setLocationRelativeTo(parent);
         dialog.setVisible(true);
 
-        return inputField.getText();
+        return result[0];
+
     }
 
     private static JButton createStyledButton(String text) {

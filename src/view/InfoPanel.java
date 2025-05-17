@@ -40,6 +40,7 @@ public class InfoPanel extends JPanel {
     private final JButton annulerMouvementButton = new JButton("Annuler mouvement");
     private final JButton sauvegarderButton = new JButton("Sauvegarder");
     private final JButton finPartieButton = new JButton("Fin de la partie");
+    private final JButton editeurMapButton = new JButton("Éditeur de Map"); // Nouveau bouton
 
     private final String nomJoueur1;
     private final String nomJoueur2;
@@ -51,6 +52,12 @@ public class InfoPanel extends JPanel {
     private static final Color TEXT = Color.WHITE;
     private static final Color BTN_BG = new Color(30, 40, 60);
     private static final Color BTN_HOVER = new Color(60, 90, 150);
+
+    private final JButton zoomInButton = new JButton("+");
+    private final JButton zoomOutButton = new JButton("–");
+    private MiniMapPanel miniMapPanel;
+
+
 
     private static Font gothic;
     static {
@@ -73,11 +80,9 @@ public class InfoPanel extends JPanel {
         this.plateau = plateau;
 
         setLayout(new BorderLayout());
-        // setPreferredSize(new Dimension(310, 0)); // +10 px pour éviter coupures
-        setPreferredSize(null); // → laisse le layout gérer
+        setPreferredSize(new Dimension(300, 0)); // largeur propre
         setMinimumSize(new Dimension(250, 0));
         setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-
         setBackground(BACKGROUND);
 
         /* ---------- En‑tête ---------- */
@@ -86,10 +91,11 @@ public class InfoPanel extends JPanel {
         joueurActifLabel.setBorder(BorderFactory.createEmptyBorder(15, 10, 5, 10));
         add(joueurActifLabel, BorderLayout.NORTH);
 
-        /* ---------- Zone centrale ---------- */
+        /* ---------- Zone centrale (scrollable) ---------- */
         JPanel center = new JPanel();
         center.setLayout(new BoxLayout(center, BoxLayout.Y_AXIS));
         center.setBackground(BACKGROUND);
+        center.setOpaque(false);
 
         terrainEtDefenseLabel.setFont(gothic.deriveFont(Font.PLAIN, 13f));
         terrainEtDefenseLabel.setForeground(TEXT);
@@ -98,16 +104,19 @@ public class InfoPanel extends JPanel {
 
         // Image & stats
         JPanel stats = new JPanel();
-        stats.setLayout(new BoxLayout(stats, BoxLayout.X_AXIS));
+        stats.setLayout(new BorderLayout());
         stats.setBackground(BACKGROUND);
+        stats.setOpaque(false);
+
 
         uniteImageLabel.setPreferredSize(new Dimension(64, 64));
-        stats.add(Box.createRigidArea(new Dimension(10, 0)));
-        stats.add(uniteImageLabel);
+        //stats.add(Box.createRigidArea(new Dimension(10, 0)));
+        stats.add(uniteImageLabel, BorderLayout.WEST);
 
         JPanel right = new JPanel();
         right.setLayout(new BoxLayout(right, BoxLayout.Y_AXIS));
         right.setBackground(BACKGROUND);
+        right.setOpaque(false);
 
         for (JLabel l : new JLabel[] { nomLabel, joueurLabel, pvLabel, attaqueLabel, defenseLabel, deplacementLabel }) {
             l.setFont(gothic.deriveFont(Font.PLAIN, 13f));
@@ -115,48 +124,65 @@ public class InfoPanel extends JPanel {
             l.setBorder(BorderFactory.createEmptyBorder(2, 10, 2, 5));
             right.add(l);
         }
-        stats.add(Box.createRigidArea(new Dimension(10, 0)));
-        stats.add(right);
+
+        //stats.add(Box.createRigidArea(new Dimension(10, 0)));
+        stats.add(right, BorderLayout.CENTER);
         center.add(stats);
 
-        // Description + armes
-        // Appliquer les styles aux JLabel
+        // Description & armes
         for (JLabel l : new JLabel[] { attaqueDetailsLabel }) {
             l.setFont(gothic.deriveFont(Font.PLAIN, 12f));
             l.setForeground(TEXT);
         }
 
-        // Appliquer les styles au JTextArea
         descriptionLabel.setFont(gothic.deriveFont(Font.PLAIN, 12f));
         descriptionLabel.setForeground(TEXT);
-
-        descriptionLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 2, 10));
-        attaqueDetailsLabel.setBorder(BorderFactory.createEmptyBorder(5, 10, 10, 10));
         descriptionLabel.setEditable(false);
         descriptionLabel.setOpaque(false);
         descriptionLabel.setLineWrap(true);
         descriptionLabel.setWrapStyleWord(true);
-        descriptionLabel.setForeground(TEXT);
-        descriptionLabel.setFont(gothic.deriveFont(Font.PLAIN, 12f));
+        descriptionLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 2, 10));
+
+        attaqueDetailsLabel.setBorder(BorderFactory.createEmptyBorder(5, 10, 10, 10));
 
         center.add(descriptionLabel);
         center.add(attaqueDetailsLabel);
 
-        add(center, BorderLayout.CENTER);
+        // Ajoute le panneau central dans un JScrollPane
+        JScrollPane scroll = new JScrollPane(center);
+        scroll.setBorder(null);
+        scroll.setOpaque(false);
+        scroll.getViewport().setOpaque(false);
+        scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scroll.getVerticalScrollBar().setUnitIncrement(12); // défilement fluide
+        ////////////////////////////////
+        miniMapPanel = new MiniMapPanel(plateau, null); // BoardPanel sera injecté plus tard
+        center.add(Box.createVerticalStrut(10));
+        center.add(miniMapPanel);
+
+        add(scroll, BorderLayout.CENTER);
 
         /* ---------- Boutons ---------- */
-        JPanel south = new JPanel(new GridLayout(4, 1, 0, 10));
+        JPanel south = new JPanel(new GridLayout(0, 1, 0, 10));
         south.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
         south.setBackground(BACKGROUND);
-        for (JButton b : new JButton[] { finTourButton, annulerMouvementButton, sauvegarderButton, finPartieButton }) {
+        for (JButton b : new JButton[] {
+                finTourButton,
+                annulerMouvementButton,
+                sauvegarderButton,
+                zoomInButton,
+                zoomOutButton,
+                editeurMapButton,
+                finPartieButton }) {
             styliseBouton(b);
             south.add(b);
         }
         add(south, BorderLayout.SOUTH);
 
         majJoueurActif(new Joueur(nomJoueur1, false, ""));
-
     }
+
 
     /* ═════════════════════════════════════════════════════════════ */
     /* Mise à jour dynamique */
@@ -201,6 +227,10 @@ public class InfoPanel extends JPanel {
                 .map(arme -> arme.getNom())
                 .reduce((a, b) -> a + ", " + b).orElse("-"));
     }
+    public MiniMapPanel getMiniMapPanel() {
+        return miniMapPanel;
+    }
+
 
     public void majDeplacement(int val) {
         deplacementLabel.setText("Déplacement : " + val);
@@ -209,6 +239,15 @@ public class InfoPanel extends JPanel {
     public void majJoueurActif(Joueur j) {
         joueurActifLabel.setText("Joueur actif : " + j.getNom());
     }
+
+    public JButton getZoomInButton() {
+        return zoomInButton;
+    }
+
+    public JButton getZoomOutButton() {
+        return zoomOutButton;
+    }
+
 
     /* ═════════════════════════════════════════════════════════════ */
     /* Style des boutons */
@@ -250,6 +289,9 @@ public class InfoPanel extends JPanel {
 
     public JButton getFinPartieButton() {
         return finPartieButton;
+    }
+    public JButton getEditeurMapButton() { // Nouvel accesseur
+        return editeurMapButton;
     }
 
     /* ═════════════════════════════════════════════════════════════ */

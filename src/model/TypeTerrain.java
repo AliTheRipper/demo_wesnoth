@@ -9,7 +9,7 @@ public enum TypeTerrain {
     MONTAGNE("resources/montagne.png", 3, 60),
     VILLAGE("resources/village.png", 1, 40),
     CHATEAU("resources/chateau.png", 1, 60), // similaire à forteresse
-    FORTERESSE("resources/forteresse.png", 1, 60),
+    FUNGUS("resources/fungus.png", 1, 60),
     EAU_PROFONDE("resources/eau.png", 999, 0); // infranchissable
 
     private final String cheminImage;

@@ -74,7 +74,7 @@ public class PlateauDeJeu implements Serializable {
             case 'V':
                 return TypeTerrain.VILLAGE;
             case 'T':
-                return TypeTerrain.FORTERESSE;
+                return TypeTerrain.FUNGUS;
             case 'C':
                 return TypeTerrain.CHATEAU;
             default:
@@ -139,7 +139,7 @@ public class PlateauDeJeu implements Serializable {
                 return 3;
             case EAU_PROFONDE:
                 return 999;
-            case FORTERESSE:
+            case FUNGUS:
                 return 2;
             case COLLINE:
                 return 2;

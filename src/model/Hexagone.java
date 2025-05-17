@@ -33,6 +33,9 @@ public class Hexagone implements Serializable {
     public int getY() {
         return y;
     }
+    public void setTypeTerrain(TypeTerrain typeTerrain) {
+        this.typeTerrain = typeTerrain;
+    }
 
     public TypeTerrain getTypeTerrain() {
         return typeTerrain;

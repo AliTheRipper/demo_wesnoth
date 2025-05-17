@@ -17,7 +17,8 @@ public class Unite implements Serializable {
     /* --- Données de base -------------------------------------------------- */
     private final String nom;
     private final TypeUnite typeUnite; // peut être null quand créé par la vue
-    private final transient ImageIcon icone;
+    private transient ImageIcon icone;
+
     private final String cheminImage;
     private final int defenseBase; // ← NOUVEAU
 
@@ -153,6 +154,10 @@ public class Unite implements Serializable {
         if (a != null)
             armes.add(a);
     }
+    public void reinitialiserIcone() {
+    this.icone = new ImageIcon(this.cheminImage); // cheminImage should be stored
+}
+
 
     /* ------------------------ Mouvements -------------------------------- */
     public void resetDeplacement() {

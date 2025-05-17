@@ -5,7 +5,6 @@ import model.Unite;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 
 public class FicheCombatDialog extends JDialog {
     public static final int DECISION_ANNULER = 0;
@@ -20,6 +19,7 @@ public class FicheCombatDialog extends JDialog {
         setLocationRelativeTo(parent);
 
         JPanel content = new JPanel(new GridLayout(2, 2, 10, 10));
+        content.setBackground(InfoPanel.BACKGROUND);
         content.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
         // === Partie Attaquant ===
@@ -27,36 +27,48 @@ public class FicheCombatDialog extends JDialog {
         content.add(attaquantPanel);
 
         // === Partie Défenseur ===
-        JPanel defenseurPanel = createUnitePanel(defenseur, "Défenseur");
+        JPanel defenseurPanel = createUnitePanel(defenseur, "Defenseur");
         content.add(defenseurPanel);
 
         // === Statistiques de combat ===
         JPanel statsPanel = new JPanel(new GridLayout(0, 1));
-        statsPanel.setBorder(BorderFactory.createTitledBorder("Prévision de combat"));
+        statsPanel.setBackground(InfoPanel.BACKGROUND);
+        statsPanel.setBorder(BorderFactory.createTitledBorder("Prevision de combat"));
 
-        // Calcul des dégâts estimés
         int degatsEstimes = attaquant.getAttaque() - defenseur.getDefense();
-        degatsEstimes = Math.max(1, degatsEstimes); // Au moins 1 dégât
+        degatsEstimes = Math.max(1, degatsEstimes);
 
-        statsPanel.add(new JLabel("Dégâts estimés: " + degatsEstimes));
-        statsPanel.add(new JLabel("PV restants estimés: " + Math.max(0, defenseur.getPointsVie() - degatsEstimes)));
+        JLabel dmgLabel = new JLabel("Degats estimes: " + degatsEstimes);
+        JLabel pvLabel = new JLabel("PV restants estimes: " + Math.max(0, defenseur.getPointsVie() - degatsEstimes));
+
+        for (JLabel lbl : new JLabel[] { dmgLabel, pvLabel }) {
+            lbl.setForeground(InfoPanel.TEXT);
+            lbl.setFont(InfoPanel.gothic.deriveFont(14f));
+            statsPanel.add(lbl);
+        }
 
         content.add(statsPanel);
 
         // === Armes ===
         JPanel armesPanel = new JPanel(new GridLayout(0, 1));
+        armesPanel.setBackground(InfoPanel.BACKGROUND);
         armesPanel.setBorder(BorderFactory.createTitledBorder("Armes disponibles"));
 
         for (Arme arme : attaquant.getArmes()) {
-            armesPanel.add(new JLabel(arme.getNom() + ": " + arme.getDegats() + " dégâts"));
+            JLabel armeLabel = new JLabel(arme.getNom() + ": " + arme.getDegats() + " degats");
+            armeLabel.setForeground(InfoPanel.TEXT);
+            armeLabel.setFont(InfoPanel.gothic.deriveFont(14f));
+            armesPanel.add(armeLabel);
         }
 
         content.add(armesPanel);
 
         // === Boutons ===
         JPanel buttons = new JPanel();
-        JButton btnAttaquer = new JButton("Attaquer");
-        JButton btnAnnuler = new JButton("Annuler");
+        buttons.setBackground(InfoPanel.BACKGROUND);
+
+        JButton btnAttaquer = InfoPanel.createStyledButton("Attaquer");
+        JButton btnAnnuler = InfoPanel.createStyledButton("Annuler");
 
         btnAttaquer.addActionListener(e -> {
             decision = DECISION_ATTAQUER;
@@ -78,25 +90,32 @@ public class FicheCombatDialog extends JDialog {
     private JPanel createUnitePanel(Unite unite, String role) {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBorder(BorderFactory.createTitledBorder(role));
+        panel.setBackground(InfoPanel.BACKGROUND);
 
         // Image
         if (unite.getIcone() != null) {
             ImageIcon icon = new ImageIcon(unite.getIcone().getImage().getScaledInstance(80, 80, Image.SCALE_SMOOTH));
-            panel.add(new JLabel(icon), BorderLayout.WEST);
+            JLabel iconLabel = new JLabel(icon);
+            panel.add(iconLabel, BorderLayout.WEST);
         }
 
         // Stats
         JPanel stats = new JPanel(new GridLayout(0, 1));
-        stats.add(new JLabel(unite.getNom()));
-        stats.add(new JLabel("PV: " + unite.getPointsVie()));
-        stats.add(new JLabel("Attaque: " + unite.getAttaque()));
-        stats.add(new JLabel("Défense: " + unite.getDefense()));
+        stats.setBackground(InfoPanel.BACKGROUND);
 
-        // AJOUTEZ ICI LA NOUVELLE LIGNE
-        stats.add(new JLabel("Attaque possible: " + (unite.peutAttaquer() ? "Oui" : "Non")));
+        JLabel nom = new JLabel(unite.getNom());
+        JLabel pv = new JLabel("PV: " + unite.getPointsVie());
+        JLabel atk = new JLabel("Attaque: " + unite.getAttaque());
+        JLabel def = new JLabel("Defense: " + unite.getDefense());
+        JLabel canAttack = new JLabel("Attaque possible: " + (unite.peutAttaquer() ? "Oui" : "Non"));
+
+        for (JLabel l : new JLabel[] { nom, pv, atk, def, canAttack }) {
+            l.setForeground(InfoPanel.TEXT);
+            l.setFont(InfoPanel.gothic.deriveFont(13f));
+            stats.add(l);
+        }
 
         panel.add(stats, BorderLayout.CENTER);
-
         return panel;
     }
 

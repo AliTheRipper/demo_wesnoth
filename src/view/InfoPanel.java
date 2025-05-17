@@ -3,7 +3,6 @@ package view;
 import java.awt.*;
 import java.io.File;
 import javax.swing.*;
-
 import model.Hexagone;
 import model.Joueur;
 import model.PlateauDeJeu;
@@ -40,16 +39,15 @@ public class InfoPanel extends JPanel {
     private final JButton annulerMouvementButton = new JButton("Annuler mouvement");
     private final JButton sauvegarderButton = new JButton("Sauvegarder");
     private final JButton finPartieButton = new JButton("Fin de la partie");
-    private final JButton editeurMapButton = new JButton("Éditeur de Map"); // Nouveau bouton
 
     private final String nomJoueur1;
     private final String nomJoueur2;
     private final PlateauDeJeu plateau;
 
     /* ───────────────── THÈME COULEUR ───────────────── */
-    private static final Color BACKGROUND = new Color(20, 20, 30);
+    public static final Color BACKGROUND = new Color(20, 20, 30);
     private static final Color GOLD = new Color(212, 175, 55);
-    private static final Color TEXT = Color.WHITE;
+    public static final Color TEXT = Color.WHITE;
     private static final Color BTN_BG = new Color(30, 40, 60);
     private static final Color BTN_HOVER = new Color(60, 90, 150);
 
@@ -59,7 +57,7 @@ public class InfoPanel extends JPanel {
 
 
 
-    private static Font gothic;
+    public static Font gothic;
     static {
         try {
             gothic = Font.createFont(Font.TRUETYPE_FONT,
@@ -168,16 +166,23 @@ public class InfoPanel extends JPanel {
         south.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
         south.setBackground(BACKGROUND);
         for (JButton b : new JButton[] {
-                finTourButton,
-                annulerMouvementButton,
-                sauvegarderButton,
-                zoomInButton,
-                zoomOutButton,
-                editeurMapButton,
-                finPartieButton }) {
-            styliseBouton(b);
-            south.add(b);
-        }
+    finTourButton,
+    annulerMouvementButton,
+    sauvegarderButton,
+    finPartieButton }) {
+    styliseBouton(b);
+    south.add(b);
+}
+
+// Add zoom buttons side by side
+JPanel zoomPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
+zoomPanel.setBackground(BACKGROUND);
+styliseBouton(zoomInButton);
+styliseBouton(zoomOutButton);
+zoomPanel.add(zoomInButton);
+zoomPanel.add(zoomOutButton);
+south.add(zoomPanel);
+
         add(south, BorderLayout.SOUTH);
 
         majJoueurActif(new Joueur(nomJoueur1, false, ""));
@@ -195,8 +200,8 @@ public class InfoPanel extends JPanel {
             joueurLabel.setText("Joueur : -");
             pvLabel.setText("PV : -");
             attaqueLabel.setText("Attaque : -");
-            defenseLabel.setText("Défense : -");
-            deplacementLabel.setText("Déplacement : -");
+            defenseLabel.setText("Defense : -");
+            deplacementLabel.setText("Deplacement : -");
             terrainEtDefenseLabel.setText("- : -");
             descriptionLabel.setText("Description : -");
             attaqueDetailsLabel.setText("Armes : -");
@@ -207,8 +212,8 @@ public class InfoPanel extends JPanel {
         joueurLabel.setText("Joueur : " + u.getJoueur().getNom());
         pvLabel.setText("PV : " + u.getPointsVie());
         attaqueLabel.setText("Attaque : " + u.getAttaque());
-        defenseLabel.setText("Défense : " + u.getDefense());
-        deplacementLabel.setText("Déplacement : " + u.getDeplacementRestant());
+        defenseLabel.setText("Defense : " + u.getDefense());
+        deplacementLabel.setText("Deplacement : " + u.getDeplacementRestant());
 
         Image img = u.getIcone().getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH);
         uniteImageLabel.setIcon(new ImageIcon(img));
@@ -309,7 +314,7 @@ public class InfoPanel extends JPanel {
         content.setBorder(BorderFactory.createLineBorder(GOLD, 2));
         content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
 
-        JLabel lbl = new JLabel("Êtes‑vous sûr de vouloir terminer la partie ?", SwingConstants.CENTER);
+        JLabel lbl = new JLabel("Etes‑vous sur de vouloir terminer la partie ?", SwingConstants.CENTER);
         lbl.setForeground(TEXT);
         lbl.setFont(gothic.deriveFont(Font.BOLD, 16f));
         lbl.setBorder(BorderFactory.createEmptyBorder(20, 20, 10, 20));
@@ -387,7 +392,7 @@ public class InfoPanel extends JPanel {
         return res[0];
     }
 
-    private static JButton createStyledButton(String text) {
+    public static JButton createStyledButton(String text) {
         JButton b = new JButton(text);
         b.setForeground(TEXT);
         b.setBackground(BTN_BG);

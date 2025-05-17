@@ -3,7 +3,6 @@ package view;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
-import model.*;
 
 public class GameWindow extends JPanel {
     private PlateauManager manager;
@@ -71,26 +70,53 @@ public class GameWindow extends JPanel {
             splitPane.setDividerLocation(getWidth() - infoPanel.getPreferredSize().width);
         });
     }
+private void configurerDeplacementAutomatique(JScrollPane scrollPane) {
+    Timer autoScrollTimer = new Timer(30, e -> {
+        PointerInfo pointerInfo = MouseInfo.getPointerInfo();
+        if (pointerInfo != null) {
+            Point p = pointerInfo.getLocation();
 
-    private void configurerDeplacementAutomatique(JScrollPane scrollPane) {
-        Timer autoScrollTimer = new Timer(30, e -> {
-            PointerInfo pointerInfo = MouseInfo.getPointerInfo();
-            if (pointerInfo != null) {
-                Point p = pointerInfo.getLocation();
-                SwingUtilities.convertPointFromScreen(p, scrollPane);
-                JViewport viewport = scrollPane.getViewport();
-                Rectangle view = viewport.getViewRect();
+            // Convert to coordinates relative to the entire GameWindow
+            SwingUtilities.convertPointFromScreen(p, this);
 
-                if (p.y < 30) {
-                    viewport.setViewPosition(new Point(view.x, Math.max(view.y - 20, 0)));
-                } else if (p.y > scrollPane.getHeight() - 30) {
-                    int maxY = boardPanel.getHeight() - view.height;
-                    viewport.setViewPosition(new Point(view.x, Math.min(view.y + 20, maxY)));
-                }
+            // Don't scroll if mouse is over InfoPanel
+            if (infoPanel.getBounds().contains(p)) {
+                return; // Abort scrolling
             }
-        });
-        autoScrollTimer.start();
-    }
+
+            // Now convert point relative to the scrollPane (BoardPanel container)
+            SwingUtilities.convertPointFromScreen(p, scrollPane);
+
+            JViewport viewport = scrollPane.getViewport();
+            Rectangle view = viewport.getViewRect();
+
+            int maxX = boardPanel.getWidth() - view.width;
+            int maxY = boardPanel.getHeight() - view.height;
+
+            int newX = view.x;
+            int newY = view.y;
+
+            // Horizontal scrolling
+            if (p.x < 30) {
+                newX = Math.max(view.x - 20, 0);
+            } else if (p.x > scrollPane.getWidth() - 30) {
+                newX = Math.min(view.x + 20, maxX);
+            }
+
+            // Vertical scrolling
+            if (p.y < 30) {
+                newY = Math.max(view.y - 20, 0);
+            } else if (p.y > scrollPane.getHeight() - 30) {
+                newY = Math.min(view.y + 20, maxY);
+            }
+
+            viewport.setViewPosition(new Point(newX, newY));
+        }
+    });
+    autoScrollTimer.start();
+}
+
+
 
     private void configurerBoutons() {
         // Bouton Fin de Partie

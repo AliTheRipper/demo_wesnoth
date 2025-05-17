@@ -611,6 +611,14 @@ public class BoardPanel extends JPanel {
                         int newY = Math.min(view.y + 20, getHeight() - view.height);
                         viewport.setViewPosition(new Point(view.x, newY));
                     }
+                    if (screenPoint.x < 30) {
+    int newX = Math.max(view.x - 20, 0);
+    viewport.setViewPosition(new Point(newX, view.y));
+} else if (screenPoint.x > getWidth() - 30) {
+    int newX = Math.min(view.x + 20, getWidth() - view.width);
+    viewport.setViewPosition(new Point(newX, view.y));
+}
+
                 }
             }
         };

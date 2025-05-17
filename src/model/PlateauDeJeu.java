@@ -22,13 +22,6 @@ public class PlateauDeJeu implements Serializable {
             List<String> terrainLines = Files.readAllLines(Paths.get(terrainFile));
             List<String> decorLines = null;
 
-            if (decorFile != null && Files.exists(Paths.get(decorFile))) {
-                decorLines = Files.readAllLines(Paths.get(decorFile));
-                System.out.println("✅ Fichier decor.txt trouvé, nombre de lignes: " + decorLines.size());
-            } else if (decorFile != null) {
-                System.out.println("❌ Fichier decor.txt non trouvé !");
-            }
-
             hauteur = terrainLines.size();
             largeur = terrainLines.get(0).length();
             hexagones = new Hexagone[largeur][hauteur];

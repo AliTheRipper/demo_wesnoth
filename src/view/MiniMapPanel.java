@@ -18,11 +18,13 @@ public class MiniMapPanel extends JPanel {
         setPreferredSize(new Dimension(120, 120));
         setBackground(Color.DARK_GRAY);
 
-        for (TypeTerrain t : TypeTerrain.values()) {
-            Image img = t.getIcon().getImage();
-            Image scaled = img.getScaledInstance(4, 4, Image.SCALE_SMOOTH);
-            terrainIcons.put(t, scaled);
+        terrainIcons = new HashMap<>();
+        for (TypeTerrain type : TypeTerrain.values()) {
+            Image original = type.getIcon().getImage();
+            Image scaled = original.getScaledInstance(4, 4, Image.SCALE_SMOOTH);
+            terrainIcons.put(type, scaled);
         }
+
     }
 
     @Override
@@ -42,12 +44,17 @@ public class MiniMapPanel extends JPanel {
         for (int y = 0; y < rows; y++) {
             for (int x = 0; x < cols; x++) {
                 TypeTerrain type = plateau.getHexagone(x, y).getTypeTerrain();
-                Color color = mapColorFromTerrain(type);
+                Image icon = terrainIcons.get(type);
 
-                g2.setColor(color);
-                g2.fillRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
+                if (icon != null) {
+                    g2.drawImage(icon, x * cellWidth, y * cellHeight, cellWidth, cellHeight, null);
+                } else {
+                    g2.setColor(mapColorFromTerrain(type)); // fallback color
+                    g2.fillRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
+                }
             }
         }
+
 
         // Optionnel : Afficher la "vue actuelle" de l’écran principal
         if (boardPanel != null && boardPanel.getParent() instanceof JViewport viewport) {

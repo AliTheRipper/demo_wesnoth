@@ -8,7 +8,7 @@ package model;
  * – coups : nombre de coups par attaque (1 par défaut)
  * – precision : % de réussite (0‑100)
  */
-public class Arme {
+public class Arme implements java.io.Serializable {
     private final String nom;
     private final String type;
     private final int portee;

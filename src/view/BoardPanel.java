@@ -8,10 +8,10 @@ import java.io.File;
 import java.util.*;
 import java.util.List;
 import java.util.Queue;
-import javax.sound.sampled.*; // pour lire le son
-import javax.swing.Timer;
 
+import javax.sound.sampled.*;
 import javax.swing.*;
+import javax.swing.Timer; // pour lire le son
 import model.Decoration;
 import model.Hexagone;
 import model.Joueur;
@@ -377,11 +377,12 @@ public class BoardPanel extends JPanel {
         g2.drawImage(terrainImage, centerX - imgWidth / 2, centerY - imgHeight / 2, imgWidth, imgHeight, null);
 
         // Dessin de l’unité
-        Unite u = plateau.getHexagone(col, row).getUnite();
-        if (u != null) {
-            Image icon = u.getIcone().getImage();
-            g2.drawImage(icon, centerX - HEX_SIZE / 2, centerY - HEX_SIZE / 2, HEX_SIZE, HEX_SIZE, null);
-        }
+      Unite u = plateau.getHexagone(col, row).getUnite();
+if (u != null && u.getIcone() != null) {
+    Image icon = u.getIcone().getImage();
+    g2.drawImage(icon, centerX - HEX_SIZE / 2, centerY - HEX_SIZE / 2, HEX_SIZE, HEX_SIZE, null);
+}
+
     }
 
 
@@ -468,13 +469,14 @@ public class BoardPanel extends JPanel {
     }
 
     @Override
-    public Dimension getPreferredSize() {
-        int stepX = (int) (1.5 * HEX_SIZE * scale);
-        int stepY = (int) (Math.sqrt(3) * HEX_SIZE * scale);
-        int width = stepX * plateau.getLargeur();
-        int height = stepY * plateau.getHauteur();
-        return new Dimension(width, height);
-    }
+public Dimension getPreferredSize() {
+    int stepX = (int) (1.5 * HEX_SIZE);
+    int stepY = (int) (Math.sqrt(3) * HEX_SIZE);
+    int width = stepX * plateau.getLargeur();
+    int height = stepY * plateau.getHauteur();
+    return new Dimension((int) (width * scale), (int) (height * scale));
+}
+
 
 
     private Set<Hexagone> calculerCasesAccessibles(int startX, int startY, int maxSteps) {
@@ -762,48 +764,62 @@ public class BoardPanel extends JPanel {
 
     }
 
-    public void zoomAt(Point mouseInComponent, boolean zoomIn) {
-        double oldScale = scale;
-        scale = zoomIn
-                ? Math.min(MAX_SCALE, scale + ZOOM_STEP)
-                : Math.max(MIN_SCALE, scale - ZOOM_STEP);
+public void zoomAt(Point mouseInComponent, boolean zoomIn) {
+    double oldScale = scale;
+    double newScale = zoomIn
+            ? Math.min(MAX_SCALE, scale + ZOOM_STEP)
+            : Math.max(MIN_SCALE, scale - ZOOM_STEP);
 
-        double zoomFactor = scale / oldScale;
+    JScrollPane scrollPane = (JScrollPane) SwingUtilities.getAncestorOfClass(JScrollPane.class, this);
 
-        JScrollPane scrollPane = (JScrollPane) SwingUtilities.getAncestorOfClass(JScrollPane.class, this);
-        if (scrollPane != null) {
-            JViewport viewport = scrollPane.getViewport();
+    if (scrollPane != null && !zoomIn) {
+        Dimension scaledSize = new Dimension(
+                (int) (getBaseWidth() * newScale),
+                (int) (getBaseHeight() * newScale)
+        );
+        Dimension viewSize = scrollPane.getViewport().getExtentSize();
 
-            if (mouseInComponent == null) {
-                // Centre du viewport
-                mouseInComponent = new Point(
-                        viewport.getWidth() / 2,
-                        viewport.getHeight() / 2
-                );
-            }
-
-            Point viewPos = viewport.getViewPosition();
-            int mouseMapX = mouseInComponent.x + viewPos.x;
-            int mouseMapY = mouseInComponent.y + viewPos.y;
-
-            int newViewX = (int) ((mouseMapX * zoomFactor) - mouseInComponent.x);
-            int newViewY = (int) ((mouseMapY * zoomFactor) - mouseInComponent.y);
-
-            revalidate();
-            repaint();
-            infoPanel.getMiniMapPanel().updateMiniMap();
-
-
-            SwingUtilities.invokeLater(() -> {
-                viewport.setViewPosition(new Point(newViewX, newViewY));
-            });
-        } else {
-            revalidate();
-            repaint();
-            infoPanel.getMiniMapPanel().updateMiniMap();
-
+        if (scaledSize.width < viewSize.width || scaledSize.height < viewSize.height) {
+            return; // Prevent zooming out beyond the visible area
         }
     }
+
+    scale = newScale;
+
+    double zoomFactor = scale / oldScale;
+
+    if (scrollPane != null) {
+        JViewport viewport = scrollPane.getViewport();
+
+        if (mouseInComponent == null) {
+            mouseInComponent = new Point(viewport.getWidth() / 2, viewport.getHeight() / 2);
+        }
+
+        Point viewPos = viewport.getViewPosition();
+        int mouseMapX = mouseInComponent.x + viewPos.x;
+        int mouseMapY = mouseInComponent.y + viewPos.y;
+
+        int newViewX = (int) ((mouseMapX * zoomFactor) - mouseInComponent.x);
+        int newViewY = (int) ((mouseMapY * zoomFactor) - mouseInComponent.y);
+
+        revalidate();
+        repaint();
+        infoPanel.getMiniMapPanel().updateMiniMap();
+
+        SwingUtilities.invokeLater(() -> {
+            viewport.setViewPosition(new Point(newViewX, newViewY));
+        });
+    }
+}
+private int getBaseWidth() {
+    return (int) (1.5 * HEX_SIZE) * plateau.getLargeur();
+}
+
+private int getBaseHeight() {
+    return (int) (Math.sqrt(3) * HEX_SIZE) * plateau.getHauteur();
+}
+
+
     public double getScale() {
         return this.scale;
     }

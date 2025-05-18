@@ -42,13 +42,27 @@ public class PlateauManager implements Serializable {
     }
 
     public static PlateauManager chargerDepuisFichier(String nom) {
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("sauvegardes/" + nom + ".save"))) {
-            return (PlateauManager) ois.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-            return null;
+    try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("sauvegardes/" + nom + ".save"))) {
+        PlateauManager loaded = (PlateauManager) ois.readObject();
+
+        // 🔧 FIX: restore icons manually
+        for (int y = 0; y < loaded.plateau.getHauteur(); y++) {
+            for (int x = 0; x < loaded.plateau.getLargeur(); x++) {
+                Unite u = loaded.plateau.getHexagone(x, y).getUnite();
+                if (u != null) {
+                    u.reinitialiserIcone();  // You need to add this method in Unite.java
+                }
+            }
         }
+
+        return loaded;
+
+    } catch (IOException | ClassNotFoundException e) {
+        e.printStackTrace();
+        return null;
     }
+}
+
 
     private static void placerUnitesParJoueur(PlateauDeJeu plat,
             Joueur j1, Joueur j2) {

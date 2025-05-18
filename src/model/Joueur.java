@@ -2,8 +2,9 @@ package model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.io.Serializable;
 
-public class Joueur {
+public class Joueur implements Serializable {
     private String nom;
     private boolean estIA;
     private List<Unite> unites;

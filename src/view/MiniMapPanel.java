@@ -1,11 +1,10 @@
 package view;
 
-import model.*;
-
-import javax.swing.*;
 import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
+import javax.swing.*;
+import model.*;
 
 public class MiniMapPanel extends JPanel {
     private PlateauDeJeu plateau;
@@ -74,19 +73,20 @@ public class MiniMapPanel extends JPanel {
         }
     }
 
-    private Color mapColorFromTerrain(TypeTerrain type) {
-        return switch (type) {
-            case PLAINE       -> new Color(144, 238, 144); // vert clair
-            case FORET        -> new Color(34, 139, 34);   // vert foncé
-            case COLLINE      -> new Color(189, 183, 107); // doré/ocre
-            case MONTAGNE     -> new Color(105, 105, 105); // gris foncé
-            case VILLAGE      -> new Color(222, 184, 135); // beige / village
-            case CHATEAU      -> new Color(169, 169, 169); // gris moyen
-            case FUNGUS       -> new Color(148, 0, 211);   // violet foncé
-            case EAU_PROFONDE -> new Color(30, 144, 255);  // bleu profond
-            default           -> Color.GRAY;
-        };
-    }
+private Color mapColorFromTerrain(TypeTerrain type) {
+    return switch (type) {
+        case GREEN        -> new Color(144, 238, 144); // ancien PLAINE
+        case LEAF         -> new Color(34, 139, 34);   // ancien FORET
+        case REGULAR      -> new Color(189, 183, 107); // ancien COLLINE
+        case BASIC        -> new Color(105, 105, 105); // ancien MONTAGNE
+        case REGULAR_TILE -> new Color(222, 184, 135); // ancien VILLAGE
+        case RUINED_KEEP  -> new Color(169, 169, 169); // ancien CHATEAU
+        case OCEAN        -> new Color(30, 144, 255);  // ancien EAU_1
+        case SUNKEN_RUIN  -> new Color(0, 105, 180);   // ancien EAU_2
+        default           -> Color.GRAY;
+    };
+}
+
 
     public void setBoardPanel(BoardPanel bp) {
         this.boardPanel = bp;

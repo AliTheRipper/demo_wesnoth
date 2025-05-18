@@ -1,14 +1,15 @@
 package view;
 
-import model.*;
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import javax.swing.*;
+import model.*;
 
 public class MapEditor extends JFrame {
     private Hexagone[][] grid;
-    private TypeTerrain selectedTerrain = TypeTerrain.PLAINE;
+    private TypeTerrain selectedTerrain = TypeTerrain.GREEN;
+
     private JPanel mapPanel;
     private int hexSize = 40;
     private int panelPadding = 50;
@@ -47,7 +48,8 @@ public class MapEditor extends JFrame {
         grid = new Hexagone[mapWidth][mapHeight];
         for (int x = 0; x < mapWidth; x++) {
             for (int y = 0; y < mapHeight; y++) {
-                grid[x][y] = new Hexagone(x, y, TypeTerrain.PLAINE);
+                grid[x][y] = new Hexagone(x, y, TypeTerrain.GREEN);
+
             }
         }
     }
@@ -122,9 +124,10 @@ public class MapEditor extends JFrame {
             terrainGroup.add(btn);
             toolsPanel.add(btn);
 
-            if (terrain == TypeTerrain.PLAINE) {
-                btn.setSelected(true);
-            }
+           if (terrain == TypeTerrain.GREEN) {
+    btn.setSelected(true);
+}
+
         }
 
         JButton saveBtn = new JButton("Sauvegarder");

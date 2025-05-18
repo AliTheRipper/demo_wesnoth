@@ -39,17 +39,30 @@ public class BoardPanel extends JPanel {
 
     private final List<Joueur> joueurs; // injected from your controller
     private Joueur joueurActif; // instead of int joueurActif = 1;
+// Directions for hex grid neighbors (even-q layout)
+private static final int[][] EVEN_Q_DIRS = {
+    {+1, 0}, {0, -1}, {-1, -1},
+    {-1, 0}, {-1, +1}, {0, +1}
+};
+
+private static final int[][] ODD_Q_DIRS = {
+    {+1, 0}, {+1, -1}, {0, -1},
+    {-1, 0}, {0, +1}, {+1, +1}
+};
+
 
     private int xDepart = -1;
     private int yDepart = -1;
     private Unite derniereUniteDeplacee = null;
     private int derniereXDepart = -1;
     private int derniereYDepart = -1;
+private int offsetX = HEX_SIZE;
+private int offsetY = HEX_SIZE;
 
     //private final Image backgroundImage = new ImageIcon("resources/plaine.png").getImage();
     private double scale = 1.0;
     private final double ZOOM_STEP = 0.1;
-    private final double MIN_SCALE = 0.5;
+    private final double MIN_SCALE = 0.635;
     private final double MAX_SCALE = 2.5;
     private final List<Trace> tracesDeplacement = new ArrayList<>();
 
@@ -110,6 +123,7 @@ public class BoardPanel extends JPanel {
         }
 
         if (hoveredCol >= 0 && hoveredRow >= 0) {
+            System.out.println("Hex clicked at: " + (hoveredRow) + "." + (hoveredCol));
             Hexagone hex = plateau.getHexagone(hoveredCol, hoveredRow);
             Unite unite = hex.getUnite();
 
@@ -138,11 +152,14 @@ public class BoardPanel extends JPanel {
                     && estVoisin(selX, selY, hoveredCol, hoveredRow)) {
 
                 if (!uniteSelectionnee.peutAttaquer()) {
-                    JOptionPane.showMessageDialog(this,
-                            "Cette unité a déjà attaqué ce tour ou n'a plus de points de déplacement",
-                            "Attaque impossible",
-                            JOptionPane.WARNING_MESSAGE);
+                    InfoPanel.showStyledWarningDialog(
+    (JFrame) SwingUtilities.getWindowAncestor(this),
+    "Cette unite a dwjà attaque ou n'a plus de points de deplacement",
+    "Attaque impossible"
+);
+
                     return;
+                    
                 }
 
                 FicheCombatDialog dialog = new FicheCombatDialog(
@@ -235,36 +252,50 @@ public class BoardPanel extends JPanel {
     }
 
     private void updateHoveredHexagon(int rawMouseX, int rawMouseY) {
-        int mouseX = (int)(rawMouseX / scale);
-        int mouseY = (int)(rawMouseY / scale);
+    int mouseX = (int)(rawMouseX / scale);
+    int mouseY = (int)(rawMouseY / scale);
 
-        int stepX = (int) (1.5 * HEX_SIZE);
-        int stepY = (int) (Math.sqrt(3) * HEX_SIZE);
+    int stepX = (int) (1.5 * HEX_SIZE);
+    int stepY = (int) (Math.sqrt(3) * HEX_SIZE);
 
-        int col = mouseX / stepX;
-        int row = (col % 2 == 0) ? mouseY / stepY : (mouseY - stepY / 2) / stepY;
+    int col = mouseX / stepX;
+    int row = (col % 2 == 0) ? mouseY / stepY : (mouseY - stepY / 2) / stepY;
 
-        hoveredCol = -1;
-        hoveredRow = -1;
+    hoveredCol = -1;
+    hoveredRow = -1;
 
-        for (int[] c : new int[][] {
-                { col, row }, { col - 1, row }, { col + 1, row }, { col, row - 1 },
-                { col, row + 1 }, { col - 1, row - 1 }, { col + 1, row - 1 }, { col - 1, row + 1 }, { col + 1, row + 1 }
-        }) {
-            int cx = c[0], cy = c[1];
-            if (cx >= 0 && cy >= 0 && cx < plateau.getLargeur() && cy < plateau.getHauteur()) {
-                if (createHexagon(cx, cy).contains(mouseX, mouseY)) {
-                    hoveredCol = cx;
-                    hoveredRow = cy;
-                    break;
-                }
+    for (int[] c : new int[][] {
+            { col, row }, { col - 1, row }, { col + 1, row }, { col, row - 1 },
+            { col, row + 1 }, { col - 1, row - 1 }, { col + 1, row - 1 }, { col - 1, row + 1 }, { col + 1, row + 1 }
+    }) {
+        int cx = c[0], cy = c[1];
+        if (cx > 0 && cy > 0 && cx < plateau.getLargeur() - 1 && cy < plateau.getHauteur() - 1){
+            if (createHexagon(cx, cy).contains(mouseX, mouseY)) {
+                hoveredCol = cx;
+                hoveredRow = cy;
+                break;
             }
         }
+    }
 
-        repaint();
-        infoPanel.getMiniMapPanel().updateMiniMap();
+    tracesDeplacement.clear();
+    if (uniteSelectionnee != null &&
+        hoveredCol >= 0 && hoveredRow >= 0 &&
+        accessibles.contains(plateau.getHexagone(hoveredCol, hoveredRow))) {
+
+        List<Point> chemin = calculerChemin(selX, selY, hoveredCol, hoveredRow);
+
+        for (Point p : chemin) {
+    if (accessibles.contains(plateau.getHexagone(p.x, p.y))) {
+        tracesDeplacement.add(new Trace(p));
+    }
+}
 
     }
+
+    repaint();
+    infoPanel.getMiniMapPanel().updateMiniMap();
+}
 
 
 
@@ -272,8 +303,8 @@ public class BoardPanel extends JPanel {
         int stepX = (int) (1.5 * HEX_SIZE);
         int stepY = (int) (Math.sqrt(3) * HEX_SIZE);
 
-        int offsetX = 0; // Alignement top-left
-        int offsetY = 0; // Alignement top-left
+        int offsetX = 25; // Alignement top-left
+        int offsetY = 15; // Alignement top-left
 
         int x = col * stepX + offsetX;
         int y = row * stepY + offsetY;
@@ -296,8 +327,8 @@ public class BoardPanel extends JPanel {
         int rows = plateau.getHauteur();
         int stepX = (int) (1.5 * HEX_SIZE);
         int stepY = (int) (Math.sqrt(3) * HEX_SIZE);
-        int offsetX = 0; // Alignement top-left
-        int offsetY = 0; // Alignement top-left
+        int offsetX = 25; // Alignement top-left
+        int offsetY = 15; // Alignement top-left
 
         Graphics2D g2 = (Graphics2D) g.create();
         //////////////////////////////
@@ -340,10 +371,26 @@ public class BoardPanel extends JPanel {
         }
         if (isNight) {
             g2.setColor(new Color(0, 0, 30, 100)); // bleu nuit semi-transparent
-            g2.fillRect(0, 0, getWidth(), getHeight());
+            g2.fillRect(0, 0, (int)(getWidth() / scale), (int)(getHeight() / scale));
+
         }
 
 
+// --- Draw border fog ---
+int fogThickness = 30;
+Graphics2D gFog = (Graphics2D) g.create();
+gFog.setColor(new Color(20, 20, 30)); // semi-transparent black
+
+// Top
+gFog.fillRect(0, -5, getWidth(), fogThickness);
+// Bottom
+gFog.fillRect(0, getHeight() - fogThickness + 17, getWidth(), fogThickness);
+// Left
+gFog.fillRect(0, 0, fogThickness - 7, getHeight());
+// Right
+gFog.fillRect(getWidth() - fogThickness + 10, 0, fogThickness, getHeight());
+
+gFog.dispose();
 
         g2.dispose();
     }
@@ -386,71 +433,100 @@ if (u != null && u.getIcone() != null) {
     }
 
 
-    private void drawOverlays(Graphics2D g2, int centerX, int centerY, int col, int row) {
-        Polygon hex = createHexagon(col, row);
+ private void drawOverlays(Graphics2D g2, int centerX, int centerY, int col, int row) {
+    Polygon hex = createHexagon(col, row);
 
-        // 1. Overlay cases accessibles
+    // 1. Fill accessible
         if (accessibles.contains(plateau.getHexagone(col, row))) {
-            g2.setColor(new Color(0, 255, 0, 100));
-            g2.fillPolygon(hex);
+    g2.setColor(new Color(0, 255, 0, 40)); // soft green inside
+    g2.fillPolygon(hex);
+
+    boolean isBorder = false;
+    int[][] dirs = (col % 2 == 0) ? EVEN_Q_DIRS : ODD_Q_DIRS;
+for (int[] dir : dirs) {
+
+        int nx = col + dir[0];
+        int ny = row + dir[1];
+        if (nx < 0 || ny < 0 || nx >= plateau.getLargeur() || ny >= plateau.getHauteur()) {
+            isBorder = true; break;
         }
 
-        // 2. Outline survol
-        if (col == hoveredCol && row == hoveredRow) {
-            g2.setColor(Color.CYAN);
-            g2.setStroke(new BasicStroke(2));
-            g2.drawPolygon(hex);
+        Hexagone neighbor = plateau.getHexagone(nx, ny);
+        if (!accessibles.contains(neighbor)) {
+            isBorder = true;
+            break;
         }
-
-        // 3. Outline sélection
-        if (col == selX && row == selY) {
-            g2.setColor(Color.YELLOW);
-            g2.setStroke(new BasicStroke(3));
-            g2.drawPolygon(hex);
-        }
-
-        // 4. Texte bonus défense
-        if (col == hoveredCol && row == hoveredRow && accessibles.contains(plateau.getHexagone(col, row))) {
-            int bonus = plateau.getHexagone(col, row).getTypeTerrain().getBonusDefense();
-            String text = bonus + "%";
-            g2.setFont(new Font("Serif", Font.BOLD, 16));
-            g2.setColor(new Color(212, 175, 55));
-            FontMetrics fm = g2.getFontMetrics();
-            int textWidth = fm.stringWidth(text);
-            int textHeight = fm.getAscent();
-            g2.drawString(text, centerX - textWidth / 2, centerY + textHeight / 2);
-        }
-
-        // 5. Brouillard de guerre
-        if (visionActive && !plateau.getHexagone(col, row).isVisible()) {
-            g2.setColor(new Color(0, 0, 0, 100));
-            g2.fillPolygon(hex);
-        }
-
-        // 6. Animations dégâts
-        for (DamageText dt : splash) {
-            g2.setComposite(AlphaComposite.getInstance(
-                    AlphaComposite.SRC_OVER, dt.alpha));
-            g2.setColor(Color.RED);
-            g2.setFont(getFont().deriveFont(Font.BOLD, 14f));
-            String txt = String.valueOf(dt.dmg);
-            FontMetrics fm = g2.getFontMetrics();
-            g2.drawString(txt, dt.x - fm.stringWidth(txt) / 2,
-                    dt.y + fm.getAscent() / 2);
-        }
-        g2.setComposite(AlphaComposite.SrcOver);
-        for (Trace trace : tracesDeplacement) {
-            if (trace.position.x == col && trace.position.y == row) {
-                int taille = HEX_SIZE / 2;
-                g2.drawImage(traceImage,
-                        centerX - taille / 2,
-                        centerY - taille / 2,
-                        taille, taille, null);
-            }
-        }
-
-
     }
+
+    if (isBorder) {
+        g2.setColor(new Color(0, 255, 0)); // consistent strong green
+        g2.setStroke(new BasicStroke(2));
+        g2.drawPolygon(hex);
+    }
+}
+
+
+
+    // 3. Outline survol
+    if (col == hoveredCol && row == hoveredRow) {
+        g2.setColor(Color.CYAN);
+        g2.setStroke(new BasicStroke(2));
+        g2.drawPolygon(hex);
+    }
+
+    // 4. Selection
+    if (col == selX && row == selY) {
+        g2.setColor(Color.YELLOW);
+        g2.setStroke(new BasicStroke(3));
+        g2.drawPolygon(hex);
+    }
+
+    // 5. Bonus defense
+    if (col == hoveredCol && row == hoveredRow && accessibles.contains(plateau.getHexagone(col, row))) {
+        int bonus = plateau.getHexagone(col, row).getTypeTerrain().getBonusDefense();
+        String text = bonus + "%";
+        g2.setFont(new Font("Serif", Font.BOLD, 16));
+        g2.setColor(new Color(212, 175, 55));
+        FontMetrics fm = g2.getFontMetrics();
+        int textWidth = fm.stringWidth(text);
+        int textHeight = fm.getAscent();
+        g2.drawString(text, centerX - textWidth / 2, centerY + textHeight / 2);
+    }
+
+    // 6. Fog of war
+    if (visionActive 
+        && !plateau.getHexagone(col, row).isVisible()
+        && !(col == hoveredCol && row == hoveredRow)
+        && !accessibles.contains(plateau.getHexagone(col, row))) {
+        g2.setColor(new Color(0, 0, 0, 200));
+        g2.fillPolygon(hex);
+    }
+
+    // 7. Traces
+    for (Trace trace : tracesDeplacement) {
+        if (trace.position.x == col && trace.position.y == row) {
+            int taille = HEX_SIZE / 2;
+            g2.drawImage(traceImage,
+                    centerX - taille / 2,
+                    centerY - taille / 2,
+                    taille, taille, null);
+        }
+    }
+
+    // 8. Damage splash
+    for (DamageText dt : splash) {
+        g2.setComposite(AlphaComposite.getInstance(
+                AlphaComposite.SRC_OVER, dt.alpha));
+        g2.setColor(Color.RED);
+        g2.setFont(getFont().deriveFont(Font.BOLD, 14f));
+        String txt = String.valueOf(dt.dmg);
+        FontMetrics fm = g2.getFontMetrics();
+        g2.drawString(txt, dt.x - fm.stringWidth(txt) / 2,
+                dt.y + fm.getAscent() / 2);
+    }
+    g2.setComposite(AlphaComposite.SrcOver);
+}
+
 
     private void drawDecoration(Graphics2D g2, int centerX, int centerY, int col, int row) {
         Decoration decor = plateau.getHexagone(col, row).getDecoration();
@@ -479,57 +555,48 @@ public Dimension getPreferredSize() {
 
 
 
-    private Set<Hexagone> calculerCasesAccessibles(int startX, int startY, int maxSteps) {
-        Set<Hexagone> accessibles = new HashSet<>();
-        Queue<int[]> queue = new LinkedList<>();
-        Set<String> visited = new HashSet<>();
+   private Set<Hexagone> calculerCasesAccessibles(int startX, int startY, int maxSteps) {
+    Set<Hexagone> accessibles = new HashSet<>();
+    Queue<int[]> queue = new LinkedList<>();
+    Set<String> visited = new HashSet<>();
 
-        queue.add(new int[] { startX, startY, 0 });
-        visited.add(startX + "," + startY);
+    queue.add(new int[]{startX, startY, 0});
+    visited.add(startX + "," + startY);
 
-        while (!queue.isEmpty()) {
-            int[] current = queue.poll();
-            int x = current[0], y = current[1], steps = current[2];
+    while (!queue.isEmpty()) {
+        int[] current = queue.poll();
+        int x = current[0], y = current[1], steps = current[2];
 
-            // Skip border tiles completely
-            if (x <= 0 || y <= 0 || x >= plateau.getLargeur() - 1 || y >= plateau.getHauteur() - 1)
+        Hexagone currentHex = plateau.getHexagone(x, y);
+        if (steps > maxSteps || currentHex.getTypeTerrain().getCoutDeplacement() >= 999) continue;
+
+        accessibles.add(currentHex);
+
+        int[][] dirs = (x % 2 == 0) ? EVEN_Q_DIRS : ODD_Q_DIRS;
+
+
+        for (int[] dir : dirs) {
+            int nx = x + dir[0], ny = y + dir[1];
+            String key = nx + "," + ny;
+
+            if (nx <= 0 || ny <= 0 || nx >= plateau.getLargeur() - 1 || ny >= plateau.getHauteur() - 1)
                 continue;
 
-            if (steps > maxSteps)
-                continue;
+            if (!visited.contains(key)) {
+                Hexagone neighbor = plateau.getHexagone(nx, ny);
+                int cost = neighbor.getTypeTerrain().getCoutDeplacement();
 
-            Hexagone hex = plateau.getHexagone(x, y);
-            accessibles.add(hex);
-
-            int[][] directions = {
-                    { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 },
-                    { x % 2 == 0 ? -1 : 1, 1 }, { x % 2 == 0 ? -1 : 1, -1 }
-            };
-
-            for (int[] dir : directions) {
-                int nx = x + dir[0];
-                int ny = y + dir[1];
-
-                // Skip border tiles as neighbors too
-                if (nx <= 0 || ny <= 0 || nx >= plateau.getLargeur() - 1 || ny >= plateau.getHauteur() - 1)
-                    continue;
-
-                String key = nx + "," + ny;
-                if (!visited.contains(key)) {
-                    Hexagone voisin = plateau.getHexagone(nx, ny);
-                    int cout = voisin.getTypeTerrain().getCoutDeplacement();
-
-                    if (voisin.getUnite() == null && steps + cout <= maxSteps && cout < 999) {
-                        visited.add(key);
-                        queue.add(new int[] { nx, ny, steps + cout });
-                    }
+                // Only walk through if it's empty or you're standing on it
+                if (neighbor.getUnite() == null && steps + cost <= maxSteps) {
+                    visited.add(key);
+                    queue.add(new int[]{nx, ny, steps + cost});
                 }
-
             }
         }
-
-        return accessibles;
     }
+
+    return accessibles;
+}
 
     private int calculerDistanceHex(int x1, int y1, int x2, int y2) {
         // Conversion des coordonnées offset en coordonnées cubes
@@ -608,17 +675,23 @@ public Dimension getPreferredSize() {
                 checkAutoEndTurn();
             }
         });
-        addMouseWheelListener(e -> {
-            if (e.getPreciseWheelRotation() < 0) {
-                scale = Math.min(MAX_SCALE, scale + ZOOM_STEP);
-            } else {
-                scale = Math.max(MIN_SCALE, scale - ZOOM_STEP);
-            }
-            revalidate();
-            repaint();
-            infoPanel.getMiniMapPanel().updateMiniMap();
+       addMouseWheelListener(e -> {
+    double newScale = scale;
 
-        });
+    if (e.getPreciseWheelRotation() < 0) {
+        newScale = Math.min(MAX_SCALE, scale + ZOOM_STEP);
+    } else {
+        newScale = Math.max(MIN_SCALE, scale - ZOOM_STEP);
+    }
+
+    if (newScale != scale) {
+        scale = newScale;
+        revalidate();
+        repaint();
+        infoPanel.getMiniMapPanel().updateMiniMap();
+    }
+});
+
 
 
 
@@ -726,8 +799,19 @@ public Dimension getPreferredSize() {
     }
 
     public void passerAuTourSuivant() {
-        // Changement de joueur
-        tracesDeplacement.clear();
+tracesDeplacement.clear();
+if (uniteSelectionnee != null &&
+    hoveredCol >= 0 && hoveredRow >= 0 &&
+    accessibles.contains(plateau.getHexagone(hoveredCol, hoveredRow))) {
+
+    List<Point> chemin = calculerChemin(selX, selY, hoveredCol, hoveredRow);
+
+    tracesDeplacement.clear();
+for (Point p : chemin) {
+    tracesDeplacement.add(new Trace(p));
+}
+
+}
 
         joueurActif = (joueurActif == joueurs.get(0)) ? joueurs.get(1) : joueurs.get(0);
 
@@ -756,11 +840,11 @@ public Dimension getPreferredSize() {
         infoPanel.getMiniMapPanel().updateMiniMap();
 
 
-        // Notification
-        JOptionPane.showMessageDialog(this,
-                "Tour de " + joueurActif.getNom(),
-                "Changement de joueur",
-                JOptionPane.INFORMATION_MESSAGE);
+        InfoPanel.showStyledTurnDialog(
+    (JFrame) SwingUtilities.getWindowAncestor(this),
+    joueurActif.getNom()
+);
+
 
     }
 
@@ -824,18 +908,56 @@ private int getBaseHeight() {
         return this.scale;
     }
     private List<Point> calculerChemin(int x1, int y1, int x2, int y2) {
-        List<Point> chemin = new ArrayList<>();
-        int x = x1;
-        int y = y1;
+    Queue<Point> queue = new LinkedList<>();
+    Map<String, Point> cameFrom = new HashMap<>();
+    Map<String, Integer> costSoFar = new HashMap<>();
+    Set<String> visited = new HashSet<>();
 
-        while (x != x2 || y != y2) {
-            if (x != x2) x += Integer.compare(x2, x);
-            if (y != y2) y += Integer.compare(y2, y);
-            chemin.add(new Point(x, y));
+    Point start = new Point(x1, y1);
+    Point end = new Point(x2, y2);
+
+    queue.add(start);
+    cameFrom.put(x1 + "," + y1, null);
+    costSoFar.put(x1 + "," + y1, 0);
+
+    while (!queue.isEmpty()) {
+        Point current = queue.poll();
+
+        if (current.equals(end)) break;
+
+        int[][] dirs = (current.x % 2 == 0) ? EVEN_Q_DIRS : ODD_Q_DIRS;
+        for (int[] dir : dirs) {
+            int nx = current.x + dir[0];
+            int ny = current.y + dir[1];
+            String key = nx + "," + ny;
+
+            if (nx <= 0 || ny <= 0 || nx >= plateau.getLargeur() - 1 || ny >= plateau.getHauteur() - 1)
+                continue;
+
+            Hexagone neighbor = plateau.getHexagone(nx, ny);
+            if (!accessibles.contains(neighbor)) continue;
+
+            int newCost = costSoFar.get(current.x + "," + current.y) + neighbor.getTypeTerrain().getCoutDeplacement();
+            if (!costSoFar.containsKey(key) || newCost < costSoFar.get(key)) {
+                costSoFar.put(key, newCost);
+                queue.add(new Point(nx, ny));
+                cameFrom.put(key, current);
+            }
         }
-
-        return chemin;
     }
+
+    // Reconstruct path
+    List<Point> path = new ArrayList<>();
+    Point current = end;
+    while (current != null && cameFrom.containsKey(current.x + "," + current.y)) {
+        path.add(0, current);
+        current = cameFrom.get(current.x + "," + current.y);
+    }
+
+    return path;
+}
+
+
     /////////////////////////////////////////////CLASE TRACE/////////////////////////////
     private static class Trace {
         Point position;

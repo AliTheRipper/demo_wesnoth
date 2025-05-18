@@ -1,6 +1,5 @@
 package model;
 
-import java.awt.Point;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.Files;
@@ -20,7 +19,7 @@ public class PlateauDeJeu implements Serializable {
     public PlateauDeJeu(String terrainFile, String decorFile) {
         try {
             List<String> terrainLines = Files.readAllLines(Paths.get(terrainFile));
-            List<String> decorLines = null;
+            List<String> decorLines = decorFile != null ? Files.readAllLines(Paths.get(decorFile)) : null;
 
             hauteur = terrainLines.size();
             largeur = terrainLines.get(0).length();
@@ -39,13 +38,10 @@ public class PlateauDeJeu implements Serializable {
                         char posChar = decorLine.charAt(x * 2 + 1);
 
                         Decoration decor = convertirDecoration(typeChar);
-                        Point offset = getDecorationOffset(posChar);
 
                         hexagones[x][y].setDecoration(decor);
-                        hexagones[x][y].setDecorOffset(offset);
                     } else {
                         hexagones[x][y].setDecoration(Decoration.NONE);
-                        hexagones[x][y].setDecorOffset(new Point(0, 0));
                     }
                 }
             }
@@ -55,60 +51,35 @@ public class PlateauDeJeu implements Serializable {
     }
 
     private TypeTerrain convertirSymbole(char c) {
-        switch (c) {
-            case 'P':
-                return TypeTerrain.PLAINE;
-            case 'F':
-                return TypeTerrain.FORET;
-            case 'M':
-                return TypeTerrain.MONTAGNE;
-            case 'E':
-                return TypeTerrain.EAU_PROFONDE;
-            case 'V':
-                return TypeTerrain.VILLAGE;
-            case 'T':
-                return TypeTerrain.FUNGUS;
-            case 'C':
-                return TypeTerrain.CHATEAU;
-            default:
-                return TypeTerrain.PLAINE;
-        }
+    switch (c) {
+        case 'G': return TypeTerrain.GREEN;
+        case 'P': return TypeTerrain.STONE_PATH;
+        case 'F': return TypeTerrain.LEAF;
+        case 'M': return TypeTerrain.BASIC;
+        case 'H': return TypeTerrain.REGULAR;
+        case 'V': return TypeTerrain.REGULAR_TILE;
+        case 'C': return TypeTerrain.RUINED_KEEP;
+        case 'R': return TypeTerrain.RUIN;
+        case 'B': return TypeTerrain.BEACH;
+        case 'D': return TypeTerrain.DIRT;
+        case 'Y': return TypeTerrain.DRY;
+        case 'J': return TypeTerrain.SEMI_DRY;
+        case 'L': return TypeTerrain.LEAF;
+        case 'O': return TypeTerrain.OCEAN;
+        case 'K': return TypeTerrain.KELP;
+        case 'S': return TypeTerrain.SUNKEN_RUIN;
+        case 'W': return TypeTerrain.COAST;
+        case 'E': return TypeTerrain.COAST_GREY;
+        case 'X': return TypeTerrain.FORD;
+        case 'A': return TypeTerrain.WATER;
+        default: return TypeTerrain.GREEN;
     }
+}
 
-    private Decoration convertirDecoration(char c) {
-        switch (c) {
-            case 't':
-                return Decoration.TREES;
-            case 'b':
-                return Decoration.BUSH;
-            case 's':
-                return Decoration.SKULL;
-            case '.':
-                return Decoration.NONE;
-            default:
-                System.out.println("Décor inconnu: " + c);
-                return Decoration.NONE;
-        }
-    }
+private Decoration convertirDecoration(char c) {
+    return Decoration.fromSymbol(c);
+}
 
-    private Point getDecorationOffset(char pos) {
-        switch (pos) {
-            case '1':
-                return new Point(-10, -10); // top-left
-            case '2':
-                return new Point(0, -15); // top-center
-            case '3':
-                return new Point(10, -10); // top-right
-            case '4':
-                return new Point(-10, 10); // bottom-left
-            case '5':
-                return new Point(0, 10); // bottom-center
-            case '6':
-                return new Point(10, 10); // bottom-right
-            default:
-                return new Point(0, 0); // center
-        }
-    }
 
     public Hexagone getHexagone(int x, int y) {
         return hexagones[x][y];
@@ -122,26 +93,49 @@ public class PlateauDeJeu implements Serializable {
         return hauteur;
     }
 
-    public int getCoutDeplacement(TypeTerrain terrain) {
-        switch (terrain) {
-            case PLAINE:
-                return 1;
-            case FORET:
-                return 2;
-            case MONTAGNE:
-                return 3;
-            case EAU_PROFONDE:
-                return 999;
-            case FUNGUS:
-                return 2;
-            case COLLINE:
-                return 2;
-            case VILLAGE:
-                return 1;
-            default:
-                return 1;
-        }
+  public int getCoutDeplacement(TypeTerrain terrain) {
+    switch (terrain) {
+        case GREEN:
+        case DIRT:
+        case DRY:
+        case SEMI_DRY:
+            return 1;
+
+        case STONE_PATH:
+        case BEACH:
+            return 1;
+
+        case LEAF:
+            return 2;
+
+        case BASIC:
+            return 3;
+
+        case REGULAR:
+            return 2;
+
+        case REGULAR_TILE:
+            return 1;
+
+        case RUINED_KEEP:
+        case RUIN:
+            return 1;
+
+        case OCEAN:
+        case KELP:
+        case SUNKEN_RUIN:
+        case COAST:
+        case COAST_GREY:
+        case FORD:
+        case WATER:
+            return 999;
+
+        default:
+            return 1;
     }
+}
+
+
 
     public List<Unite> getToutesLesUnites() {
         List<Unite> unites = new ArrayList<>();

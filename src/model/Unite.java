@@ -14,13 +14,12 @@ import java.util.*;
  * Les deux mondes (moteur / IHM) cohabitent sans se gêner.
  */
 public class Unite implements Serializable {
-    /* --- Données de base -------------------------------------------------- */
     private final String nom;
-    private final TypeUnite typeUnite; // peut être null quand créé par la vue
+    private final TypeUnite typeUnite;
     private transient ImageIcon icone;
 
     private final String cheminImage;
-    private final int defenseBase; // ← NOUVEAU
+    private final int defenseBase;
 
     private final int pointsVieMax;
     private int pointsVie;

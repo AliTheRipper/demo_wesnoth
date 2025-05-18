@@ -83,11 +83,27 @@ public class InfoPanel extends JPanel {
         setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
         setBackground(BACKGROUND);
 
-        /* ---------- En‑tête ---------- */
-        joueurActifLabel.setFont(gothic.deriveFont(Font.BOLD, 18f));
-        joueurActifLabel.setForeground(TEXT);
-        joueurActifLabel.setBorder(BorderFactory.createEmptyBorder(15, 10, 5, 10));
-        add(joueurActifLabel, BorderLayout.NORTH);
+      /* ---------- TOP PANEL with MiniMap and Joueur Actif ---------- */
+JPanel topPanel = new JPanel();
+topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.Y_AXIS));
+topPanel.setBackground(BACKGROUND);
+
+// MiniMap first
+miniMapPanel = new MiniMapPanel(plateau, null);
+miniMapPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+topPanel.add(Box.createVerticalStrut(10));
+topPanel.add(miniMapPanel);
+topPanel.add(Box.createVerticalStrut(10));
+
+// Joueur actif below minimap
+joueurActifLabel.setFont(gothic.deriveFont(Font.BOLD, 18f));
+joueurActifLabel.setForeground(TEXT);
+joueurActifLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+joueurActifLabel.setBorder(BorderFactory.createEmptyBorder(0, 10, 5, 10));
+topPanel.add(joueurActifLabel);
+topPanel.add(Box.createVerticalStrut(10));
+
+add(topPanel, BorderLayout.NORTH);
 
         /* ---------- Zone centrale (scrollable) ---------- */
         JPanel center = new JPanel();
@@ -154,10 +170,6 @@ public class InfoPanel extends JPanel {
         scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
         scroll.getVerticalScrollBar().setUnitIncrement(12); // défilement fluide
-        ////////////////////////////////
-        miniMapPanel = new MiniMapPanel(plateau, null); // BoardPanel sera injecté plus tard
-        center.add(Box.createVerticalStrut(10));
-        center.add(miniMapPanel);
 
         add(scroll, BorderLayout.CENTER);
 
@@ -295,9 +307,6 @@ south.add(zoomPanel);
     public JButton getFinPartieButton() {
         return finPartieButton;
     }
-    public JButton getEditeurMapButton() { // Nouvel accesseur
-        return editeurMapButton;
-    }
 
     /* ═════════════════════════════════════════════════════════════ */
     /* Dialogues statiques ré‑utilisables */
@@ -413,4 +422,91 @@ south.add(zoomPanel);
         });
         return b;
     }
+    public static void showStyledTurnDialog(JFrame parent, String joueurNom) {
+    JDialog dialog = new JDialog(parent, "Tour", false); // non-modal
+    dialog.setUndecorated(true);
+    dialog.setSize(300, 100);
+    dialog.setLocationRelativeTo(parent);
+
+    JPanel content = new JPanel(new BorderLayout());
+    content.setBackground(BACKGROUND);
+    content.setBorder(BorderFactory.createLineBorder(GOLD, 2));
+
+    JLabel label = new JLabel("Tour de " + joueurNom, SwingConstants.CENTER);
+    label.setForeground(TEXT);
+    label.setFont(gothic.deriveFont(Font.BOLD, 14f));
+    label.setBorder(BorderFactory.createEmptyBorder(20, 20, 10, 20));
+    content.add(label, BorderLayout.CENTER);
+
+    dialog.setContentPane(content);
+    dialog.setVisible(true);
+
+    // Auto-close after 5 seconds
+    Timer timer = new Timer(3000, e -> dialog.dispose());
+    timer.setRepeats(false);
+    timer.start();
+}
+public static void showStyledWarningDialog(JFrame parent, String message, String titre) {
+    JDialog dialog = new JDialog(parent, titre, true);
+    dialog.setUndecorated(true);
+    dialog.setSize(500, 140);
+    dialog.setLocationRelativeTo(parent);
+    dialog.setLayout(new BorderLayout());
+
+    JPanel content = new JPanel();
+    content.setBackground(BACKGROUND);
+    content.setBorder(BorderFactory.createLineBorder(GOLD, 2));
+    content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
+
+    JLabel lbl = new JLabel(message, SwingConstants.CENTER);
+    lbl.setForeground(TEXT);
+    lbl.setFont(gothic.deriveFont(Font.BOLD, 16f));
+    lbl.setBorder(BorderFactory.createEmptyBorder(20, 20, 10, 20));
+    lbl.setAlignmentX(Component.CENTER_ALIGNMENT);
+    content.add(lbl);
+
+    JButton ok = createStyledButton("OK");
+    ok.addActionListener(e -> dialog.dispose());
+
+    JPanel btnPanel = new JPanel();
+    btnPanel.setBackground(BACKGROUND);
+    btnPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+    btnPanel.add(ok);
+
+    content.add(btnPanel);
+    dialog.setContentPane(content);
+    dialog.setVisible(true);
+}
+public static void showStyledInfoDialog(JFrame parent, String message, String titre) {
+    JDialog dialog = new JDialog(parent, titre, true);
+    dialog.setUndecorated(true);
+    dialog.setSize(450, 140);
+    dialog.setLocationRelativeTo(parent);
+    dialog.setLayout(new BorderLayout());
+
+    JPanel content = new JPanel();
+    content.setBackground(BACKGROUND);
+    content.setBorder(BorderFactory.createLineBorder(GOLD, 2));
+    content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
+
+    JLabel lbl = new JLabel(message, SwingConstants.CENTER);
+    lbl.setForeground(TEXT);
+    lbl.setFont(gothic.deriveFont(Font.BOLD, 16f));
+    lbl.setBorder(BorderFactory.createEmptyBorder(20, 20, 10, 20));
+    lbl.setAlignmentX(Component.CENTER_ALIGNMENT);
+    content.add(lbl);
+
+    JButton ok = createStyledButton("OK");
+    ok.addActionListener(e -> dialog.dispose());
+
+    JPanel btnPanel = new JPanel();
+    btnPanel.setBackground(BACKGROUND);
+    btnPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+    btnPanel.add(ok);
+
+    content.add(btnPanel);
+    dialog.setContentPane(content);
+    dialog.setVisible(true);
+}
+
 }

@@ -1,0 +1,45 @@
+Ke = K
+Khr = C
+Ce = V 
+Chr = R
+Chw = S
+Ds = B
+Gd = Y
+Gg = G
+Gll = F
+Gs = J
+Hh = H
+Mm = M 
+Re = D
+Rp = P
+Ss = A
+Wo = O
+Ww = W 
+Wwf = X 
+Wwg = E
+
+Deco: 
+
+Bsb|= # 
+Bw/= 2 
+Bw\ = 1 
+Bw|= | 
+Edb = D 
+Eff = / 
+Efm = F 
+Em = M 
+Es = S 
+Ewf  = W 
+Fds = E 
+Fms = Z 
+Fp  = T 
+Gvs = V 
+Vc = H 
+Vct = A 
+Vh = U 
+Vhcr = R 
+Vhh = I 
+Vhhr = J 
+Vl = C 
+Wm = X 
+Xm = L 

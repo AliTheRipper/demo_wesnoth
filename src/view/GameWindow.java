@@ -48,7 +48,12 @@ public class GameWindow extends JPanel {
         boardPanel.setPreferredSize(new Dimension(1400, 800));
 
         // ScrollPane avec défilement automatique
-        JScrollPane scrollPane = new JScrollPane(boardPanel);
+        JPanel boardContainer = new JPanel(new GridBagLayout()); // Centering layout
+boardContainer.setBackground(Color.BLACK); // or any dark color to match theme
+boardContainer.add(boardPanel); // Center the actual game panel
+
+JScrollPane scrollPane = new JScrollPane(boardContainer);
+
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         scrollPane.setBorder(null);
@@ -64,6 +69,17 @@ public class GameWindow extends JPanel {
         splitPane.setResizeWeight(1.0);
 
         add(splitPane, BorderLayout.CENTER);
+// Scroll to center of the map
+SwingUtilities.invokeLater(() -> {
+    JViewport viewport = scrollPane.getViewport();
+    Dimension viewSize = viewport.getExtentSize();
+    Dimension boardSize = boardPanel.getPreferredSize();
+
+    int centerX = (boardSize.width - viewSize.width) / 2;
+    int centerY = (boardSize.height - viewSize.height) / 2;
+
+    viewport.setViewPosition(new Point(centerX, centerY));
+});
 
         // Ajustement final
         SwingUtilities.invokeLater(() -> {
@@ -159,10 +175,12 @@ private void configurerDeplacementAutomatique(JScrollPane scrollPane) {
         String nom = InfoPanel.showCustomInputDialog(this);
         if (nom != null && !nom.isEmpty()) {
             PlateauManager.sauvegarderDansFichier(manager, nom);
-            JOptionPane.showMessageDialog(this,
-                    "Partie sauvegardée avec succès !",
-                    "Sauvegarde",
-                    JOptionPane.INFORMATION_MESSAGE);
+            InfoPanel.showStyledInfoDialog(
+    (JFrame) SwingUtilities.getWindowAncestor(this),
+    "Partie sauvegardee avec succes !",
+    "Sauvegarde"
+);
+
         }
     }
 

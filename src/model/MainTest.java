@@ -29,15 +29,12 @@ public class MainTest {
         Unite mage = new Unite("Mage", TypeUnite.MAGE, bob, armesMage);
         Unite archer = new Unite("Archer", TypeUnite.ARCHER, alice, armesArcher);
 
-        // Terrains
-        Hexagone forteresse = new Hexagone(0, 0, TypeTerrain.FUNGUS);
-        Hexagone colline = new Hexagone(1, 0, TypeTerrain.COLLINE);
-        Hexagone montagne = new Hexagone(2, 0, TypeTerrain.MONTAGNE);
-        Hexagone village = new Hexagone(3, 0, TypeTerrain.VILLAGE);
+        Hexagone colline = new Hexagone(1, 0, TypeTerrain.REGULAR);
+Hexagone montagne = new Hexagone(2, 0, TypeTerrain.BASIC);
+Hexagone village = new Hexagone(3, 0, TypeTerrain.REGULAR_TILE);
+
 
         // Positionnement
-        infanterie.setPosition(forteresse);
-        lourde.setPosition(forteresse);
         cavalier.setPosition(colline);
         mage.setPosition(montagne);
         archer.setPosition(village);

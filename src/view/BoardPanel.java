@@ -51,6 +51,13 @@ public class BoardPanel extends JPanel {
     private final double ZOOM_STEP = 0.1;
     private final double MIN_SCALE = 0.5;
     private final double MAX_SCALE = 2.5;
+    private final List<Trace> tracesDeplacement = new ArrayList<>();
+
+    private final Image traceImage = new ImageIcon("resources/step.png").getImage(); // chemin vers l’image
+    private boolean isNight = false;
+
+
+
 
 
     public void annulerDernierDeplacement() {
@@ -106,7 +113,10 @@ public class BoardPanel extends JPanel {
             Hexagone hex = plateau.getHexagone(hoveredCol, hoveredRow);
             Unite unite = hex.getUnite();
 
+            // Cas 1 : Sélection d'une unité alliée
             if (unite != null && unite.getJoueur() == joueurActif) {
+                tracesDeplacement.clear(); // Nettoyer les anciennes traces
+
                 uniteSelectionnee = unite;
                 selX = hoveredCol;
                 selY = hoveredRow;
@@ -120,7 +130,10 @@ public class BoardPanel extends JPanel {
                 infoPanel.majInfos(uniteSelectionnee);
                 infoPanel.majDeplacement(uniteSelectionnee.getDeplacementRestant());
 
-            } else if (uniteSelectionnee != null && unite != null
+            }
+
+            // Cas 2 : Attaque ennemi voisin
+            else if (uniteSelectionnee != null && unite != null
                     && unite.getJoueur() != joueurActif
                     && estVoisin(selX, selY, hoveredCol, hoveredRow)) {
 
@@ -155,20 +168,29 @@ public class BoardPanel extends JPanel {
 
                     uniteSelectionnee = null;
                     selX = selY = -1;
+                    tracesDeplacement.clear(); // Nettoyage des traces
                     accessibles.clear();
                     infoPanel.majInfos(null);
                 }
 
                 repaint();
                 infoPanel.getMiniMapPanel().updateMiniMap();
+            }
 
-
-            } else if (uniteSelectionnee != null && hex.getUnite() == null && accessibles.contains(hex)) {
+            // Cas 3 : Déplacement sur une case accessible
+            else if (uniteSelectionnee != null && hex.getUnite() == null && accessibles.contains(hex)) {
                 int distance = calculerDistanceHex(selX, selY, hoveredCol, hoveredRow);
                 uniteSelectionnee.reduireDeplacement(distance);
 
                 plateau.getHexagone(selX, selY).setUnite(null);
                 hex.setUnite(uniteSelectionnee);
+
+                // 🎯 Enregistre les traces de déplacement
+                tracesDeplacement.clear();
+                for (Point p : calculerChemin(selX, selY, hoveredCol, hoveredRow)) {
+                    tracesDeplacement.add(new Trace(p));
+                }
+
 
                 derniereUniteDeplacee = uniteSelectionnee;
                 derniereXDepart = xDepart;
@@ -182,11 +204,14 @@ public class BoardPanel extends JPanel {
 
                 infoPanel.majInfos(uniteSelectionnee);
                 infoPanel.majDeplacement(uniteSelectionnee.getDeplacementRestant());
+            }
 
-            } else {
+            // Cas 4 : Clic ailleurs = désélection
+            else {
                 uniteSelectionnee = null;
                 selX = selY = -1;
                 visionActive = false;
+                tracesDeplacement.clear(); // Supprime les traces
                 accessibles.clear();
                 setHexVisibility(null);
 
@@ -196,9 +221,9 @@ public class BoardPanel extends JPanel {
 
             repaint();
             infoPanel.getMiniMapPanel().updateMiniMap();
-
         }
     }
+
 
 
     private void setHexVisibility(Set<Hexagone> visibles) {
@@ -313,6 +338,12 @@ public class BoardPanel extends JPanel {
                 drawOverlays(g2, x, y, col, row);
             }
         }
+        if (isNight) {
+            g2.setColor(new Color(0, 0, 30, 100)); // bleu nuit semi-transparent
+            g2.fillRect(0, 0, getWidth(), getHeight());
+        }
+
+
 
         g2.dispose();
     }
@@ -407,6 +438,17 @@ public class BoardPanel extends JPanel {
                     dt.y + fm.getAscent() / 2);
         }
         g2.setComposite(AlphaComposite.SrcOver);
+        for (Trace trace : tracesDeplacement) {
+            if (trace.position.x == col && trace.position.y == row) {
+                int taille = HEX_SIZE / 2;
+                g2.drawImage(traceImage,
+                        centerX - taille / 2,
+                        centerY - taille / 2,
+                        taille, taille, null);
+            }
+        }
+
+
     }
 
     private void drawDecoration(Graphics2D g2, int centerX, int centerY, int col, int row) {
@@ -646,6 +688,19 @@ public class BoardPanel extends JPanel {
                 }
             }
         }
+        Timer traceCleaner = new Timer(100, e -> {
+            tracesDeplacement.removeIf(Trace::isExpired);
+            repaint();
+        });
+        traceCleaner.start();
+
+        Timer cycleJourNuit = new Timer(90_000, e -> {
+            isNight = !isNight;
+            repaint();
+        });
+        cycleJourNuit.start();
+
+
     }
 
     private void checkAutoEndTurn() {
@@ -670,6 +725,8 @@ public class BoardPanel extends JPanel {
 
     public void passerAuTourSuivant() {
         // Changement de joueur
+        tracesDeplacement.clear();
+
         joueurActif = (joueurActif == joueurs.get(0)) ? joueurs.get(1) : joueurs.get(0);
 
         // Réinitialisation des unités du nouveau joueur
@@ -702,6 +759,7 @@ public class BoardPanel extends JPanel {
                 "Tour de " + joueurActif.getNom(),
                 "Changement de joueur",
                 JOptionPane.INFORMATION_MESSAGE);
+
     }
 
     public void zoomAt(Point mouseInComponent, boolean zoomIn) {
@@ -748,6 +806,33 @@ public class BoardPanel extends JPanel {
     }
     public double getScale() {
         return this.scale;
+    }
+    private List<Point> calculerChemin(int x1, int y1, int x2, int y2) {
+        List<Point> chemin = new ArrayList<>();
+        int x = x1;
+        int y = y1;
+
+        while (x != x2 || y != y2) {
+            if (x != x2) x += Integer.compare(x2, x);
+            if (y != y2) y += Integer.compare(y2, y);
+            chemin.add(new Point(x, y));
+        }
+
+        return chemin;
+    }
+    /////////////////////////////////////////////CLASE TRACE/////////////////////////////
+    private static class Trace {
+        Point position;
+        long timestamp; // en millisecondes
+
+        Trace(Point position) {
+            this.position = position;
+            this.timestamp = System.currentTimeMillis();
+        }
+
+        boolean isExpired() {
+            return System.currentTimeMillis() - timestamp > 1000; // 3 secondes
+        }
     }
 
 

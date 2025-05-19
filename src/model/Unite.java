@@ -210,17 +210,6 @@ public class Unite implements Serializable {
 }
 
 
-   public boolean frapper(Unite cible, TypeTerrain terrain) {
-    if (!peutAttaquer()) return false;
-
-    int degats = calculDegats(cible, terrain);
-    int oldPv = cible.pointsVie;
-    cible.pointsVie = Math.max(0, cible.pointsVie - degats);
-    cible.pcs.firePropertyChange("pv", oldPv, cible.pointsVie);
-
-    this.aAttaqueCeTour = true;
-    return cible.pointsVie == 0;
-}
 
 
     public void reinitialiserDeplacement() {

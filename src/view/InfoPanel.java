@@ -61,9 +61,8 @@ public class InfoPanel extends JPanel {
     public static Font gothic;
     static {
         try {
-            gothic = Font.createFont(Font.TRUETYPE_FONT,
-                    new File("resources/fonts/UnifrakturCook-Bold.ttf")).deriveFont(16f);
-            GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(gothic);
+            // Test d’une police système compatible accents
+            gothic = new Font("Segoe UI", Font.PLAIN, 16);
         } catch (Exception e) {
             gothic = new Font("Serif", Font.PLAIN, 16);
             System.err.println("Erreur chargement police gothique : " + e.getMessage());

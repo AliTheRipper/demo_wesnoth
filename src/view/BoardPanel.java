@@ -39,7 +39,15 @@ public class BoardPanel extends JPanel {
 
     private final List<Joueur> joueurs; // injected from your controller
     private Joueur joueurActif; // instead of int joueurActif = 1;
-// Directions for hex grid neighbors (even-q layout)
+    private final List<ShakeEffect> shakeEffects = new ArrayList<>();
+    private final Image explosionGif = new ImageIcon("resources/explosion.gif").getImage();
+
+    private final List<GifExplosion> gifExplosions = new ArrayList<>();
+
+
+
+
+    // Directions for hex grid neighbors (even-q layout)
 private static final int[][] EVEN_Q_DIRS = {
     {+1, 0}, {0, -1}, {-1, -1},
     {-1, 0}, {-1, +1}, {0, +1}
@@ -143,7 +151,6 @@ private int offsetY = HEX_SIZE;
 
                 infoPanel.majInfos(uniteSelectionnee);
                 infoPanel.majDeplacement(uniteSelectionnee.getDeplacementRestant());
-
             }
 
             // Cas 2 : Attaque ennemi voisin
@@ -153,13 +160,11 @@ private int offsetY = HEX_SIZE;
 
                 if (!uniteSelectionnee.peutAttaquer()) {
                     InfoPanel.showStyledWarningDialog(
-    (JFrame) SwingUtilities.getWindowAncestor(this),
-    "Cette unite a dwjà attaque ou n'a plus de points de deplacement",
-    "Attaque impossible"
-);
-
+                            (JFrame) SwingUtilities.getWindowAncestor(this),
+                            "Cette unité a déjà attaqué ou n'a plus de points de déplacement.",
+                            "Attaque impossible"
+                    );
                     return;
-                    
                 }
 
                 FicheCombatDialog dialog = new FicheCombatDialog(
@@ -169,25 +174,42 @@ private int offsetY = HEX_SIZE;
                 dialog.setVisible(true);
 
                 if (dialog.getDecision() == FicheCombatDialog.DECISION_ATTAQUER) {
+                    int pvAvant = unite.getPointsVie();
+
                     boolean tuee = uniteSelectionnee.frapper(
                             unite,
-                            plateau.getHexagone(hoveredCol, hoveredRow).getTypeTerrain());
+                            plateau.getHexagone(hoveredCol, hoveredRow).getTypeTerrain()
+                    );
+
+                    int pvApres = unite.getPointsVie();
+                    int degatsReels = Math.max(0, pvAvant - pvApres);
 
                     Rectangle r = createHexagon(hoveredCol, hoveredRow).getBounds();
                     int cx = r.x + r.width / 2;
                     int cy = r.y + r.height / 2;
-                    splash.add(new DamageText(cx, cy, -uniteSelectionnee.getArmes().get(0).getDegats()));
+
+                    Color couleurDegats = degatsReels >= 10 ? new Color(180, 0, 0) : // gros coup
+                            degatsReels <= 2 ? Color.GRAY :
+                                    Color.RED;
+
+                    splash.add(new DamageText(cx, cy, -degatsReels, couleurDegats));
+                    shakeEffects.add(new ShakeEffect(cx, cy));
+
                     playHitSound();
 
                     if (tuee) {
                         plateau.getHexagone(hoveredCol, hoveredRow).setUnite(null);
+                        gifExplosions.add(new GifExplosion(cx, cy));
+
                         checkVictory();
                     }
-                    
+
+
+
 
                     uniteSelectionnee = null;
                     selX = selY = -1;
-                    tracesDeplacement.clear(); // Nettoyage des traces
+                    tracesDeplacement.clear();
                     accessibles.clear();
                     infoPanel.majInfos(null);
                 }
@@ -204,12 +226,10 @@ private int offsetY = HEX_SIZE;
                 plateau.getHexagone(selX, selY).setUnite(null);
                 hex.setUnite(uniteSelectionnee);
 
-                // 🎯 Enregistre les traces de déplacement
                 tracesDeplacement.clear();
                 for (Point p : calculerChemin(selX, selY, hoveredCol, hoveredRow)) {
                     tracesDeplacement.add(new Trace(p));
                 }
-
 
                 derniereUniteDeplacee = uniteSelectionnee;
                 derniereXDepart = xDepart;
@@ -230,7 +250,7 @@ private int offsetY = HEX_SIZE;
                 uniteSelectionnee = null;
                 selX = selY = -1;
                 visionActive = false;
-                tracesDeplacement.clear(); // Supprime les traces
+                tracesDeplacement.clear();
                 accessibles.clear();
                 setHexVisibility(null);
 
@@ -242,6 +262,7 @@ private int offsetY = HEX_SIZE;
             infoPanel.getMiniMapPanel().updateMiniMap();
         }
     }
+
 
 
 
@@ -516,18 +537,34 @@ for (int[] dir : dirs) {
     }
 
     // 8. Damage splash
-    for (DamageText dt : splash) {
-        g2.setComposite(AlphaComposite.getInstance(
-                AlphaComposite.SRC_OVER, dt.alpha));
-        g2.setColor(Color.RED);
-        g2.setFont(getFont().deriveFont(Font.BOLD, 14f));
-        String txt = String.valueOf(dt.dmg);
-        FontMetrics fm = g2.getFontMetrics();
-        g2.drawString(txt, dt.x - fm.stringWidth(txt) / 2,
-                dt.y + fm.getAscent() / 2);
-    }
-    g2.setComposite(AlphaComposite.SrcOver);
-}
+     for (DamageText dt : splash) {
+         g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, dt.alpha));
+         g2.setColor(dt.color);
+         g2.setFont(getFont().deriveFont(Font.BOLD, 14f));
+
+         Point offset = new Point(0, 0);
+         for (ShakeEffect se : shakeEffects) {
+             if (se.isActive()) {
+                 Point shake = se.getOffset();
+                 offset.translate(shake.x, shake.y);
+             }
+         }
+
+         String txt = String.valueOf(dt.dmg);
+         FontMetrics fm = g2.getFontMetrics();
+         g2.drawString(txt, dt.x - fm.stringWidth(txt) / 2 + offset.x,
+                 dt.y + fm.getAscent() / 2 + offset.y);
+     }
+
+     g2.setComposite(AlphaComposite.SrcOver);
+     for (GifExplosion g : gifExplosions) {
+         int size = 64;
+         g2.drawImage(explosionGif, g.x - size / 2, g.y - size / 2, size, size, null);
+     }
+
+
+
+ }
 
 
     private void drawDecoration(Graphics2D g2, int centerX, int centerY, int col, int row) {
@@ -630,23 +667,26 @@ public Dimension getPreferredSize() {
 
     private static class DamageText {
         int x, y, dmg;
-        float alpha = 1f; // 1 = opaque, 0 = invisible
+        float alpha = 1f;
+        Color color;
 
-        DamageText(int x, int y, int dmg) {
+        DamageText(int x, int y, int dmg, Color color) {
             this.x = x;
             this.y = y;
             this.dmg = dmg;
+            this.color = color;
         }
 
         void tick() {
             y -= 1;
-            alpha = Math.max(0f, alpha - 0.025f); // 40 ticks ≈ 1 s
+            alpha = Math.max(0f, alpha - 0.025f);
         }
 
         boolean isDead() {
             return alpha <= 0f;
         }
     }
+
 
     private void playHitSound() {
         try (AudioInputStream ais = AudioSystem.getAudioInputStream(new File("resources/sounds/hit.wav"))) {
@@ -740,10 +780,15 @@ public Dimension getPreferredSize() {
         damageTimer = new Timer(30, e -> {
             splash.forEach(DamageText::tick);
             splash.removeIf(DamageText::isDead);
+            shakeEffects.removeIf(se -> !se.isActive());
+            //explosions.forEach(Explosion::tick);
+            //explosions.removeIf(Explosion::isDead);
+            gifExplosions.removeIf(GifExplosion::isExpired); // ✅ nettoyage des gifs
             repaint();
-            infoPanel.getMiniMapPanel().updateMiniMap();
-
         });
+
+
+
         damageTimer.start();
 
         // Configuration du passage automatique de tour
@@ -1040,6 +1085,48 @@ dialog.setLocationRelativeTo(gameWindow);
 
     dialog.setVisible(true);
 }
+
+    private static class ShakeEffect {
+        int x, y;
+        int amplitude = 6;
+        int duration = 10;
+        int ticks = 0;
+
+        ShakeEffect(int x, int y) {
+            this.x = x;
+            this.y = y;
+        }
+
+        boolean isActive() {
+            return ticks < duration;
+        }
+
+        Point getOffset() {
+            ticks++;
+            int dx = (int)(Math.random() * amplitude * 2) - amplitude;
+            int dy = (int)(Math.random() * amplitude * 2) - amplitude;
+            return new Point(dx, dy);
+        }
+    }
+
+    private static class GifExplosion {
+        int x, y;
+        long startTime;
+        long durationMillis = 1000;
+
+        GifExplosion(int x, int y) {
+            this.x = x;
+            this.y = y;
+            this.startTime = System.currentTimeMillis();
+        }
+
+        boolean isExpired() {
+            return System.currentTimeMillis() - startTime > durationMillis;
+        }
+    }
+
+
+
 
 
 }

@@ -12,7 +12,7 @@ public class PlateauDeJeu implements Serializable {
     private int hauteur;
     private Hexagone[][] hexagones;
     private Joueur joueur1;
-private Joueur joueur2;
+    private Joueur joueur2;
     public PlateauDeJeu(String terrainFile) {
         this(terrainFile, null);
     }
@@ -52,34 +52,34 @@ private Joueur joueur2;
     }
 
     private TypeTerrain convertirSymbole(char c) {
-    switch (c) {
-        case 'G': return TypeTerrain.GREEN;
-        case 'P': return TypeTerrain.STONE_PATH;
-        case 'F': return TypeTerrain.LEAF;
-        case 'M': return TypeTerrain.BASIC;
-        case 'H': return TypeTerrain.REGULAR;
-        case 'V': return TypeTerrain.REGULAR_TILE;
-        case 'C': return TypeTerrain.RUINED_KEEP;
-        case 'R': return TypeTerrain.RUIN;
-        case 'B': return TypeTerrain.BEACH;
-        case 'D': return TypeTerrain.DIRT;
-        case 'Y': return TypeTerrain.DRY;
-        case 'J': return TypeTerrain.SEMI_DRY;
-        case 'L': return TypeTerrain.LEAF;
-        case 'O': return TypeTerrain.OCEAN;
-        case 'K': return TypeTerrain.KELP;
-        case 'S': return TypeTerrain.SUNKEN_RUIN;
-        case 'W': return TypeTerrain.COAST;
-        case 'E': return TypeTerrain.COAST_GREY;
-        case 'X': return TypeTerrain.FORD;
-        case 'A': return TypeTerrain.WATER;
-        default: return TypeTerrain.GREEN;
+        switch (c) {
+            case 'G': return TypeTerrain.GREEN;
+            case 'P': return TypeTerrain.STONE_PATH;
+            case 'F': return TypeTerrain.LEAF;
+            case 'M': return TypeTerrain.BASIC;
+            case 'H': return TypeTerrain.REGULAR;
+            case 'V': return TypeTerrain.REGULAR_TILE;
+            case 'C': return TypeTerrain.RUINED_KEEP;
+            case 'R': return TypeTerrain.RUIN;
+            case 'B': return TypeTerrain.BEACH;
+            case 'D': return TypeTerrain.DIRT;
+            case 'Y': return TypeTerrain.DRY;
+            case 'J': return TypeTerrain.SEMI_DRY;
+            case 'L': return TypeTerrain.LEAF;
+            case 'O': return TypeTerrain.OCEAN;
+            case 'K': return TypeTerrain.KELP;
+            case 'S': return TypeTerrain.SUNKEN_RUIN;
+            case 'W': return TypeTerrain.COAST;
+            case 'E': return TypeTerrain.COAST_GREY;
+            case 'X': return TypeTerrain.FORD;
+            case 'A': return TypeTerrain.WATER;
+            default: return TypeTerrain.GREEN;
+        }
     }
-}
 
-private Decoration convertirDecoration(char c) {
-    return Decoration.fromSymbol(c);
-}
+    private Decoration convertirDecoration(char c) {
+        return Decoration.fromSymbol(c);
+    }
 
 
     public Hexagone getHexagone(int x, int y) {
@@ -94,47 +94,47 @@ private Decoration convertirDecoration(char c) {
         return hauteur;
     }
 
-  public int getCoutDeplacement(TypeTerrain terrain) {
-    switch (terrain) {
-        case GREEN:
-        case DIRT:
-        case DRY:
-        case SEMI_DRY:
-            return 1;
+    public int getCoutDeplacement(TypeTerrain terrain) {
+        switch (terrain) {
+            case GREEN:
+            case DIRT:
+            case DRY:
+            case SEMI_DRY:
+                return 1;
 
-        case STONE_PATH:
-        case BEACH:
-            return 1;
+            case STONE_PATH:
+            case BEACH:
+                return 1;
 
-        case LEAF:
-            return 2;
+            case LEAF:
+                return 2;
 
-        case BASIC:
-            return 3;
+            case BASIC:
+                return 3;
 
-        case REGULAR:
-            return 2;
+            case REGULAR:
+                return 2;
 
-        case REGULAR_TILE:
-            return 1;
+            case REGULAR_TILE:
+                return 1;
 
-        case RUINED_KEEP:
-        case RUIN:
-            return 1;
+            case RUINED_KEEP:
+            case RUIN:
+                return 1;
 
-        case OCEAN:
-        case KELP:
-        case SUNKEN_RUIN:
-        case COAST:
-        case COAST_GREY:
-        case FORD:
-        case WATER:
-            return 999;
+            case OCEAN:
+            case KELP:
+            case SUNKEN_RUIN:
+            case COAST:
+            case COAST_GREY:
+            case FORD:
+            case WATER:
+                return 999;
 
-        default:
-            return 1;
+            default:
+                return 1;
+        }
     }
-}
 
 
 
@@ -152,21 +152,21 @@ private Decoration convertirDecoration(char c) {
     }
 
 
-public Joueur getJoueur1() {
-    return joueur1;
-}
+    public Joueur getJoueur1() {
+        return joueur1;
+    }
 
-public Joueur getJoueur2() {
-    return joueur2;
-}
+    public Joueur getJoueur2() {
+        return joueur2;
+    }
 
-public void setJoueur1(Joueur joueur) {
-    this.joueur1 = joueur;
-}
+    public void setJoueur1(Joueur joueur) {
+        this.joueur1 = joueur;
+    }
 
-public void setJoueur2(Joueur joueur) {
-    this.joueur2 = joueur;
-}
+    public void setJoueur2(Joueur joueur) {
+        this.joueur2 = joueur;
+    }
 
 
 }

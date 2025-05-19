@@ -36,6 +36,8 @@ public class Unite implements Serializable {
     /* Références “joueur”  */
     private final Joueur joueur; // ← keep only this
     private boolean aAttaqueCeTour = false; // Nouveau champ
+    private boolean aBougeCeTour = false;
+
 
 
     private int calculDegats(Unite cible, TypeTerrain terrain) {
@@ -155,8 +157,34 @@ public class Unite implements Serializable {
 
     /** Alias demandé par OrdreRepos.java */
     public void seReposer() {
+        System.out.println(">>>> [Repos] " + nom + " est sur : " + (position != null ? position.getTypeTerrain() : "null"));
+    
+        if (!aAttaqueCeTour && position != null) {
+            TypeTerrain type = position.getTypeTerrain();
+            System.out.println("  - Type de terrain : " + type);
+            System.out.println("  - PV actuels : " + pointsVie + " / " + pointsVieMax);
+    
+            if (type == TypeTerrain.REGULAR_TILE) {
+                int recuperation = (int) Math.ceil(pointsVieMax * 0.10);
+                int oldPv = pointsVie;
+                pointsVie = Math.min(pointsVie + recuperation, pointsVieMax);
+                pcs.firePropertyChange("pv", oldPv, pointsVie);
+                System.out.println("  ✔ Récupère " + (pointsVie - oldPv) + " PV !");
+            } else {
+                System.out.println("  ❌ Terrain non valide pour repos");
+            }
+        } else {
+            System.out.println("  ❌ Ne peut pas se reposer (attaque ou pas de position)");
+        }
+    
+        aBougeCeTour = false;
+        aAttaqueCeTour = false;
         resetDeplacement();
     }
+    
+    
+    
+    
 
     /** Ajoute une arme (appelé par PlateauManager) */
     public void ajouterArme(Arme a) {
@@ -227,6 +255,7 @@ public class Unite implements Serializable {
             return false; // occupé
         pointsDeplacement -= cout;
         this.position = destination;
+        this.aBougeCeTour = true;
         return true;
     }
 
@@ -246,8 +275,9 @@ public class Unite implements Serializable {
 
     public void resetTour() {
         this.aAttaqueCeTour = false;
-        // Ne pas reset les points de déplacement ici, c'est fait ailleurs
+        this.aBougeCeTour = false;
     }
+    
 
     // Modifiez la méthode frapper() pour marquer l'attaque :
     public boolean frapper(Unite cible, TypeTerrain terrain) {

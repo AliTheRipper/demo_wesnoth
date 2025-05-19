@@ -860,8 +860,10 @@ for (Point p : chemin) {
             for (int x = 0; x < plateau.getLargeur(); x++) {
                 Unite u = plateau.getHexagone(x, y).getUnite();
                 if (u != null && u.getJoueur() == joueurActif) {
-                    u.resetDeplacement();
-                    u.setAAttaqueCeTour(false);
+                    if (u.getJoueur() == joueurActif) {
+                        u.seReposer(); // récupère les PV si sur village
+                    }
+                    
                 }
             }
         }

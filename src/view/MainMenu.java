@@ -149,6 +149,8 @@ public class MainMenu extends JFrame {
                 PlateauManager manager = PlateauManager.initialiserNouvellePartie();
                 manager.nomJoueur1 = nom1;
                 manager.nomJoueur2 = nom2;
+    manager.joueur1.setNom(nom1);
+    manager.joueur2.setNom(nom2);
 
                 getContentPane().removeAll();
                 currentGame = new GameWindow(this, manager);

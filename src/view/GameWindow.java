@@ -39,6 +39,8 @@ public class GameWindow extends JPanel {
         // Configuration de l'UI
         configurerUI();
         configurerBoutons();
+        infoPanel.majJoueurActif(manager.joueurActif);
+
     }
 
     private void configurerUI() {

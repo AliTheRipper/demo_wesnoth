@@ -17,8 +17,12 @@ public class Hexagone implements Serializable {
     }
 
     public void setUnite(Unite unite) {
-        this.unite = unite;
+    this.unite = unite;
+    if (unite != null) {
+        unite.setPosition(this); // ✅ Corrected
     }
+}
+
 
     public Hexagone(int x, int y, TypeTerrain typeTerrain) {
         this.x = x;

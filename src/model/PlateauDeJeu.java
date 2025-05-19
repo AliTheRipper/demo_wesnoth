@@ -11,7 +11,8 @@ public class PlateauDeJeu implements Serializable {
     private int largeur;
     private int hauteur;
     private Hexagone[][] hexagones;
-
+    private Joueur joueur1;
+private Joueur joueur2;
     public PlateauDeJeu(String terrainFile) {
         this(terrainFile, null);
     }
@@ -149,5 +150,23 @@ private Decoration convertirDecoration(char c) {
         }
         return unites;
     }
+
+
+public Joueur getJoueur1() {
+    return joueur1;
+}
+
+public Joueur getJoueur2() {
+    return joueur2;
+}
+
+public void setJoueur1(Joueur joueur) {
+    this.joueur1 = joueur;
+}
+
+public void setJoueur2(Joueur joueur) {
+    this.joueur2 = joueur;
+}
+
 
 }

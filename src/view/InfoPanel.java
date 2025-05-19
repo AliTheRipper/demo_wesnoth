@@ -32,7 +32,8 @@ public class InfoPanel extends JPanel {
 
     /* ───────────────── DESCRIPTION & ARMES ───────────────── */
     private final JTextArea descriptionLabel = new JTextArea("Description : -");
-    private final JLabel attaqueDetailsLabel = new JLabel("Armes : -");
+   private final JTextArea attaqueDetailsLabel = new JTextArea("Armes : -");
+
 
     /* ───────────────── BOUTONS DE CONTRÔLE ───────────────── */
     private final JButton finTourButton = new JButton("Fin du tour");
@@ -91,7 +92,7 @@ topPanel.setBackground(BACKGROUND);
 // MiniMap first
 miniMapPanel = new MiniMapPanel(plateau, null);
 miniMapPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
-topPanel.add(Box.createVerticalStrut(10));
+topPanel.add(Box.createVerticalStrut(0));
 topPanel.add(miniMapPanel);
 topPanel.add(Box.createVerticalStrut(10));
 
@@ -118,13 +119,18 @@ add(topPanel, BorderLayout.NORTH);
 
         // Image & stats
         JPanel stats = new JPanel();
-        stats.setLayout(new BorderLayout());
+stats.setLayout(new BoxLayout(stats, BoxLayout.X_AXIS));
+stats.setBackground(BACKGROUND);
+stats.setOpaque(false);
+stats.setAlignmentX(Component.CENTER_ALIGNMENT);
         stats.setBackground(BACKGROUND);
         stats.setOpaque(false);
 
 
-        uniteImageLabel.setPreferredSize(new Dimension(64, 64));
-        //stats.add(Box.createRigidArea(new Dimension(10, 0)));
+       uniteImageLabel.setPreferredSize(new Dimension(64, 64));
+uniteImageLabel.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10)); // spacing
+stats.add(uniteImageLabel);
+
         stats.add(uniteImageLabel, BorderLayout.WEST);
 
         JPanel right = new JPanel();
@@ -132,7 +138,7 @@ add(topPanel, BorderLayout.NORTH);
         right.setBackground(BACKGROUND);
         right.setOpaque(false);
 
-        for (JLabel l : new JLabel[] { nomLabel, joueurLabel, pvLabel, attaqueLabel, defenseLabel, deplacementLabel }) {
+        for (JLabel l : new JLabel[] { joueurLabel, pvLabel, attaqueLabel, defenseLabel, deplacementLabel }) {
             l.setFont(gothic.deriveFont(Font.PLAIN, 13f));
             l.setForeground(TEXT);
             l.setBorder(BorderFactory.createEmptyBorder(2, 10, 2, 5));
@@ -144,10 +150,6 @@ add(topPanel, BorderLayout.NORTH);
         center.add(stats);
 
         // Description & armes
-        for (JLabel l : new JLabel[] { attaqueDetailsLabel }) {
-            l.setFont(gothic.deriveFont(Font.PLAIN, 12f));
-            l.setForeground(TEXT);
-        }
 
         descriptionLabel.setFont(gothic.deriveFont(Font.PLAIN, 12f));
         descriptionLabel.setForeground(TEXT);
@@ -155,9 +157,16 @@ add(topPanel, BorderLayout.NORTH);
         descriptionLabel.setOpaque(false);
         descriptionLabel.setLineWrap(true);
         descriptionLabel.setWrapStyleWord(true);
-        descriptionLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 2, 10));
+        descriptionLabel.setBorder(BorderFactory.createEmptyBorder(6, 10, 0, 10)); // no bottom gap
 
-        attaqueDetailsLabel.setBorder(BorderFactory.createEmptyBorder(5, 10, 10, 10));
+        attaqueDetailsLabel.setFont(gothic.deriveFont(Font.PLAIN, 12f));
+        attaqueDetailsLabel.setForeground(TEXT);
+        attaqueDetailsLabel.setEditable(false);
+        attaqueDetailsLabel.setOpaque(false);
+        attaqueDetailsLabel.setLineWrap(true);
+        attaqueDetailsLabel.setWrapStyleWord(true);
+        attaqueDetailsLabel.setRows(1); // avoid auto-expansion
+        attaqueDetailsLabel.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10)); // no top/bottom gap
 
         center.add(descriptionLabel);
         center.add(attaqueDetailsLabel);
@@ -221,7 +230,16 @@ south.add(zoomPanel);
         }
 
         nomLabel.setText("Nom : " + u.getNom());
-        joueurLabel.setText("Joueur : " + u.getJoueur().getNom());
+        String joueurNom = u.getJoueur().getNom();
+if (joueurNom.equals("Humain 1")) {
+    joueurNom = nomJoueur1;
+} else if (joueurNom.equals("Humain 2")) {
+    joueurNom = nomJoueur2;
+} else if (u.getJoueur().estIA() || joueurNom.equals("IA")) {
+    joueurNom = "Robot";
+}
+joueurLabel.setText("Joueur : " + joueurNom);
+
         pvLabel.setText("PV : " + u.getPointsVie());
         attaqueLabel.setText("Attaque : " + u.getAttaque());
         defenseLabel.setText("Defense : " + u.getDefense());
@@ -232,14 +250,15 @@ south.add(zoomPanel);
 
         Hexagone hex = u.getPosition();
         if (hex != null) {
-            TypeTerrain tt = hex.getTypeTerrain();
-            terrainEtDefenseLabel.setText(tt.name() + " : " + tt.getBonusDefense() + "%");
-        } else {
-            terrainEtDefenseLabel.setText("? : ?");
-        }
+    TypeTerrain tt = hex.getTypeTerrain();
+    terrainEtDefenseLabel.setText("Bonus defense : " + tt.getBonusDefense() + "%");
+} else {
+    terrainEtDefenseLabel.setText("Bonus defense : ?");
+}
+
 
         descriptionLabel.setText(
-                "Description : Un combattant redoutable.\nSes compétences sont redoutées sur tous les champs de bataille.");
+                "Description : Un combattant redoutable.\nSes competences sont redoutées sur tous les champs de bataille.");
         attaqueDetailsLabel.setText("Armes : " + u.getArmes().stream()
                 .map(arme -> arme.getNom())
                 .reduce((a, b) -> a + ", " + b).orElse("-"));
@@ -250,12 +269,26 @@ south.add(zoomPanel);
 
 
     public void majDeplacement(int val) {
-        deplacementLabel.setText("Déplacement : " + val);
+        deplacementLabel.setText("Deplacement : " + val);
     }
 
-    public void majJoueurActif(Joueur j) {
-        joueurActifLabel.setText("Joueur actif : " + j.getNom());
+ public void majJoueurActif(Joueur j) {
+    String affichage;
+
+    if (j.equals(plateau.getJoueur1())) {
+        affichage = nomJoueur1;
+    } else if (j.equals(plateau.getJoueur2())) {
+        affichage = nomJoueur2;
+    } else if (j.estIA()) {
+        affichage = "Robot";
+    } else {
+        affichage = j.getNom();
     }
+
+    joueurActifLabel.setText("Joueur actif : " + affichage);
+}
+
+
 
     public JButton getZoomInButton() {
         return zoomInButton;

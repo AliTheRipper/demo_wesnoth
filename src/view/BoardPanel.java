@@ -181,7 +181,9 @@ private int offsetY = HEX_SIZE;
 
                     if (tuee) {
                         plateau.getHexagone(hoveredCol, hoveredRow).setUnite(null);
+                        checkVictory();
                     }
+                    
 
                     uniteSelectionnee = null;
                     selX = selY = -1;
@@ -691,13 +693,6 @@ public Dimension getPreferredSize() {
         infoPanel.getMiniMapPanel().updateMiniMap();
     }
 });
-
-
-
-
-
-
-
         addComponentListener(new ComponentAdapter() {
             public void componentResized(ComponentEvent e) {
                 revalidate();
@@ -972,6 +967,79 @@ private int getBaseHeight() {
             return System.currentTimeMillis() - timestamp > 1000; // 3 secondes
         }
     }
+private void checkVictory() {
+    int countJ1 = 0, countJ2 = 0;
+
+    for (int y = 0; y < plateau.getHauteur(); y++) {
+        for (int x = 0; x < plateau.getLargeur(); x++) {
+            Unite u = plateau.getHexagone(x, y).getUnite();
+            if (u != null && u.getPointsVie() > 0) {
+                if (u.getJoueur() == joueurs.get(0)) countJ1++;
+                else if (u.getJoueur() == joueurs.get(1)) countJ2++;
+            }
+        }
+    }
+
+    if (countJ1 == 0) {
+        showVictoryDialog(joueurs.get(1).getNom());
+    } else if (countJ2 == 0) {
+        showVictoryDialog(joueurs.get(0).getNom());
+    }
+}
+
+private void showVictoryDialog(String winnerName) {
+    JDialog dialog = new JDialog((JFrame) SwingUtilities.getWindowAncestor(this), "Victoire", true);
+    dialog.setUndecorated(true);
+    dialog.setSize(500, 180);
+    Window gameWindow = SwingUtilities.getWindowAncestor(this);
+dialog.setLocationRelativeTo(gameWindow);
+
+    dialog.setLayout(new BorderLayout());
+
+    JPanel content = new JPanel();
+    content.setBackground(InfoPanel.BACKGROUND);
+    content.setBorder(BorderFactory.createLineBorder(new Color(212, 175, 55), 2));
+    content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
+
+    JLabel label = new JLabel("Felicitations " + winnerName + ", vous avez gagne !", SwingConstants.CENTER);
+    label.setForeground(Color.WHITE);
+    label.setFont(InfoPanel.gothic.deriveFont(Font.BOLD, 18f));
+    label.setAlignmentX(Component.CENTER_ALIGNMENT);
+    label.setBorder(BorderFactory.createEmptyBorder(20, 20, 10, 20));
+
+    JPanel btns = new JPanel(new FlowLayout());
+    btns.setBackground(InfoPanel.BACKGROUND);
+
+    JButton replay = InfoPanel.createStyledButton("Nouvelle partie");
+    JButton menu = InfoPanel.createStyledButton("Menu principal");
+
+    btns.add(replay);
+    btns.add(menu);
+
+    content.add(label);
+    content.add(btns);
+    dialog.setContentPane(content);
+
+    replay.addActionListener(e -> {
+        dialog.dispose();
+        GameWindow newGame = new GameWindow(new MainMenu(), PlateauManager.initialiserNouvellePartie());
+        JFrame frame = new JFrame("Nouvelle Partie");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setContentPane(newGame);
+        frame.pack();
+        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        frame.setVisible(true);
+    });
+
+    menu.addActionListener(e -> {
+        dialog.dispose();
+        Window w = SwingUtilities.getWindowAncestor(this);
+        if (w != null) w.dispose();
+        new MainMenu().showMainMenu();
+    });
+
+    dialog.setVisible(true);
+}
 
 
 }

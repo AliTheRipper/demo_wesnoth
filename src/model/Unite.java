@@ -39,18 +39,27 @@ public class Unite implements Serializable {
 
 
     private int calculDegats(Unite cible, TypeTerrain terrain) {
-        if (armes.isEmpty())
-            return 0;
-        Arme arme = armes.get(0);
-        Random rnd = new Random();
-        if (rnd.nextInt(100) >= arme.getPrecision())
-            return 0;
+    if (armes.isEmpty()) return 0;
 
-        int variation = rnd.nextInt(arme.getDegats() + 1) - arme.getDegats() / 2;
-        int defense = cible.getDefense();
-        double bonus = terrain.getBonusDefense() / 100.0;
-        return Math.max(0, arme.getDegats() + variation - (int) (defense * bonus));
-    }
+    Arme arme = armes.get(0);
+    int pAtt = arme.getDegats();
+    int pDef = cible.getDefense();
+    int bonus = terrain.getBonusDefense();
+
+    // Défense effective = ⌈pDef + pDef * bonus%⌉
+    double defenseEff = pDef + (pDef * (bonus / 100.0));
+    int defenseFinale = (int) Math.ceil(defenseEff);
+
+    // Dégâts bruts
+    int dBrut = Math.max(0, pAtt - defenseFinale);
+
+    // Aléa ∈ [-50%, +50%]
+    Random rnd = new Random();
+    int alea = rnd.nextInt(dBrut + 1) - (dBrut / 2);  // de -dBrut/2 à +dBrut/2
+
+    return Math.max(0, dBrut + alea);
+}
+
 
     /* -------------------- CONSTRUCTEURS --------------------------------- */
 
@@ -137,9 +146,10 @@ public class Unite implements Serializable {
         return (typeUnite != null) ? typeUnite.getDefense() : defenseBase;
     }
 
-    public void setPosition(Hexagone h) {
-        position = h;
-    }
+   public void setPosition(Hexagone hex) {
+    this.position = hex;
+}
+
 
     /* ------------------------ Manip -------------------------------- */
 
@@ -173,37 +183,45 @@ public class Unite implements Serializable {
 
     /* -------------------------- Combat ---------------------------------- */
     /** Renvoie la quantité de dégâts réellement infligés (0 si raté). */
-    public int attaquer(Unite cible, TypeTerrain terrain) {
-        if (armes.isEmpty())
-            return 0;
+   public int attaquer(Unite cible, TypeTerrain terrain) {
+    if (!peutAttaquer() || armes.isEmpty())
+        return 0;
 
-        Arme arme = armes.get(0);
-        Random rnd = new Random();
+    Arme arme = armes.get(0);
+    Random rnd = new Random();
 
-        if (rnd.nextInt(100) >= arme.getPrecision())
-            return 0; // coup manqué
+    if (rnd.nextInt(100) >= arme.getPrecision())
+        return 0; // Missed
 
-        int variation = rnd.nextInt(arme.getDegats() + 1) - arme.getDegats() / 2;
-        int defense = cible.getDefense();
-        double bonus = terrain.getBonusDefense() / 100.0;
+    int variation = rnd.nextInt(arme.getDegats() + 1) - arme.getDegats() / 2;
+    int defense = cible.getDefense();
+    double bonus = terrain.getBonusDefense() / 100.0;
 
-        int degats = arme.getDegats() + variation - (int) (defense * bonus);
-        degats = Math.max(0, degats);
+    int degats = arme.getDegats() + variation - (int) (defense * bonus);
+    degats = Math.max(0, degats);
 
-        int oldPv = cible.pointsVie;
-        cible.pointsVie = Math.max(0, cible.pointsVie - degats);
-        cible.pcs.firePropertyChange("pv", oldPv, cible.pointsVie);
-        return degats;
+    int oldPv = cible.pointsVie;
+    cible.pointsVie = Math.max(0, cible.pointsVie - degats);
+    cible.pcs.firePropertyChange("pv", oldPv, cible.pointsVie);
 
-    }
+    this.aAttaqueCeTour = true; // Mark as having attacked
 
-    /*public boolean frapper(Unite cible, TypeTerrain terrain) {
-        int degats = calculDegats(cible, terrain); // ↙︎ extraction du calcul
-        int oldPv = cible.pointsVie;
-        cible.pointsVie = Math.max(0, cible.pointsVie - degats);
-        cible.pcs.firePropertyChange("pv", oldPv, cible.pointsVie);
-        return cible.pointsVie == 0;
-    }*/
+    return degats;
+}
+
+
+   public boolean frapper(Unite cible, TypeTerrain terrain) {
+    if (!peutAttaquer()) return false;
+
+    int degats = calculDegats(cible, terrain);
+    int oldPv = cible.pointsVie;
+    cible.pointsVie = Math.max(0, cible.pointsVie - degats);
+    cible.pcs.firePropertyChange("pv", oldPv, cible.pointsVie);
+
+    this.aAttaqueCeTour = true;
+    return cible.pointsVie == 0;
+}
+
 
     public void reinitialiserDeplacement() {
         resetDeplacement();

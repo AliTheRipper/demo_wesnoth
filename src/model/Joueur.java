@@ -32,6 +32,10 @@ public class Joueur implements Serializable {
     public boolean estIA() {
         return estIA;
     }
+// In Joueur.java
+public void setNom(String nom) {
+    this.nom = nom;
+}
 
     public String getCouleur() {
         return couleur;

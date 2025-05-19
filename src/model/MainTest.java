@@ -55,11 +55,11 @@ Hexagone village = new Hexagone(3, 0, TypeTerrain.REGULAR_TILE);
         System.out.println("\n> Tour de Bob");
         System.out.println("PV Infanterie avant : " + infanterie.getPointsVie());
         lourde.attaquer(infanterie, infanterie.getPosition().getTypeTerrain());
-        System.out.println("PV Infanterie après : " + infanterie.getPointsVie());
+        System.out.println("PV Infanterie apres : " + infanterie.getPointsVie());
 
         System.out.println("PV Cavalier avant : " + cavalier.getPointsVie());
         mage.attaquer(cavalier, cavalier.getPosition().getTypeTerrain());
-        System.out.println("PV Cavalier après : " + cavalier.getPointsVie());
+        System.out.println("PV Cavalier apres : " + cavalier.getPointsVie());
 
         System.out.println("\n--- Fin du tour ---");
     }

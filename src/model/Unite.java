@@ -209,9 +209,6 @@ public class Unite implements Serializable {
     return degats;
 }
 
-
-
-
     public void reinitialiserDeplacement() {
         resetDeplacement();
     }

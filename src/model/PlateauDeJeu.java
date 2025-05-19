@@ -34,12 +34,9 @@ public class PlateauDeJeu implements Serializable {
                     TypeTerrain terrain = convertirSymbole(terrainLine.charAt(x));
                     hexagones[x][y] = new Hexagone(x, y, terrain);
 
-                    if (decorLine != null && x * 2 + 1 < decorLine.length()) {
-                        char typeChar = decorLine.charAt(x * 2);
-                        char posChar = decorLine.charAt(x * 2 + 1);
-
-                        Decoration decor = convertirDecoration(typeChar);
-
+                    if (decorLine != null && x < decorLine.length()) {
+                        char decoChar = decorLine.charAt(x);
+                        Decoration decor = convertirDecoration(decoChar);
                         hexagones[x][y].setDecoration(decor);
                     } else {
                         hexagones[x][y].setDecoration(Decoration.NONE);

@@ -572,8 +572,8 @@ for (int[] dir : dirs) {
         if (decor != Decoration.NONE) {
             Image decorImg = decor.getIcon().getImage();
 
-            int decorWidth = HEX_SIZE * 2; // ajuster si nécessaire
-            int decorHeight = HEX_SIZE * 2;
+            int decorWidth = (int) (HEX_SIZE * 1.7) ; // ajuster si nécessaire
+            int decorHeight = (int) (HEX_SIZE * 1.7);
 
             Point offset = plateau.getHexagone(col, row).getDecorOffset();
             int dx = centerX + offset.x - decorWidth / 2;

@@ -1,54 +1,40 @@
-mapping = {
-    "Bsb|": "#",
-    "Bw/": "2",
-    "Bw\\": "1",
-    "Bw|": "|",
-    "Edb": "D",
-    "Eff": "/",
-    "Efm": "F",
-    "Em": "M",
-    "Es": "S",
-    "Ewf": "W",
-    "Fds": "E",
-    "Fms": "Z",
-    "Fp": "T",
-    "Gvs": "V",
-    "Vc": "H",
-    "Vct": "A",
-    "Vh": "U",
-    "Vhcr": "R",
-    "Vhh": "I",
-    "Vhhr": "J",
-    "Vl": "C",
-    "Wm": "X",
-    "Xm": "L"
+# Mapping dictionary
+conversion = {
+    "Ke": "K",
+    "Khr": "C",
+    "Ce": "V",
+    "Chr": "R",
+    "Chw": "S",
+    "Ds": "B",
+    "Gd": "Y",
+    "Gg": "G",
+    "Gll": "F",
+    "Gs": "J",
+    "Hh": "H",
+    "Mm": "M",
+    "Re": "D",
+    "Rp": "P",
+    "Ss": "A",
+    "Wo": "O",
+    "Ww": "W",
+    "Wwf": "X",
+    "Wwg": "E"
 }
 
-def convert_line(line):
-    result = []
-    tokens = [t.strip() for t in line.split(',')]
-    for token in tokens:
-        if '^' in token:
-            parts = token.split('^')
-            suffix = parts[1]
-            result.append(mapping.get(suffix, '.'))
-        else:
-            result.append('.')
-    return ''.join(result)
+# Read from file
+with open("map/maps.txt", "r") as f:
+    content = f.read()
 
-def process_file(input_path, output_path=None):
-    with open(input_path, 'r', encoding='utf-8') as f:
-        lines = f.readlines()
+# Process the map (assumes comma-separated values)
+tiles = [x.strip().split("^")[0] for x in content.replace("\n", ",").split(",") if x.strip()]
+result = ""
 
-    converted_lines = [convert_line(line) for line in lines]
+# Convert each tile
+for tile in tiles:
+    result += conversion.get(tile, "?")  # "?" for unknown entries
 
-    if output_path:
-        with open(output_path, 'w', encoding='utf-8') as f:
-            f.write('\n'.join(converted_lines))
-    else:
-        for line in converted_lines:
-            print(line)
+# Write result to file
+with open("converted_output.txt", "w") as f:
+    f.write(result)
 
-# Example usage
-if __name__ == "__main__":
-    process_file("map/maps.txt", "map/map_deco_converted.txt")
+print("Conversion done. Output saved to converted_output.txt")

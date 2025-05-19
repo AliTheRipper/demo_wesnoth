@@ -19,6 +19,8 @@ public class InfoPanel extends JPanel {
     /* ───────────────── TITRES / INFOS GÉNÉRALES ───────────────── */
     private final JLabel joueurActifLabel = new JLabel("Joueur actif : ", SwingConstants.CENTER);
     private final JLabel terrainEtDefenseLabel = new JLabel("-", SwingConstants.CENTER);
+// ────────────── New field ──────────────
+private final JLabel coordLabel = new JLabel("Coord : -", SwingConstants.CENTER);
 
     /* ───────────────── IMAGE & STATS DE L'UNITÉ ───────────────── */
     private final JLabel uniteImageLabel = new JLabel();
@@ -115,6 +117,11 @@ add(topPanel, BorderLayout.NORTH);
         terrainEtDefenseLabel.setForeground(TEXT);
         terrainEtDefenseLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         center.add(terrainEtDefenseLabel);
+coordLabel.setFont(gothic.deriveFont(Font.PLAIN, 13f));
+coordLabel.setForeground(TEXT);
+coordLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+center.add(coordLabel);
+center.add(Box.createVerticalStrut(5));
 
         // Image & stats
         JPanel stats = new JPanel();
@@ -539,6 +546,17 @@ public static void showStyledInfoDialog(JFrame parent, String message, String ti
     content.add(btnPanel);
     dialog.setContentPane(content);
     dialog.setVisible(true);
+}
+/** Met à jour l’affichage des coordonnées survolées */
+public void majCoordonnees(int x, int y) {
+    if (x >= 0 && y >= 0) {
+        coordLabel.setText("Coord : " + x + " , " + y);
+    } else {
+        coordLabel.setText("Coord : -");
+    }
+    coordLabel.revalidate();
+coordLabel.repaint();
+
 }
 
 }

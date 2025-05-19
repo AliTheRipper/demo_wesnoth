@@ -315,6 +315,8 @@ private int offsetY = HEX_SIZE;
 }
 
     }
+    
+infoPanel.majCoordonnees(hoveredCol, hoveredRow);
 
     repaint();
     infoPanel.getMiniMapPanel().updateMiniMap();
@@ -572,8 +574,8 @@ for (int[] dir : dirs) {
         if (decor != Decoration.NONE) {
             Image decorImg = decor.getIcon().getImage();
 
-            int decorWidth = (int) (HEX_SIZE * 1.7) ; // ajuster si nécessaire
-            int decorHeight = (int) (HEX_SIZE * 1.7);
+            int decorWidth = (int) (HEX_SIZE * 1.8) ; // ajuster si nécessaire
+            int decorHeight = (int) (HEX_SIZE * 1.8);
 
             Point offset = plateau.getHexagone(col, row).getDecorOffset();
             int dx = centerX + offset.x - decorWidth / 2;
@@ -860,10 +862,8 @@ for (Point p : chemin) {
             for (int x = 0; x < plateau.getLargeur(); x++) {
                 Unite u = plateau.getHexagone(x, y).getUnite();
                 if (u != null && u.getJoueur() == joueurActif) {
-                    if (u.getJoueur() == joueurActif) {
-                        u.seReposer(); // récupère les PV si sur village
-                    }
-                    
+                    u.resetDeplacement();
+                    u.setAAttaqueCeTour(false);
                 }
             }
         }

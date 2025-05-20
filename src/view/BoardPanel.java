@@ -58,7 +58,6 @@ private static final int[][] ODD_Q_DIRS = {
     {-1, 0}, {0, +1}, {+1, +1}
 };
 
-
     private int xDepart = -1;
     private int yDepart = -1;
     private Unite derniereUniteDeplacee = null;
@@ -225,6 +224,7 @@ private int offsetY = HEX_SIZE;
 
                 plateau.getHexagone(selX, selY).setUnite(null);
                 hex.setUnite(uniteSelectionnee);
+                uniteSelectionnee.setPosition(hex);
 
                 tracesDeplacement.clear();
                 for (Point p : calculerChemin(selX, selY, hoveredCol, hoveredRow)) {
@@ -452,7 +452,7 @@ gFog.dispose();
       Unite u = plateau.getHexagone(col, row).getUnite();
 if (u != null && u.getIcone() != null) {
     Image icon = u.getIcone().getImage();
-    g2.drawImage(icon, centerX - HEX_SIZE / 2, centerY - HEX_SIZE / 2, HEX_SIZE, HEX_SIZE, null);
+    g2.drawImage(icon, centerX - HEX_SIZE / 2 - 10, centerY - HEX_SIZE / 2 - 10, HEX_SIZE + 15, HEX_SIZE + 15, null);
 }
 
     }
@@ -563,7 +563,6 @@ for (int[] dir : dirs) {
          int size = 64;
          g2.drawImage(explosionGif, g.x - size / 2, g.y - size / 2, size, size, null);
      }
-
 
 
  }
@@ -841,51 +840,46 @@ public Dimension getPreferredSize() {
     }
 
     public void passerAuTourSuivant() {
-tracesDeplacement.clear();
-if (uniteSelectionnee != null &&
-    hoveredCol >= 0 && hoveredRow >= 0 &&
-    accessibles.contains(plateau.getHexagone(hoveredCol, hoveredRow))) {
-
-    List<Point> chemin = calculerChemin(selX, selY, hoveredCol, hoveredRow);
-
     tracesDeplacement.clear();
-for (Point p : chemin) {
-    tracesDeplacement.add(new Trace(p));
-}
+        if (uniteSelectionnee != null &&
+            hoveredCol >= 0 && hoveredRow >= 0 &&
+            accessibles.contains(plateau.getHexagone(hoveredCol, hoveredRow))) {
 
-}
+            List<Point> chemin = calculerChemin(selX, selY, hoveredCol, hoveredRow);
 
+            tracesDeplacement.clear();
+        for (Point p : chemin) {
+            tracesDeplacement.add(new Trace(p));
+        }
+        }
         joueurActif = (joueurActif == joueurs.get(0)) ? joueurs.get(1) : joueurs.get(0);
-
         // Réinitialisation des unités du nouveau joueur
         for (int y = 0; y < plateau.getHauteur(); y++) {
             for (int x = 0; x < plateau.getLargeur(); x++) {
                 Unite u = plateau.getHexagone(x, y).getUnite();
                 if (u != null && u.getJoueur() == joueurActif) {
+                    u.seReposer(); // <=== ADD THIS LINE
                     u.resetDeplacement();
                     u.setAAttaqueCeTour(false);
                 }
+
             }
         }
-
         // Nettoyage de l'interface
         uniteSelectionnee = null;
         selX = selY = -1;
         accessibles.clear();
         visionActive = false;
-
         // Mise à jour de l'affichage
         infoPanel.majJoueurActif(joueurActif);
         infoPanel.majInfos(null);
         infoPanel.majDeplacement(0);
         repaint();
         infoPanel.getMiniMapPanel().updateMiniMap();
-
-
         InfoPanel.showStyledTurnDialog(
-    (JFrame) SwingUtilities.getWindowAncestor(this),
-    joueurActif.getNom()
-);
+        (JFrame) SwingUtilities.getWindowAncestor(this),
+        joueurActif.getNom()
+    );
 
 
     }
@@ -1126,8 +1120,6 @@ dialog.setLocationRelativeTo(gameWindow);
             return System.currentTimeMillis() - startTime > durationMillis;
         }
     }
-
-
 
 
 

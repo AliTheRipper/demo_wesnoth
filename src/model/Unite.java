@@ -2,6 +2,8 @@ package model;
 
 import javax.swing.ImageIcon;
 
+import view.BoardPanel;
+
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.Serializable;
@@ -106,7 +108,6 @@ public class Unite implements Serializable {
         this.champDeVision = 5; // valeur par défaut
 
     }
-
     /* ------------------------ Getters ----------------------------------- */
     public String getNom() {
         return nom;
@@ -169,6 +170,12 @@ public class Unite implements Serializable {
                 int oldPv = pointsVie;
                 pointsVie = Math.min(pointsVie + recuperation, pointsVieMax);
                 pcs.firePropertyChange("pv", oldPv, pointsVie);
+
+                int healed = pointsVie - oldPv;
+                if (healed > 0) {
+                    pcs.firePropertyChange("healed", null, healed);  // 🔔 Trigger healing animation
+                }
+
                 System.out.println("  ✔ Récupère " + (pointsVie - oldPv) + " PV !");
             } else {
                 System.out.println("  ❌ Terrain non valide pour repos");

@@ -45,6 +45,7 @@ public class Hexagone implements Serializable {
         return typeTerrain;
     }
 
+
     public boolean isVisible() {
         return isVisible;
     }

@@ -67,8 +67,10 @@ m.plateau.setJoueur2(m.joueur2);
             for (int x = 0; x < loaded.plateau.getLargeur(); x++) {
                 Unite u = loaded.plateau.getHexagone(x, y).getUnite();
                 if (u != null) {
-                    u.reinitialiserIcone();  // You need to add this method in Unite.java
-                }
+    u.reinitialiserIcone();
+    u.setPosition(loaded.plateau.getHexagone(x, y)); // 👈 ADD THIS
+}
+
             }
         }
 

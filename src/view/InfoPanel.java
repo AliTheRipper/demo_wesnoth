@@ -251,8 +251,13 @@ joueurLabel.setText("Joueur : " + joueurNom);
         defenseLabel.setText("Defense : " + u.getDefense());
         deplacementLabel.setText("Deplacement : " + u.getDeplacementRestant());
 
-        Image img = u.getIcone().getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH);
-        uniteImageLabel.setIcon(new ImageIcon(img));
+        if (u.getIcone() != null) {
+    Image img = u.getIcone().getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH);
+    uniteImageLabel.setIcon(new ImageIcon(img));
+} else {
+    uniteImageLabel.setIcon(null); // fallback
+}
+
 
         Hexagone hex = u.getPosition();
         if (hex != null) {

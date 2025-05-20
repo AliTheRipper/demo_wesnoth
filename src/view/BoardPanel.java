@@ -147,22 +147,23 @@ private int offsetY = HEX_SIZE;
             Unite unite = hex.getUnite();
 
             // Cas 1 : Sélection d'une unité alliée
-            if (unite != null && unite.getJoueur() == joueurActif) {
-                tracesDeplacement.clear(); // Nettoyer les anciennes traces
+           if (unite != null && unite.getJoueur() == joueurActif) {
+    // ✅ Always refresh info even if the same unit is clicked again
+    uniteSelectionnee = unite;
+    selX = hoveredCol;
+    selY = hoveredRow;
+    xDepart = selX;
+    yDepart = selY;
+    visionActive = true;
 
-                uniteSelectionnee = unite;
-                selX = hoveredCol;
-                selY = hoveredRow;
-                xDepart = selX;
-                yDepart = selY;
-                visionActive = true;
+    tracesDeplacement.clear();
+    accessibles = calculerCasesAccessibles(selX, selY, uniteSelectionnee.getDeplacementRestant());
+    setHexVisibility(accessibles);
 
-                accessibles = calculerCasesAccessibles(selX, selY, uniteSelectionnee.getDeplacementRestant());
-                setHexVisibility(accessibles);
+    infoPanel.majInfos(uniteSelectionnee); // <- force update
+    infoPanel.majDeplacement(uniteSelectionnee.getDeplacementRestant());
+}
 
-                infoPanel.majInfos(uniteSelectionnee);
-                infoPanel.majDeplacement(uniteSelectionnee.getDeplacementRestant());
-            }
 
             // Cas 2 : Attaque ennemi voisin
             else if (uniteSelectionnee != null && unite != null
@@ -657,13 +658,6 @@ for (int[] dir : dirs) {
             g2.drawImage(decorImg, dx, dy, decorWidth, decorHeight, null);
         }
 
-        setHexVisibility(null);
-        infoPanel.majInfos(null);
-        infoPanel.majDeplacement(0);
-        infoPanel.majJoueurActif(joueurActif);
-        
-        repaint();
-
     }
 
 @Override
@@ -675,9 +669,16 @@ public Dimension getPreferredSize() {
     return new Dimension((int) (width * scale), (int) (height * scale));
 }
 
+private boolean areAdjacentByLand(Hexagone from, Hexagone to) {
+    // Allow if both tiles are land
+    boolean fromIsLand = from.getTypeTerrain().getCoutDeplacement() < 999;
+    boolean toIsLand = to.getTypeTerrain().getCoutDeplacement() < 999;
+
+    return fromIsLand && toIsLand;
+}
 
 
-  private Set<Hexagone> calculerCasesAccessibles(int startX, int startY, int maxSteps) {
+private Set<Hexagone> calculerCasesAccessibles(int startX, int startY, int maxSteps) {
     Set<Hexagone> accessibles = new HashSet<>();
     Queue<int[]> queue = new LinkedList<>();
     Set<String> visited = new HashSet<>();
@@ -690,43 +691,52 @@ public Dimension getPreferredSize() {
         int x = current[0], y = current[1], steps = current[2];
 
         Hexagone currentHex = plateau.getHexagone(x, y);
-
         boolean isCurrentWater = currentHex.getTypeTerrain().getCoutDeplacement() >= 999;
-        boolean canStandHere = !isCurrentWater || isBridge(currentHex);
-
-        if (steps > maxSteps || !canStandHere) continue;
+        boolean canStandHere   = !isCurrentWater || isBridge(currentHex);
+        if (steps > maxSteps || !canStandHere) {
+            continue;
+        }
 
         accessibles.add(currentHex);
 
         int[][] dirs = (x % 2 == 0) ? EVEN_Q_DIRS : ODD_Q_DIRS;
-
         for (int[] dir : dirs) {
             int nx = x + dir[0], ny = y + dir[1];
-            String key = nx + "," + ny;
-
-            if (nx <= 0 || ny <= 0 || nx >= plateau.getLargeur() - 1 || ny >= plateau.getHauteur() - 1)
+            // stay in bounds
+            if (nx <= 0 || ny <= 0 || nx >= plateau.getLargeur() - 1 || ny >= plateau.getHauteur() - 1) {
                 continue;
+            }
 
-            if (!visited.contains(key)) {
-                Hexagone neighbor = plateau.getHexagone(nx, ny);
-                int cost = neighbor.getTypeTerrain().getCoutDeplacement();
+            String key = nx + "," + ny;
+            if (visited.contains(key)) {
+                continue;
+            }
 
-                boolean isWater = cost >= 999;
-                boolean bridgeOverWater = isWater && isBridge(neighbor);
+            Hexagone neighbor = plateau.getHexagone(nx, ny);
+            int cost = neighbor.getTypeTerrain().getCoutDeplacement();
+            boolean isWater       = cost >= 999;
+            boolean bridge        = isWater && isBridge(neighbor);
+            boolean pathCrossesWater =
+                !isCurrentWater &&
+                !isWater &&
+                !areAdjacentByLand(currentHex, neighbor);
 
-                if ((neighbor.getUnite() == null || neighbor == plateau.getHexagone(startX, startY)) &&
-                    (!isWater || bridgeOverWater) &&
-                    steps + (bridgeOverWater ? 1 : cost) <= maxSteps) {
+            // only enqueue if move is valid
+            if ((neighbor.getUnite() == null || neighbor == plateau.getHexagone(startX, startY))
+                    && (!isWater || bridge)
+                    && !pathCrossesWater
+                    && steps + (bridge ? 1 : cost) <= maxSteps) {
 
-                    visited.add(key);
-                    queue.add(new int[]{nx, ny, steps + (bridgeOverWater ? 1 : cost)});
-                }
+                visited.add(key);
+                queue.add(new int[]{nx, ny, steps + (bridge ? 1 : cost)});
             }
         }
     }
 
+    // *** Make sure this return is here, outside of all loops/ifs! ***
     return accessibles;
 }
+
 
     private int calculerDistanceHex(int x1, int y1, int x2, int y2) {
         // Conversion des coordonnées offset en coordonnées cubes

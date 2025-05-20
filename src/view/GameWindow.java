@@ -69,23 +69,6 @@ JScrollPane scrollPane = new JScrollPane(boardContainer);
         splitPane.setDividerSize(0);
         splitPane.setEnabled(false);
         splitPane.setResizeWeight(1.0);
-        infoPanel.getFinPartieButton().addActionListener(e -> {
-            boolean confirmed = InfoPanel.showStyledConfirmDialog((JFrame) SwingUtilities.getWindowAncestor(this));
-            if (confirmed) {
-                Container parent = getParent();
-                while (parent != null && !(parent instanceof JFrame)) {
-                    parent = parent.getParent();
-                }
-                if (parent instanceof JFrame) {
-                    JFrame frame = (JFrame) parent;
-                    Window w = SwingUtilities.getWindowAncestor(this);
-                    if (w != null)
-                        w.dispose(); // Close the current GameWindow frame
-                    new MainMenu();
-                }
-
-            }
-        });
 
         //IA
         infoPanel.getFinTourButton().addActionListener(e -> {

@@ -1294,7 +1294,12 @@ dialog.setLocationRelativeTo(gameWindow);
         int cx = r.x + r.width / 2;
         int cy = r.y + r.height / 2;
 
-        splash.add(new DamageText(cx, cy, -attaquant.getArmes().get(0).getDegats()));
+        int dmg = attaquant.getArmes().get(0).getDegats();
+Color couleurDegats = dmg >= 10 ? new Color(180, 0, 0) :
+                      dmg <= 2 ? Color.GRAY : Color.RED;
+
+splash.add(new DamageText(cx, cy, -dmg, couleurDegats));
+
         playHitSound();
 
         if (tuee) {

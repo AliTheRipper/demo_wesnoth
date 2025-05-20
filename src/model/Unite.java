@@ -8,6 +8,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.Serializable;
 import java.util.*;
+import javax.swing.ImageIcon;
 
 /**
  * Implémentation unifiée :
@@ -158,13 +159,11 @@ public class Unite implements Serializable {
 
     /** Alias demandé par OrdreRepos.java */
     public void seReposer() {
+
         System.out.println(">>>> [Repos] " + nom + " est sur : " + (position != null ? position.getTypeTerrain() : "null"));
     
         if (!aAttaqueCeTour && position != null) {
             TypeTerrain type = position.getTypeTerrain();
-            System.out.println("  - Type de terrain : " + type);
-            System.out.println("  - PV actuels : " + pointsVie + " / " + pointsVieMax);
-    
             if (type == TypeTerrain.REGULAR_TILE) {
                 int recuperation = (int) Math.ceil(pointsVieMax * 0.10);
                 int oldPv = pointsVie;
@@ -175,17 +174,14 @@ public class Unite implements Serializable {
                 if (healed > 0) {
                     pcs.firePropertyChange("healed", null, healed);  // 🔔 Trigger healing animation
                 }
-
-                System.out.println("  ✔ Récupère " + (pointsVie - oldPv) + " PV !");
-            } else {
-                System.out.println("  ❌ Terrain non valide pour repos");
-            }
+            } 
         } else {
-            System.out.println("  ❌ Ne peut pas se reposer (attaque ou pas de position)");
+            System.out.println("  Ne peut pas se reposer (attaque ou pas de position)");
         }
     
         aBougeCeTour = false;
         aAttaqueCeTour = false;
+        System.out.println("💤 " + nom + " se repose");
         resetDeplacement();
     }
     
@@ -243,6 +239,7 @@ public class Unite implements Serializable {
 
     return degats;
 }
+  
 
     public void reinitialiserDeplacement() {
         resetDeplacement();
@@ -252,11 +249,24 @@ public class Unite implements Serializable {
     public boolean seDeplacer(Hexagone destination) {
         if (destination == null)
             return false;
+    
         int cout = destination.getTypeTerrain().getCoutDeplacement();
         if (pointsDeplacement < cout)
             return false;
+    
         if (destination.getUnite() != null)
             return false; // occupé
+    
+        // ✅ On enlève l’unité de l’ancienne case
+        if (this.position != null) {
+            this.position.setUnite(null);
+        }
+    
+        // ✅ On place l’unité dans la nouvelle case
+        destination.setUnite(this);
+        this.setPosition(destination);
+    
+        // ✅ On consomme les points de déplacement
         pointsDeplacement -= cout;
         this.position = destination;
         this.aBougeCeTour = true;
@@ -302,6 +312,28 @@ public class Unite implements Serializable {
     public boolean aAttaqueCeTour() {
         return aAttaqueCeTour;
     }
+    
+
+
+    public boolean estVivant() {
+        return this.pointsVie > 0;
+    }
+
+    public int getPv() {
+        return this.pointsVie;
+    }
+
+    
+    
+    //IA
+    public PlateauDeJeu getPlateau() {
+        return (position != null) ? position.getPlateau() : null;
+    }
+    
+    public int getPointsVieMax() {
+        return this.pointsVieMax;
+    }
+
 }
 
 

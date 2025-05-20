@@ -11,9 +11,9 @@ import java.util.Queue;
 
 import javax.sound.sampled.*;
 import javax.swing.*;
-import javax.swing.Timer; // pour lire le son
+import javax.swing.Timer; 
 import model.Decoration;
-import model.Hexagone;
+import model.Hexagone; // pour lire le son
 import model.Joueur;
 import model.PlateauDeJeu;
 import model.TypeTerrain;
@@ -131,10 +131,10 @@ private int offsetY = HEX_SIZE;
 }
 
 
-    private void handleClick(int rawMouseX, int rawMouseY) {
-        int mouseX = (int)(rawMouseX / scale);
-        int mouseY = (int)(rawMouseY / scale);
-
+    // ───── REMPLACEZ ENTIEREMENT la méthode ─────
+    
+    private void handleClick(int mouseX, int mouseY) {
+        
         if (hoveredCol <= 0 || hoveredRow <= 0 ||
                 hoveredCol >= plateau.getLargeur() - 1 ||
                 hoveredRow >= plateau.getHauteur() - 1) {
@@ -243,6 +243,9 @@ private int offsetY = HEX_SIZE;
                     tracesDeplacement.add(new Trace(p));
                 }
 
+                uniteSelectionnee.setPosition(hex); // ✅ obligatoire
+
+
                 derniereUniteDeplacee = uniteSelectionnee;
                 derniereXDepart = xDepart;
                 derniereYDepart = yDepart;
@@ -273,6 +276,48 @@ private int offsetY = HEX_SIZE;
             repaint();
             infoPanel.getMiniMapPanel().updateMiniMap();
         }
+    }
+private void ajouterUnite(String nom, String imagePath,
+            int numJoueur, int x, int y) {
+
+        int pv = 30, att = 5, dep = 5;
+
+        switch (nom) { // ajustement des stats
+            case "Mage" -> {
+                pv = 24;
+                att = 7;
+                dep = 5;
+            }
+            case "Fantassin" -> {
+                pv = 38;
+                att = 11;
+                dep = 4;
+            }
+            case "Voleur" -> {
+                pv = 24;
+                att = 6;
+                dep = 6;
+            }
+            case "Cavalier" -> {
+                pv = 38;
+                att = 9;
+                dep = 8;
+            }
+            case "Archer" -> {
+                pv = 33;
+                att = 6;
+                dep = 5;
+            }
+            case "Soldat" -> {
+                pv = 35;
+                att = 8;
+                dep = 5;
+            }
+        }
+
+        Joueur owner = joueurs.get(numJoueur - 1); // 1→0, 2→1
+        Unite u = new Unite(nom, imagePath, owner, pv, att, dep);
+        plateau.getHexagone(x, y).setUnite(u);
     }
 
 
@@ -611,9 +656,17 @@ for (int[] dir : dirs) {
 
             g2.drawImage(decorImg, dx, dy, decorWidth, decorHeight, null);
         }
+
+        setHexVisibility(null);
+        infoPanel.majInfos(null);
+        infoPanel.majDeplacement(0);
+        infoPanel.majJoueurActif(joueurActif);
+        
+        repaint();
+
     }
 
-    @Override
+@Override
 public Dimension getPreferredSize() {
     int stepX = (int) (1.5 * HEX_SIZE);
     int stepY = (int) (Math.sqrt(3) * HEX_SIZE);
@@ -746,6 +799,7 @@ public Dimension getPreferredSize() {
         }
     }
 
+
     public BoardPanel(InfoPanel infoPanel, PlateauManager manager) {
         this.infoPanel = infoPanel;
         this.plateau = manager.plateau;
@@ -817,6 +871,7 @@ public Dimension getPreferredSize() {
 } else if (screenPoint.x > getWidth() - 30) {
     int newX = Math.min(view.x + 20, getWidth() - view.width);
     viewport.setViewPosition(new Point(newX, view.y));
+
 }
 
                 }
@@ -1146,7 +1201,8 @@ dialog.setLocationRelativeTo(gameWindow);
 
     replay.addActionListener(e -> {
         dialog.dispose();
-        GameWindow newGame = new GameWindow(new MainMenu(), PlateauManager.initialiserNouvellePartie());
+        GameWindow newGame = new GameWindow(new MainMenu(), PlateauManager.initialiserNouvellePartie("Joueur 1", "Joueur 2", false)
+);
         JFrame frame = new JFrame("Nouvelle Partie");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setContentPane(newGame);
@@ -1225,9 +1281,33 @@ dialog.setLocationRelativeTo(gameWindow);
         }
     }
 
+   
+    public void lancerCombat(Unite attaquant, Unite cible) {
+        if (attaquant == null || cible == null) return;
+        Hexagone cibleHex = cible.getPosition();
+        if (cibleHex == null) return;
+
+        boolean tuee = attaquant.frapper(cible, cibleHex.getTypeTerrain());
+
+            Polygon poly = createHexagon(cibleHex.getX(), cibleHex.getY());
+        Rectangle r = poly.getBounds();
+        int cx = r.x + r.width / 2;
+        int cy = r.y + r.height / 2;
+
+        splash.add(new DamageText(cx, cy, -attaquant.getArmes().get(0).getDegats()));
+        playHitSound();
+
+        if (tuee) {
+            cibleHex.setUnite(null);
+        }
+
+        repaint();
+    }
 
 
-
-
+ //IA
+    public Joueur getJoueurActif() {
+        return joueurActif;
+    }
 }
 

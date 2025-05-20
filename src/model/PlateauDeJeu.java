@@ -32,7 +32,12 @@ public class PlateauDeJeu implements Serializable {
 
                 for (int x = 0; x < largeur; x++) {
                     TypeTerrain terrain = convertirSymbole(terrainLine.charAt(x));
-                    hexagones[x][y] = new Hexagone(x, y, terrain);
+
+                    //IA
+                    Hexagone hex = new Hexagone(x, y, terrain);
+                    hex.setPlateau(this); // pour l'IA
+                    hexagones[x][y] = hex;  
+
 
                     if (decorLine != null && x < decorLine.length()) {
                         char decoChar = decorLine.charAt(x);

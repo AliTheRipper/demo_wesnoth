@@ -1,8 +1,8 @@
 package view;
 
-import javax.swing.*;
 import java.awt.*;
 import java.io.File;
+import javax.swing.*;
 
 public class StartDialog extends JDialog {
     private JTextField joueur1Field = new JTextField(15);
@@ -11,6 +11,8 @@ public class StartDialog extends JDialog {
     private String joueur2;
     private boolean validerClique = false;
     private Font gothicFont;
+    //IA
+    private JCheckBox iaCheckbox;
 
     public StartDialog(JFrame parent) {
         super(parent, "", true);
@@ -30,7 +32,13 @@ public class StartDialog extends JDialog {
         title.setForeground(fg);
         title.setBorder(BorderFactory.createEmptyBorder(15, 15, 0, 15));
 
-        JPanel form = new JPanel(new GridLayout(4, 1, 10, 10));
+        //IA
+        JPanel form = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
         form.setBackground(bg);
         form.setBorder(BorderFactory.createEmptyBorder(15, 25, 15, 25));
 
@@ -44,25 +52,56 @@ public class StartDialog extends JDialog {
         joueur2Field.setCaretColor(fg);
         joueur2Field.setBorder(BorderFactory.createLineBorder(new Color(70, 120, 180)));
 
+        //IA
         JLabel label1 = new JLabel("Nom du joueur 1 :");
         JLabel label2 = new JLabel("Nom du joueur 2 :");
+        
         label1.setForeground(Color.LIGHT_GRAY);
         label2.setForeground(Color.LIGHT_GRAY);
-label1.setFont(gothicFont.deriveFont(Font.PLAIN, 12));
-
-label2.setFont(gothicFont.deriveFont(Font.PLAIN, 12));
-        form.add(label1);
-        form.add(joueur1Field);
-        form.add(label2);
-        form.add(joueur2Field);
-
+        label1.setFont(gothicFont.deriveFont(Font.PLAIN, 12));
+        label2.setFont(gothicFont.deriveFont(Font.PLAIN, 12));
+        
+        // ligne 1 : label1 + champ joueur1
+        gbc.gridx = 0; gbc.gridy = 0;
+        form.add(label1, gbc);
+        
+        gbc.gridx = 1;
+        form.add(joueur1Field, gbc);
+        
+        // ligne 2 : label2 + champ joueur2
+        gbc.gridx = 0; gbc.gridy = 1;
+        form.add(label2, gbc);
+        
+        gbc.gridx = 1;
+        form.add(joueur2Field, gbc);
+        
+        // ligne 3 : checkbox IA
+        iaCheckbox = new JCheckBox("Joueur 2 est une IA");
+        iaCheckbox.setBackground(bg);
+        iaCheckbox.setForeground(Color.LIGHT_GRAY);
+        iaCheckbox.setFont(gothicFont.deriveFont(Font.PLAIN, 12));
+        
+        gbc.gridx = 0; gbc.gridy = 2;
+        gbc.gridwidth = 2;
+        form.add(iaCheckbox, gbc);
+        
+        // Masquage dynamique
+        iaCheckbox.addActionListener(e -> {
+            boolean visible = !iaCheckbox.isSelected();
+            joueur2Field.setVisible(visible);
+            label2.setVisible(visible);
+            form.revalidate();
+            form.repaint();
+        });
+        
         JButton valider = createStyledButton("Demarrer la partie");
         JButton annuler = createStyledButton("Annuler");
 
         valider.addActionListener(e -> {
             joueur1 = joueur1Field.getText().trim();
             joueur2 = joueur2Field.getText().trim();
-            if (joueur1.isEmpty() || joueur2.isEmpty()) {
+            boolean ia = iaCheckbox.isSelected();
+            if (joueur1.isEmpty() || (!ia && joueur2.isEmpty())) {
                 showStyledWarning(parent);
             } else {
                 validerClique = true;
@@ -163,4 +202,10 @@ label2.setFont(gothicFont.deriveFont(Font.PLAIN, 12));
             gothicFont = new Font("Serif", Font.PLAIN, 14);
         }
     }
+    //IA
+    public boolean isJoueur2IA() {
+        return iaCheckbox.isSelected();
+    }
+    
+
 }

@@ -69,6 +69,57 @@ JScrollPane scrollPane = new JScrollPane(boardContainer);
         splitPane.setDividerSize(0);
         splitPane.setEnabled(false);
         splitPane.setResizeWeight(1.0);
+        infoPanel.getFinPartieButton().addActionListener(e -> {
+            boolean confirmed = InfoPanel.showStyledConfirmDialog((JFrame) SwingUtilities.getWindowAncestor(this));
+            if (confirmed) {
+                Container parent = getParent();
+                while (parent != null && !(parent instanceof JFrame)) {
+                    parent = parent.getParent();
+                }
+                if (parent instanceof JFrame) {
+                    JFrame frame = (JFrame) parent;
+                    Window w = SwingUtilities.getWindowAncestor(this);
+                    if (w != null)
+                        w.dispose(); // Close the current GameWindow frame
+                    new MainMenu();
+                }
+
+            }
+        });
+
+        //IA
+        infoPanel.getFinTourButton().addActionListener(e -> {
+        boardPanel.passerAuTourSuivant();
+
+        if (boardPanel.getJoueurActif().estIA()) {
+            System.out.println("🤖 L’IA réfléchit...");
+
+            Timer t = new Timer(500, ev -> {
+                boardPanel.getJoueurActif().jouerTour(boardPanel);
+                boardPanel.passerAuTourSuivant();
+            });
+            t.setRepeats(false);
+            t.start();
+        }
+    });
+
+
+
+        
+
+
+        infoPanel.getAnnulerMouvementButton().addActionListener(e -> boardPanel.annulerDernierDeplacement());
+
+
+        infoPanel.getSauvegarderButton().addActionListener(e -> {
+            // Parent should be the GameWindow (this), not infoPanel, to center the dialog
+            // correctly
+            String nom = InfoPanel.showCustomInputDialog(this);
+            if (nom != null && !nom.isEmpty()) {
+                PlateauManager.sauvegarderDansFichier(manager, nom);
+                JOptionPane.showMessageDialog(this, "Partie sauvegardée avec succès !");
+            }
+        });
 
         add(splitPane, BorderLayout.CENTER);
 // Scroll to center of the map
@@ -144,9 +195,6 @@ private void configurerDeplacementAutomatique(JScrollPane scrollPane) {
             }
         });
 
-        // Bouton Fin de Tour
-        infoPanel.getFinTourButton().addActionListener(e -> boardPanel.passerAuTourSuivant());
-
         // Bouton Annuler Mouvement
         infoPanel.getAnnulerMouvementButton().addActionListener(e -> boardPanel.annulerDernierDeplacement());
 
@@ -205,7 +253,8 @@ private void configurerDeplacementAutomatique(JScrollPane scrollPane) {
 
     // Constructeur par défaut
     public GameWindow() {
-        this(new MainMenu(), PlateauManager.initialiserNouvellePartie());
+        this(new MainMenu(), PlateauManager.initialiserNouvellePartie("Joueur 1", "Joueur 2", false));
+
     }
 
     // Méthode pour rafraîchir l'interface

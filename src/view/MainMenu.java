@@ -139,28 +139,30 @@ public class MainMenu extends JFrame {
 
         // -------- Button Logic --------
         buttons[0].addActionListener(e -> {
-            StartDialog dialog = new StartDialog(this);
-            dialog.setVisible(true);
+    StartDialog dialog = new StartDialog(this);
+    dialog.setVisible(true);
 
-            String nom1 = dialog.getJoueur1();
-            String nom2 = dialog.getJoueur2();
+    String nom1 = dialog.getJoueur1();
+    String nom2 = dialog.getJoueur2();
+    boolean joueur2IA = dialog.isJoueur2IA();
 
-            if (nom1 != null && nom2 != null) {
-                PlateauManager manager = PlateauManager.initialiserNouvellePartie();
-                manager.nomJoueur1 = nom1;
-                manager.nomJoueur2 = nom2;
-    manager.joueur1.setNom(nom1);
-    manager.joueur2.setNom(nom2);
+    if (nom1 != null && nom2 != null) {
+        PlateauManager manager = PlateauManager.initialiserNouvellePartie(nom1, nom2, joueur2IA);
 
-                getContentPane().removeAll();
-                currentGame = new GameWindow(this, manager);
-                getContentPane().add(currentGame, BorderLayout.CENTER);
+        manager.nomJoueur1 = nom1;
+        manager.nomJoueur2 = nom2;
+        manager.joueur1.setNom(nom1);
+        manager.joueur2.setNom(nom2);
 
-                revalidate();
-                repaint();
-                requestFocusInWindow();
-            }
-        });
+        getContentPane().removeAll();
+        currentGame = new GameWindow(this, manager);
+        getContentPane().add(currentGame, BorderLayout.CENTER);
+
+        revalidate();
+        repaint();
+        requestFocusInWindow();
+    }
+});
 
         buttons[1].addActionListener(e -> showStyledSaveDialog());
 

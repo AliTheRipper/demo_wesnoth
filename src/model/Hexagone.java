@@ -70,4 +70,9 @@ public class Hexagone implements Serializable {
         return decorOffset;
     }
 
+    //IA
+    private PlateauDeJeu plateau;
+    public void setPlateau(PlateauDeJeu p) { this.plateau = p; }
+    public PlateauDeJeu getPlateau() { return plateau; }
+
 }

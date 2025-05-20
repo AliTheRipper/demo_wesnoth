@@ -10,9 +10,12 @@ public class OrdreDeplacement extends Ordre {
 
     @Override
     public void executer() {
-    if (unite != null && destination != null) {
-        unite.seDeplacer(destination);
+        if (unite != null && destination != null) {
+            unite.seDeplacer(destination);
+            unite.setPosition(destination);
+        }
     }
-}
-
+    public Hexagone getDestination() {
+        return destination;
+    }
 }

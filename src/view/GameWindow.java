@@ -188,12 +188,7 @@ private void configurerDeplacementAutomatique(JScrollPane scrollPane) {
 
 
     private void configurerBoutons() {
-        // Bouton Fin de Partie
-        infoPanel.getFinPartieButton().addActionListener(e -> {
-            if (InfoPanel.showStyledConfirmDialog((JFrame)SwingUtilities.getWindowAncestor(this))) {
-                retourAuMenu();
-            }
-        });
+
 
         // Bouton Annuler Mouvement
         infoPanel.getAnnulerMouvementButton().addActionListener(e -> boardPanel.annulerDernierDeplacement());

@@ -13,7 +13,7 @@ import javax.sound.sampled.*;
 import javax.swing.*;
 import javax.swing.Timer; 
 import model.Decoration;
-import model.Hexagone; // pour lire le son
+import model.Hexagone;
 import model.Joueur;
 import model.PlateauDeJeu;
 import model.TypeTerrain;
@@ -657,13 +657,6 @@ for (int[] dir : dirs) {
             g2.drawImage(decorImg, dx, dy, decorWidth, decorHeight, null);
         }
 
-        setHexVisibility(null);
-        infoPanel.majInfos(null);
-        infoPanel.majDeplacement(0);
-        infoPanel.majJoueurActif(joueurActif);
-        
-        repaint();
-
     }
 
 @Override
@@ -673,6 +666,14 @@ public Dimension getPreferredSize() {
     int width = stepX * plateau.getLargeur();
     int height = stepY * plateau.getHauteur();
     return new Dimension((int) (width * scale), (int) (height * scale));
+}
+
+private boolean areAdjacentByLand(Hexagone from, Hexagone to) {
+    // Allow if both tiles are land
+    boolean fromIsLand = from.getTypeTerrain().getCoutDeplacement() < 999;
+    boolean toIsLand = to.getTypeTerrain().getCoutDeplacement() < 999;
+
+    return fromIsLand && toIsLand;
 }
 
 
@@ -692,9 +693,12 @@ public Dimension getPreferredSize() {
         Hexagone currentHex = plateau.getHexagone(x, y);
 
         boolean isCurrentWater = currentHex.getTypeTerrain().getCoutDeplacement() >= 999;
-        boolean canStandHere = !isCurrentWater || isBridge(currentHex);
+        boolean canStandHere   = !isCurrentWater || isBridge(currentHex);
 
-        if (steps > maxSteps || !canStandHere) continue;
+        if (steps > maxSteps || !canStandHere) {
+            continue;
+        }
+
 
         accessibles.add(currentHex);
 
@@ -702,24 +706,35 @@ public Dimension getPreferredSize() {
 
         for (int[] dir : dirs) {
             int nx = x + dir[0], ny = y + dir[1];
+// stay in bounds
+            if (nx <= 0 || ny <= 0 || nx >= plateau.getLargeur() - 1 || ny >= plateau.getHauteur() - 1) {
+                continue;
+            }
+
             String key = nx + "," + ny;
 
-            if (nx <= 0 || ny <= 0 || nx >= plateau.getLargeur() - 1 || ny >= plateau.getHauteur() - 1)
+            if (visited.contains(key)) {
                 continue;
+            }
 
             if (!visited.contains(key)) {
                 Hexagone neighbor = plateau.getHexagone(nx, ny);
                 int cost = neighbor.getTypeTerrain().getCoutDeplacement();
 
-                boolean isWater = cost >= 999;
-                boolean bridgeOverWater = isWater && isBridge(neighbor);
+                boolean isWater       = cost >= 999;
+            boolean bridge        = isWater && isBridge(neighbor);
+            boolean pathCrossesWater = 
+    isCurrentWater && !isWater && !isBridge(currentHex);
 
-                if ((neighbor.getUnite() == null || neighbor == plateau.getHexagone(startX, startY)) &&
-                    (!isWater || bridgeOverWater) &&
-                    steps + (bridgeOverWater ? 1 : cost) <= maxSteps) {
+
+            // only enqueue if move is valid
+            if ((neighbor.getUnite() == null || neighbor == plateau.getHexagone(startX, startY))
+                    && (!isWater || bridge)
+                    && !pathCrossesWater
+                    && steps + (bridge ? 1 : cost) <= maxSteps) {
 
                     visited.add(key);
-                    queue.add(new int[]{nx, ny, steps + (bridgeOverWater ? 1 : cost)});
+                    queue.add(new int[]{nx, ny, steps + (bridge ? 1 : cost)});
                 }
             }
         }
@@ -968,9 +983,10 @@ public Dimension getPreferredSize() {
             for (int x = 0; x < plateau.getLargeur(); x++) {
                 Unite u = plateau.getHexagone(x, y).getUnite();
                 if (u != null && u.getJoueur() == joueurActif) {
-                    if (u.getDeplacementRestant() > 0 || (!u.aAttaqueCeTour() && u.peutAttaquer())) {
-                        return false;
-                    }
+                    if (u.getDeplacementRestant() > 0 || !u.aAttaqueCeTour()) {
+    return false;
+}
+
                 }
             }
         }
@@ -1152,7 +1168,7 @@ private void checkVictory() {
     for (int y = 0; y < plateau.getHauteur(); y++) {
         for (int x = 0; x < plateau.getLargeur(); x++) {
             Unite u = plateau.getHexagone(x, y).getUnite();
-            if (u != null && u.getPointsVie() > 0) {
+            if (u != null && u.estVivant()) {
                 if (u.getJoueur() == joueurs.get(0)) countJ1++;
                 else if (u.getJoueur() == joueurs.get(1)) countJ2++;
             }

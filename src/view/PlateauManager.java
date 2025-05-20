@@ -67,8 +67,9 @@ m.plateau.setJoueur2(m.joueur2);
             for (int x = 0; x < loaded.plateau.getLargeur(); x++) {
                 Unite u = loaded.plateau.getHexagone(x, y).getUnite();
                 if (u != null) {
-                    u.reinitialiserIcone();  // You need to add this method in Unite.java
-                }
+                       u.reinitialiserIcone();
+    u.setPosition(loaded.plateau.getHexagone(x, y)); // 👈 ADD THIS
+}
             }
         }
 
@@ -83,37 +84,37 @@ m.plateau.setJoueur2(m.joueur2);
     private static void placerUnitesParJoueur(PlateauDeJeu plat, Joueur j1, Joueur j2) {
         // Joueur 1
         Unite u1j1 = nouvelleUnite("Mage", "resources/mage.png", j1);
-        Hexagone h1j1 = plat.getHexagone(2, 3);
+        Hexagone h1j1 = plat.getHexagone(16, 3);
         h1j1.setUnite(u1j1);
         u1j1.setPosition(h1j1);
         j1.ajouterUnite(u1j1);
     
         Unite u2j1 = nouvelleUnite("Soldat", "resources/soldat.png", j1);
-        Hexagone h2j1 = plat.getHexagone(4, 5);
+        Hexagone h2j1 = plat.getHexagone(16, 5);
         h2j1.setUnite(u2j1);
         u2j1.setPosition(h2j1);
         j1.ajouterUnite(u2j1);
     
         Unite u3j1 = nouvelleUnite("Cavalier", "resources/cavalier.png", j1);
-        Hexagone h3j1 = plat.getHexagone(3, 2);
+        Hexagone h3j1 = plat.getHexagone(16, 4);
         h3j1.setUnite(u3j1);
         u3j1.setPosition(h3j1);
         j1.ajouterUnite(u3j1);
     
         Unite u4j1 = nouvelleUnite("Fantassin", "resources/fantassin.png", j1);
-        Hexagone h4j1 = plat.getHexagone(5, 4);
+        Hexagone h4j1 = plat.getHexagone(17, 4);
         h4j1.setUnite(u4j1);
         u4j1.setPosition(h4j1);
         j1.ajouterUnite(u4j1);
     
         Unite u5j1 = nouvelleUnite("Voleur", "resources/voleur.png", j1);
-        Hexagone h5j1 = plat.getHexagone(6, 6);
+        Hexagone h5j1 = plat.getHexagone(17, 5);
         h5j1.setUnite(u5j1);
         u5j1.setPosition(h5j1);
         j1.ajouterUnite(u5j1);
     
         Unite u6j1 = nouvelleUnite("Archer", "resources/archer.png", j1);
-        Hexagone h6j1 = plat.getHexagone(7, 1);
+        Hexagone h6j1 = plat.getHexagone(17, 3);
         h6j1.setUnite(u6j1);
         u6j1.setPosition(h6j1);
         j1.ajouterUnite(u6j1);
@@ -122,37 +123,37 @@ m.plateau.setJoueur2(m.joueur2);
         int h = plat.getHauteur(), l = plat.getLargeur();
     
         Unite u1j2 = nouvelleUnite("Mage", "resources/mage.png", j2);
-        Hexagone h1j2 = plat.getHexagone(l - 2, h - 2);
+        Hexagone h1j2 = plat.getHexagone(20, 3);
         h1j2.setUnite(u1j2);
         u1j2.setPosition(h1j2);
         j2.ajouterUnite(u1j2);
     
         Unite u2j2 = nouvelleUnite("Soldat", "resources/soldat.png", j2);
-        Hexagone h2j2 = plat.getHexagone(l - 3, h - 2);
+        Hexagone h2j2 = plat.getHexagone(20, 4);
         h2j2.setUnite(u2j2);
         u2j2.setPosition(h2j2);
         j2.ajouterUnite(u2j2);
     
         Unite u3j2 = nouvelleUnite("Cavalier", "resources/cavalier.png", j2);
-        Hexagone h3j2 = plat.getHexagone(l - 4, h - 2);
+        Hexagone h3j2 = plat.getHexagone(20, 5);
         h3j2.setUnite(u3j2);
         u3j2.setPosition(h3j2);
         j2.ajouterUnite(u3j2);
     
         Unite u4j2 = nouvelleUnite("Fantassin", "resources/fantassin.png", j2);
-        Hexagone h4j2 = plat.getHexagone(l - 5, h - 3);
+        Hexagone h4j2 = plat.getHexagone(21, 3);
         h4j2.setUnite(u4j2);
         u4j2.setPosition(h4j2);
         j2.ajouterUnite(u4j2);
     
         Unite u5j2 = nouvelleUnite("Voleur", "resources/voleur.png", j2);
-        Hexagone h5j2 = plat.getHexagone(l - 6, h - 3);
+        Hexagone h5j2 = plat.getHexagone(21, 4 );
         h5j2.setUnite(u5j2);
         u5j2.setPosition(h5j2);
         j2.ajouterUnite(u5j2);
     
         Unite u6j2 = nouvelleUnite("Archer", "resources/archer.png", j2);
-        Hexagone h6j2 = plat.getHexagone(l - 7, h - 2);
+        Hexagone h6j2 = plat.getHexagone(21, 5);
         h6j2.setUnite(u6j2);
         u6j2.setPosition(h6j2);
         j2.ajouterUnite(u6j2);

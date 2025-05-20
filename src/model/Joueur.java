@@ -81,7 +81,21 @@ public void setNom(String nom) {
     // Méthode appelée pour exécuter un tour complet (à implémenter selon ton contrôleur)
     public void jouerTour(BoardPanel board) {
         System.out.println(">> IA joue son tour (" + nom + ")");
-    
+    Set<Hexagone> hexasOccupes = new HashSet<>();
+         Unite cibleCommune = null;
+    if (estIA) {
+        cibleCommune = trouverCibleGlobale(); // ✅ defined in correct scope
+    }
+for (Unite unite : unites) {
+    if (unite.estVivant() && unite.getPosition() != null && unite.getDeplacementRestant() > 0) {
+        Ordre ordre = creerOrdrePourUnite(unite, cibleCommune, board, hexasOccupes);
+        ordre.executer();
+        if (ordre instanceof OrdreDeplacement) {
+            hexasOccupes.add(((OrdreDeplacement) ordre).getDestination());
+        }
+    }
+}
+
         for (Unite unite : unites) {
             String pos = (unite.getPosition() != null)
                 ? "(" + unite.getPosition().getX() + "," + unite.getPosition().getY() + ")"
@@ -89,28 +103,21 @@ public void setNom(String nom) {
             System.out.println("   - " + unite.getNom() + " à " + pos);
         }
     
-        if (estIA) {
-            Unite cibleCommune = trouverCibleGlobale();
-    
-            for (Unite unite : unites) {
-                if (unite.estVivant() && unite.getPosition() != null && unite.getDeplacementRestant() > 0) {
-                    Ordre ordre = creerOrdrePourUnite(unite, cibleCommune, board);
-                    System.out.println("IA crée l'ordre : " + ordre.getClass().getSimpleName());
-                    
-                    ordre.executer();
-                    board.repaint();
-    
-                    System.out.println("Ordre exécuté pour " + unite.getNom());
-                }
-            }
-        }
+
     }
     
     //IA
-    public Ordre creerOrdrePourUnite(Unite uniteIA, Unite cibleCommune, BoardPanel board) {
+    public Ordre creerOrdrePourUnite(Unite uniteIA, Unite cibleCommune, BoardPanel board, Set<Hexagone> hexasOccupes)
+ {
         if (!uniteIA.estVivant() || uniteIA.getDeplacementRestant() <= 0 || uniteIA.getPosition() == null)
             return new OrdreRepos(uniteIA);
         // ✅ Si l'unité est dans un village après une fuite et a récupéré ≥ 50% PV, elle quitte le village
+Hexagone destination = chercherCaseProche(uniteIA, cibleCommune);
+if (destination != null && hexasOccupes.contains(destination)) {
+    return new OrdreRepos(uniteIA); // skip to avoid crowding
+}
+
+
         if (uniteIA.estEnFuiteDansVillage() && uniteIA.getPointsVie() >= uniteIA.getPointsVieMax() * 0.5) {
 
             PlateauDeJeu plateau = uniteIA.getPlateau();
@@ -128,6 +135,7 @@ public void setNom(String nom) {
 
                         System.out.println("✅ " + uniteIA.getNom() + " quitte le village (PV ≥ 50%)");
                         uniteIA.setEnFuiteDansVillage(false);  // on désactive l'état de fuite
+                        
                         return new OrdreDeplacement(uniteIA, voisin);
                     }
                 }
@@ -176,7 +184,7 @@ public void setNom(String nom) {
                 int distance = calculerDistance(uniteIA.getPosition(), cible.getPosition());
                 Arme arme = uniteIA.getArmes().isEmpty() ? null : uniteIA.getArmes().get(0);
     
-                if (arme != null && distance <= arme.getPortee()) {
+                if (arme != null && distance == 1 && arme.getPortee() == 1) {
                     if (cible.getPointsVie() < minPv) {
                         meilleureCible = cible;
                         minPv = cible.getPointsVie();
@@ -198,7 +206,6 @@ public void setNom(String nom) {
     
         // Sinon, on avance vers la cible commune
         if (cibleCommune != null) {
-            Hexagone destination = chercherCaseProche(uniteIA, cibleCommune);
             if (destination != null) {
                 return new Ordre(uniteIA) {
                     @Override
@@ -213,7 +220,9 @@ public void setNom(String nom) {
                                 int distance = calculerDistance(uniteIA.getPosition(), cible.getPosition());
                                 Arme arme = uniteIA.getArmes().isEmpty() ? null : uniteIA.getArmes().get(0);
     
-                                if (arme != null && distance <= arme.getPortee()) {
+                                if (arme != null && distance == 1 && arme.getPortee() == 1)
+
+ {
                                     System.out.println("⚔️ IA attaque après déplacement !");
                                     board.lancerCombat(uniteIA, cible);
                                     return;
@@ -460,7 +469,9 @@ private Hexagone chercherVillageAccessible(Unite unite) {
     for (int x = 0; x < plateau.getLargeur(); x++) {
         for (int y = 0; y < plateau.getHauteur(); y++) {
             Hexagone hex = plateau.getHexagone(x, y);
-            if (hex.getTypeTerrain() == TypeTerrain.REGULAR_TILE && hex.getUnite() == null) {
+            if ((hex.getTypeTerrain().estVillage() || hex.getTypeTerrain() == TypeTerrain.REGULAR_TILE)
+    && hex.getUnite() == null)
+{
                 if (unite.peutAller(hex)) {
                     int dist = distance(unite.getPosition(), hex);
                     if (dist < minDistance) {

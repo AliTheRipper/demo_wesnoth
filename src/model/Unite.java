@@ -1,6 +1,4 @@
-package model;
-
-import java.beans.PropertyChangeListener;
+package model;import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.Serializable;
 import java.util.*;
@@ -293,8 +291,9 @@ public class Unite implements Serializable {
     }
     // Ajoutez ces nouvelles méthodes :
     public boolean peutAttaquer() {
-        return !aAttaqueCeTour && getDeplacementRestant() > 0;
-    }
+    return !aAttaqueCeTour;
+}
+
 
     public void setAAttaqueCeTour(boolean aAttaque) {
         boolean oldValue = this.aAttaqueCeTour;

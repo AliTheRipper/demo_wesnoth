@@ -43,6 +43,10 @@ public class BoardPanel extends JPanel {
     private final Image explosionGif = new ImageIcon("resources/explosion.gif").getImage();
 
     private final List<GifExplosion> gifExplosions = new ArrayList<>();
+    private final Image healIcon = new ImageIcon("resources/heal.png").getImage();
+    private final List<HealingEffect> healingEffects = new ArrayList<>();
+
+
 
 
 
@@ -555,7 +559,7 @@ for (int[] dir : dirs) {
         }
     }
 
-    // 8. Damage splash
+     // 8. Damage splash
      for (DamageText dt : splash) {
          g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, dt.alpha));
          g2.setColor(dt.color);
@@ -569,13 +573,21 @@ for (int[] dir : dirs) {
              }
          }
 
-         String txt = String.valueOf(dt.dmg);
+         // ✅ Use dt.txt if set, otherwise fallback to dt.dmg
+         String txt = (dt.txt != null) ? dt.txt : String.valueOf(dt.dmg);
          FontMetrics fm = g2.getFontMetrics();
          g2.drawString(txt, dt.x - fm.stringWidth(txt) / 2 + offset.x,
                  dt.y + fm.getAscent() / 2 + offset.y);
      }
 
+
      g2.setComposite(AlphaComposite.SrcOver);
+     for (HealingEffect h : healingEffects) {
+         int size = 32;
+         int offsetY = h.getOffsetY();
+         g2.drawImage(healIcon, h.x - size / 2, h.y - size / 2 + offsetY, size, size, null);
+     }
+
      for (GifExplosion g : gifExplosions) {
          int size = 64;
          g2.drawImage(explosionGif, g.x - size / 2, g.y - size / 2, size, size, null);
@@ -694,6 +706,8 @@ public Dimension getPreferredSize() {
     private static class DamageText {
         int x, y, dmg;
         float alpha = 1f;
+        String txt = null;
+
         Color color;
 
         DamageText(int x, int y, int dmg, Color color) {
@@ -702,6 +716,14 @@ public Dimension getPreferredSize() {
             this.dmg = dmg;
             this.color = color;
         }
+        DamageText(int x, int y, String txt, Color color) {
+            this.x = x;
+            this.y = y;
+            this.dmg = 0; // ignoré si texte
+            this.txt = txt;
+            this.color = color;
+        }
+
 
         void tick() {
             y -= 1;
@@ -807,8 +829,8 @@ public Dimension getPreferredSize() {
             splash.forEach(DamageText::tick);
             splash.removeIf(DamageText::isDead);
             shakeEffects.removeIf(se -> !se.isActive());
-            //explosions.forEach(Explosion::tick);
-            //explosions.removeIf(Explosion::isDead);
+            healingEffects.forEach(HealingEffect::tick);
+            healingEffects.removeIf(HealingEffect::isDone);
             gifExplosions.removeIf(GifExplosion::isExpired); // ✅ nettoyage des gifs
             repaint();
         });
@@ -820,21 +842,40 @@ public Dimension getPreferredSize() {
         // Configuration du passage automatique de tour
         PropertyChangeListener tourListener = evt -> SwingUtilities.invokeLater(this::checkAutoEndTurn);
 
-        // Ajout des écouteurs à toutes les unités
+// Ajout des écouteurs à toutes les unités
         for (int y = 0; y < plateau.getHauteur(); y++) {
             for (int x = 0; x < plateau.getLargeur(); x++) {
                 Unite u = plateau.getHexagone(x, y).getUnite();
                 if (u != null) {
                     u.addPropertyChangeListener(tourListener);
+
+                    // 🎯 Affichage du soin (texte vert + icône)
+                    u.addPropertyChangeListener(evt -> {
+                        if ("healed".equals(evt.getPropertyName())) {
+                            int healedAmount = (int) evt.getNewValue();
+                            if (u.getPosition() != null) {
+                                Point center = getHexCenter(u.getPosition().getX(), u.getPosition().getY());
+
+                                // Affichage texte "+N" en vert
+                                splash.add(new DamageText(center.x, center.y, "+" + healedAmount, new Color(0, 200, 0)));
+
+                                // Effet de soin visuel (ex. icône heart.png)
+                                healingEffects.add(new HealingEffect(center.x, center.y));
+                            }
+                        }
+                    });
                 }
             }
         }
+
+// ⏱️ Nettoyage des traces (petits pas)
         Timer traceCleaner = new Timer(100, e -> {
             tracesDeplacement.removeIf(Trace::isExpired);
             repaint();
         });
         traceCleaner.start();
 
+// 🌗 Cycle jour/nuit
         Timer cycleJourNuit = new Timer(90_000, e -> {
             isNight = !isNight;
             repaint();
@@ -842,7 +883,24 @@ public Dimension getPreferredSize() {
         cycleJourNuit.start();
 
 
+
     }
+    private Point getHexCenter(int col, int row) {
+        int stepX = (int) (HEX_WIDTH * 0.9);
+        int stepY = (int) (HEX_HEIGHT * 0.85);
+
+        int offsetX = 0; // Si tu veux aligné à gauche
+        int offsetY = 0;
+
+        int x = col * stepX + offsetX;
+        int y = row * stepY + offsetY;
+
+        if (col % 2 != 0)
+            y += stepY / 2;
+
+        return new Point(x, y);
+    }
+
 
     private void checkAutoEndTurn() {
         if (shouldEndTurn()) {
@@ -1145,6 +1203,29 @@ dialog.setLocationRelativeTo(gameWindow);
             return System.currentTimeMillis() - startTime > durationMillis;
         }
     }
+    private static class HealingEffect {
+        int x, y;
+        int ticks = 0;
+
+        HealingEffect(int x, int y) {
+            this.x = x;
+            this.y = y;
+        }
+
+        void tick() {
+            ticks++;
+        }
+
+        boolean isDone() {
+            return ticks > 45; // 45 ticks × 30ms ≈ 1.35s
+        }
+
+        int getOffsetY() {
+            return 0; // 🔁 FIXE : ne monte plus
+        }
+    }
+
+
 
 
 

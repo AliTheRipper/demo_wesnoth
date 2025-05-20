@@ -118,6 +118,14 @@ private int offsetY = HEX_SIZE;
 
         }
     }
+    private boolean isBridge(Hexagone hex) {
+    Decoration decor = hex.getDecoration();
+    return decor == Decoration.WOOD_NS ||
+           decor == Decoration.WOOD_SE ||
+           decor == Decoration.WOOD_SW ||
+           decor == Decoration.STONE_BRIDGE_NS;
+}
+
 
     private void handleClick(int rawMouseX, int rawMouseY) {
         int mouseX = (int)(rawMouseX / scale);
@@ -362,38 +370,46 @@ infoPanel.majCoordonnees(hoveredCol, hoveredRow);
         // Active un rendu lisse
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        // PASS 1: Dessiner terrains et unités
-        for (int col = 0; col < cols; col++) {
-            for (int row = 0; row < rows; row++) {
-                int x = col * stepX + offsetX;
-                int y = row * stepY + offsetY;
-                if (col % 2 != 0)
-                    y += stepY / 2;
-                drawTerrainAndUnit(g2, x, y, col, row);
-            }
-        }
+       // PASS 1: Draw hex and terrain image
+for (int col = 0; col < cols; col++) {
+    for (int row = 0; row < rows; row++) {
+        int x = col * stepX + offsetX;
+        int y = row * stepY + offsetY;
+        if (col % 2 != 0) y += stepY / 2;
+        drawHexAndTerrain(g2, x, y, col, row);
+    }
+}
 
-        // PASS 2: Dessiner décorations
-        for (int col = 0; col < cols; col++) {
-            for (int row = 0; row < rows; row++) {
-                int x = col * stepX + offsetX;
-                int y = row * stepY + offsetY;
-                if (col % 2 != 0)
-                    y += stepY / 2;
-                drawDecoration(g2, x, y, col, row);
-            }
-        }
+// PASS 2: Draw decorations
+for (int col = 0; col < cols; col++) {
+    for (int row = 0; row < rows; row++) {
+        int x = col * stepX + offsetX;
+        int y = row * stepY + offsetY;
+        if (col % 2 != 0) y += stepY / 2;
+        drawDecoration(g2, x, y, col, row);
+    }
+}
 
-        // PASS 3: Dessiner surlignages et overlays
-        for (int col = 0; col < cols; col++) {
-            for (int row = 0; row < rows; row++) {
-                int x = col * stepX + offsetX;
-                int y = row * stepY + offsetY;
-                if (col % 2 != 0)
-                    y += stepY / 2;
-                drawOverlays(g2, x, y, col, row);
-            }
-        }
+// PASS 3: Draw units
+for (int col = 0; col < cols; col++) {
+    for (int row = 0; row < rows; row++) {
+        int x = col * stepX + offsetX;
+        int y = row * stepY + offsetY;
+        if (col % 2 != 0) y += stepY / 2;
+        drawUnit(g2, x, y, col, row);
+    }
+}
+
+// PASS 4: Draw overlays (selection, fog, etc.)
+for (int col = 0; col < cols; col++) {
+    for (int row = 0; row < rows; row++) {
+        int x = col * stepX + offsetX;
+        int y = row * stepY + offsetY;
+        if (col % 2 != 0) y += stepY / 2;
+        drawOverlays(g2, x, y, col, row);
+    }
+}
+
         if (isNight) {
             g2.setColor(new Color(0, 0, 30, 100)); // bleu nuit semi-transparent
             g2.fillRect(0, 0, (int)(getWidth() / scale), (int)(getHeight() / scale));
@@ -420,42 +436,43 @@ gFog.dispose();
         g2.dispose();
     }
 
-    private void drawTerrainAndUnit(Graphics2D g2, int centerX, int centerY, int col, int row) {
-        Polygon hex = createHexagon(col, row);
+    private void drawHexAndTerrain(Graphics2D g2, int centerX, int centerY, int col, int row) {
+    Polygon hex = createHexagon(col, row);
 
-        // Remplissage du polygone avec une couleur proche du terrain
-        TypeTerrain terrainType = plateau.getHexagone(col, row).getTypeTerrain();
-        Color fillColor = Color.GRAY; // Par défaut
-        try {
-            Image terrainImage = terrainType.getIcon().getImage();
-            BufferedImage buffered = new BufferedImage(
-                    terrainImage.getWidth(null),
-                    terrainImage.getHeight(null),
-                    BufferedImage.TYPE_INT_RGB);
-            Graphics2D gImg = buffered.createGraphics();
-            gImg.drawImage(terrainImage, 0, 0, null);
-            gImg.dispose();
-            fillColor = new Color(buffered.getRGB(buffered.getWidth()/2, buffered.getHeight()/2));
-        } catch (Exception e) {
-            // ignore
-        }
-        g2.setColor(fillColor);
-        g2.fillPolygon(hex);
-
-        // Dessin de l’image terrain sans clipping
+    // Fill background with average color
+    TypeTerrain terrainType = plateau.getHexagone(col, row).getTypeTerrain();
+    Color fillColor = Color.GRAY;
+    try {
         Image terrainImage = terrainType.getIcon().getImage();
-        int imgWidth = (int) (HEX_WIDTH * 1.2);
-        int imgHeight = HEX_HEIGHT;
-        g2.drawImage(terrainImage, centerX - imgWidth / 2, centerY - imgHeight / 2, imgWidth, imgHeight, null);
-
-        // Dessin de l’unité
-      Unite u = plateau.getHexagone(col, row).getUnite();
-if (u != null && u.getIcone() != null) {
-    Image icon = u.getIcone().getImage();
-    g2.drawImage(icon, centerX - HEX_SIZE / 2 - 10, centerY - HEX_SIZE / 2 - 10, HEX_SIZE + 15, HEX_SIZE + 15, null);
-}
-
+        BufferedImage buffered = new BufferedImage(
+                terrainImage.getWidth(null),
+                terrainImage.getHeight(null),
+                BufferedImage.TYPE_INT_RGB);
+        Graphics2D gImg = buffered.createGraphics();
+        gImg.drawImage(terrainImage, 0, 0, null);
+        gImg.dispose();
+        fillColor = new Color(buffered.getRGB(buffered.getWidth()/2, buffered.getHeight()/2));
+    } catch (Exception e) {
+        // Ignore if image is missing
     }
+
+    g2.setColor(fillColor);
+    g2.fillPolygon(hex);
+
+    // Draw terrain image
+    Image terrainImage = terrainType.getIcon().getImage();
+    int imgWidth = (int) (HEX_WIDTH * 1.2);
+    int imgHeight = HEX_HEIGHT;
+    g2.drawImage(terrainImage, centerX - imgWidth / 2, centerY - imgHeight / 2, imgWidth, imgHeight, null);
+}
+private void drawUnit(Graphics2D g2, int centerX, int centerY, int col, int row) {
+    Unite u = plateau.getHexagone(col, row).getUnite();
+    if (u != null && u.getIcone() != null) {
+        Image icon = u.getIcone().getImage();
+        int unitSize = HEX_SIZE + 15;
+        g2.drawImage(icon, centerX - unitSize / 2, centerY - unitSize / 2, unitSize, unitSize, null);
+    }
+}
 
 
  private void drawOverlays(Graphics2D g2, int centerX, int centerY, int col, int row) {
@@ -508,7 +525,7 @@ for (int[] dir : dirs) {
 
     // 5. Bonus defense
     if (col == hoveredCol && row == hoveredRow && accessibles.contains(plateau.getHexagone(col, row))) {
-        int bonus = plateau.getHexagone(col, row).getTypeTerrain().getBonusDefense();
+        int bonus = plateau.getBonusDefense(plateau.getHexagone(col, row));
         String text = bonus + "%";
         g2.setFont(new Font("Serif", Font.BOLD, 16));
         g2.setColor(new Color(212, 175, 55));
@@ -595,7 +612,7 @@ public Dimension getPreferredSize() {
 
 
 
-   private Set<Hexagone> calculerCasesAccessibles(int startX, int startY, int maxSteps) {
+  private Set<Hexagone> calculerCasesAccessibles(int startX, int startY, int maxSteps) {
     Set<Hexagone> accessibles = new HashSet<>();
     Queue<int[]> queue = new LinkedList<>();
     Set<String> visited = new HashSet<>();
@@ -608,12 +625,15 @@ public Dimension getPreferredSize() {
         int x = current[0], y = current[1], steps = current[2];
 
         Hexagone currentHex = plateau.getHexagone(x, y);
-        if (steps > maxSteps || currentHex.getTypeTerrain().getCoutDeplacement() >= 999) continue;
+
+        boolean isCurrentWater = currentHex.getTypeTerrain().getCoutDeplacement() >= 999;
+        boolean canStandHere = !isCurrentWater || isBridge(currentHex);
+
+        if (steps > maxSteps || !canStandHere) continue;
 
         accessibles.add(currentHex);
 
         int[][] dirs = (x % 2 == 0) ? EVEN_Q_DIRS : ODD_Q_DIRS;
-
 
         for (int[] dir : dirs) {
             int nx = x + dir[0], ny = y + dir[1];
@@ -626,10 +646,15 @@ public Dimension getPreferredSize() {
                 Hexagone neighbor = plateau.getHexagone(nx, ny);
                 int cost = neighbor.getTypeTerrain().getCoutDeplacement();
 
-                // Only walk through if it's empty or you're standing on it
-                if (neighbor.getUnite() == null && steps + cost <= maxSteps) {
+                boolean isWater = cost >= 999;
+                boolean bridgeOverWater = isWater && isBridge(neighbor);
+
+                if ((neighbor.getUnite() == null || neighbor == plateau.getHexagone(startX, startY)) &&
+                    (!isWater || bridgeOverWater) &&
+                    steps + (bridgeOverWater ? 1 : cost) <= maxSteps) {
+
                     visited.add(key);
-                    queue.add(new int[]{nx, ny, steps + cost});
+                    queue.add(new int[]{nx, ny, steps + (bridgeOverWater ? 1 : cost)});
                 }
             }
         }

@@ -259,6 +259,4 @@ public class MapEditor extends JFrame {
             }
         }
     }
-
-
 }

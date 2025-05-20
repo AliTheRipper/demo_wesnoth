@@ -133,6 +133,16 @@ public class PlateauDeJeu implements Serializable {
         }
     }
 
+public int getBonusDefense(Hexagone hex) {
+    if (hex.getTypeTerrain().getCoutDeplacement() >= 999 &&
+        (hex.getDecoration() == Decoration.WOOD_NS ||
+         hex.getDecoration() == Decoration.WOOD_SE ||
+         hex.getDecoration() == Decoration.WOOD_SW ||
+         hex.getDecoration() == Decoration.STONE_BRIDGE_NS)) {
+        return TypeTerrain.GREEN.getBonusDefense(); // Same as grass
+    }
+    return hex.getTypeTerrain().getBonusDefense();
+}
 
 
     public List<Unite> getToutesLesUnites() {

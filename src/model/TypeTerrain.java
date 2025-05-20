@@ -51,5 +51,9 @@ WATER("resources/terrain/water-tile.png", 999, 0);
         return bonusDefense;
     }
 
+    public boolean estVillage() {
+        return this == REGULAR_TILE;
+    }
+    
 
 }

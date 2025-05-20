@@ -179,6 +179,7 @@ public int getBonusDefense(Hexagone hex) {
     public void setJoueur2(Joueur joueur) {
         this.joueur2 = joueur;
     }
+    
 
 
 }

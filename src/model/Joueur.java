@@ -1,11 +1,11 @@
 package model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.io.Serializable;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -110,34 +110,60 @@ public void setNom(String nom) {
     public Ordre creerOrdrePourUnite(Unite uniteIA, Unite cibleCommune, BoardPanel board) {
         if (!uniteIA.estVivant() || uniteIA.getDeplacementRestant() <= 0 || uniteIA.getPosition() == null)
             return new OrdreRepos(uniteIA);
+        // ✅ Si l'unité est dans un village après une fuite et a récupéré ≥ 50% PV, elle quitte le village
+        if (uniteIA.estEnFuiteDansVillage() && uniteIA.getPointsVie() >= uniteIA.getPointsVieMax() * 0.5) {
+
+            PlateauDeJeu plateau = uniteIA.getPlateau();
+            Hexagone pos = uniteIA.getPosition();
+            int x = pos.getX(), y = pos.getY();
+            int largeur = plateau.getLargeur(), hauteur = plateau.getHauteur();
+
+            for (int dx = -1; dx <= 1; dx++) {
+                for (int dy = -1; dy <= 1; dy++) {
+                    int nx = x + dx, ny = y + dy;
+                    if (nx < 0 || ny < 0 || nx >= largeur || ny >= hauteur) continue;
+
+                    Hexagone voisin = plateau.getHexagone(nx, ny);
+                    if (!voisin.getTypeTerrain().estVillage() && voisin.getUnite() == null && uniteIA.peutAller(voisin)) {
+
+                        System.out.println("✅ " + uniteIA.getNom() + " quitte le village (PV ≥ 50%)");
+                        uniteIA.setEnFuiteDansVillage(false);  // on désactive l'état de fuite
+                        return new OrdreDeplacement(uniteIA, voisin);
+                    }
+                }
+            }
+        }
+
+
     
         // Fuite si faible
         if (uniteIA.getPointsVie() < uniteIA.getPointsVieMax() * 0.3) {
+            Hexagone villageAtteignable = chercherVillageAccessible(uniteIA);
+            if (villageAtteignable != null) {
+                System.out.println("🏘️ Village atteignable trouvé pour fuir : " + villageAtteignable.getX() + "," + villageAtteignable.getY());
+                uniteIA.setEnFuiteDansVillage(true); 
+                return new OrdreDeplacement(uniteIA, villageAtteignable);
+            }
+            
+            
+            Hexagone villageProche = chercherVillageProche(uniteIA);
+            if (villageProche != null) {
+                Hexagone versVillage = chercherCaseProche(uniteIA, villageProche);
+                if (versVillage != null) {
+                    System.out.println("🏃 Se rapproche d’un village vers : " + versVillage.getX() + "," + versVillage.getY());
+                    return new OrdreDeplacement(uniteIA, versVillage);
+                }
+            }
+            
             Hexagone recul = chercherCaseLoin(uniteIA);
             if (recul != null) {
-                System.out.println("😰 " + uniteIA.getNom() + " est faible et fuit vers " + recul.getX() + "," + recul.getY());
-                return new Ordre(uniteIA) {
-                    @Override
-                    public void executer() {
-                        int x = recul.getX();
-                        int y = recul.getY();
-                        PlateauDeJeu plateau = uniteIA.getPlateau();
-                        int largeur = plateau.getLargeur();
-                        int hauteur = plateau.getHauteur();
-                
-                        if (x < 0 || y < 0 || x >= largeur || y >= hauteur) {
-                            System.out.println("❌ Fuite échouée : case hors carte. " + uniteIA.getNom() + " se repose à la place.");
-                            uniteIA.seReposer();
-                        } else {
-                            uniteIA.seDeplacer(recul);
-                        }
-                    }
-                };
-                
-            } else {
-                System.out.println("😩 " + uniteIA.getNom() + " est faible mais ne peut pas fuir. Elle se repose.");
-                return new OrdreRepos(uniteIA);
+                System.out.println("😰 Fuite standard vers : " + recul.getX() + "," + recul.getY());
+                return new OrdreDeplacement(uniteIA, recul);
             }
+            
+            System.out.println("😩 Aucune case trouvée, se repose.");
+            return new OrdreRepos(uniteIA);
+            
         }
     
         // Attaque si une cible à portée
@@ -199,33 +225,48 @@ public void setNom(String nom) {
             }
         }
     
+        System.out.println("💤 IA ne trouve aucune action utile, repose " + uniteIA.getNom());
         return new OrdreRepos(uniteIA);
+
     }
     
     private Unite trouverMeilleureCible(Unite uniteIA) {
         Unite meilleure = null;
-        int minScore = Integer.MAX_VALUE;
+        int meilleurScore = Integer.MAX_VALUE;
     
-        for (Joueur autre : getAutresJoueurs()) {
-            for (Unite cible : autre.getUnites()) {
+        for (Joueur adversaire : getAutresJoueurs()) {
+            for (Unite cible : adversaire.getUnites()) {
                 if (!cible.estVivant() || cible.getPosition() == null)
                     continue;
     
                 int distance = calculerDistance(uniteIA.getPosition(), cible.getPosition());
                 int pv = cible.getPointsVie();
     
-                // Score = distance + moitié des PV (plus bas = meilleure cible)
-                int score = distance + (pv / 2);
+                // calculer nombre d’alliés proches autour de la cible
+                int alliesProches = 0;
+                for (Unite autre : adversaire.getUnites()) {
+                    if (autre != cible && autre.estVivant() && autre.getPosition() != null) {
+                        if (calculerDistance(autre.getPosition(), cible.getPosition()) <= 2) {
+                            alliesProches++;
+                        }
+                    }
+                }
     
-                if (score < minScore) {
-                    minScore = score;
+                // Score : privilégie les isolés (-bonus) et les faibles (-PV)
+                int score = distance + (pv / 2) + (alliesProches * 10); // chaque allié proche augmente le score
+    
+                if (score < meilleurScore) {
+                    meilleurScore = score;
                     meilleure = cible;
                 }
             }
         }
     
         if (meilleure != null) {
-            System.out.println("🎯 Cible stratégique : " + meilleure.getNom() + " (score " + minScore + ")");
+            System.out.println("🎯 Cible stratégique choisie : " + meilleure.getNom() +
+                " (score = " + meilleurScore + ", PV = " + meilleure.getPointsVie() + ")");
+        } else {
+            System.out.println("🚫 Aucune cible valable trouvée pour " + uniteIA.getNom());
         }
     
         return meilleure;
@@ -318,6 +359,31 @@ private Hexagone chercherCaseLoin(Unite unite) {
         }
     }
 
+    // Étape 1 : chercher un village sûr d'abord
+    for (int y = 0; y < hauteur; y++) {
+        for (int x = 0; x < largeur; x++) {
+            Hexagone hex = plateau.getHexagone(x, y);
+            System.out.println("🧱 Case testée : " + x + "," + y + " → " + hex.getTypeTerrain() + " | village ? " + hex.getTypeTerrain().estVillage());
+            if (hex.getUnite() != null) continue;
+            if (!hex.getTypeTerrain().estVillage()) continue;
+
+            boolean safe = true;
+            for (Unite e : ennemis) {
+                int d = calculerDistance(hex, e.getPosition());
+                if (d <= 3) {
+                    safe = false;
+                    break;
+                }
+            }
+
+            if (safe) {
+                System.out.println("🏘️ Village sûr trouvé pour fuir : " + x + "," + y);
+                return hex;
+            }
+        }
+    }
+
+    // Étape 2 : sinon, continuer à fuir loin comme avant
     // Calcule du barycentre des ennemis
     double ex = 0, ey = 0;
     for (Unite e : ennemis) {
@@ -334,18 +400,16 @@ private Hexagone chercherCaseLoin(Unite unite) {
     int dirX = (int) Math.round(dx / dist);
     int dirY = (int) Math.round(dy / dist);
 
-    // Recherche autour de la direction de fuite
     for (int r = 1; r <= unite.getDeplacementRestant(); r++) {
         int nx = position.getX() + dirX * r;
         int ny = position.getY() + dirY * r;
 
-        if (nx < 1 || ny < 1 || nx >= largeur - 1 || ny >= hauteur - 1) continue;
+        if (nx < 0 || ny < 0 || nx >= largeur || ny >= hauteur) continue;
 
         Hexagone hex = plateau.getHexagone(nx, ny);
         if (hex.getUnite() != null) continue;
         if (hex.getTypeTerrain().getCoutDeplacement() >= 999) continue;
 
-        // Doit être à distance raisonnable des ennemis
         boolean safe = true;
         for (Unite e : ennemis) {
             int d = calculerDistance(hex, e.getPosition());
@@ -354,7 +418,10 @@ private Hexagone chercherCaseLoin(Unite unite) {
                 break;
             }
         }
-        if (safe) return hex;
+        if (safe) {
+            System.out.println("🏃 Fuite classique vers : " + nx + "," + ny);
+            return hex;
+        }
     }
 
     return null;
@@ -384,6 +451,104 @@ private Unite trouverCibleGlobale() {
 
     return meilleure;
 }
+
+private Hexagone chercherVillageAccessible(Unite unite) {
+    PlateauDeJeu plateau = unite.getPlateau();
+    Hexagone meilleure = null;
+    int minDistance = Integer.MAX_VALUE;
+
+    for (int x = 0; x < plateau.getLargeur(); x++) {
+        for (int y = 0; y < plateau.getHauteur(); y++) {
+            Hexagone hex = plateau.getHexagone(x, y);
+            if (hex.getTypeTerrain() == TypeTerrain.REGULAR_TILE && hex.getUnite() == null) {
+                if (unite.peutAller(hex)) {
+                    int dist = distance(unite.getPosition(), hex);
+                    if (dist < minDistance) {
+                        minDistance = dist;
+                        meilleure = hex;
+                    }
+                }
+            }
+        }
+    }
+
+    return meilleure;
+}
+private Hexagone chercherVillageProche(Unite unite) {
+    PlateauDeJeu plateau = unite.getPlateau();
+    Hexagone meilleure = null;
+    int minDistance = Integer.MAX_VALUE;
+
+    for (int x = 0; x < plateau.getLargeur(); x++) {
+        for (int y = 0; y < plateau.getHauteur(); y++) {
+            Hexagone hex = plateau.getHexagone(x, y);
+            if (hex.getTypeTerrain() == TypeTerrain.REGULAR_TILE && hex.getUnite() == null) {
+                int dist = distance(unite.getPosition(), hex);
+                if (dist < minDistance) {
+                    minDistance = dist;
+                    meilleure = hex;
+                }
+            }
+        }
+    }
+
+    return meilleure;
+}
+
+private int distance(Hexagone a, Hexagone b) {
+    int dx = a.getX() - b.getX();
+    int dy = a.getY() - b.getY();
+    return Math.abs(dx) + Math.abs(dy);
+}
+
+private Hexagone chercherCaseProche(Unite unite, Hexagone objectif) {
+    PlateauDeJeu plateau = unite.getPlateau();
+    Hexagone depart = unite.getPosition();
+
+    int maxDep = unite.getDeplacementRestant();
+    int largeur = plateau.getLargeur();
+    int hauteur = plateau.getHauteur();
+
+    Set<Hexagone> visited = new HashSet<>();
+    Queue<Hexagone> queue = new LinkedList<>();
+    Map<Hexagone, Hexagone> cameFrom = new HashMap<>();
+
+    queue.add(depart);
+    visited.add(depart);
+
+    while (!queue.isEmpty()) {
+        Hexagone current = queue.poll();
+
+        if (calculerDistance(current, objectif) <= 1) {
+            // On est adjacent à l’objectif
+            Hexagone suivant = current;
+            while (cameFrom.containsKey(suivant) && cameFrom.get(suivant) != depart) {
+                suivant = cameFrom.get(suivant);
+            }
+            return suivant;
+        }
+
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dy = -1; dy <= 1; dy++) {
+                int nx = current.getX() + dx;
+                int ny = current.getY() + dy;
+                if (nx < 0 || ny < 0 || nx >= largeur || ny >= hauteur) continue;
+
+                Hexagone voisin = plateau.getHexagone(nx, ny);
+                if (visited.contains(voisin)) continue;
+                if (voisin.getUnite() != null && voisin != objectif) continue;
+                if (voisin.getTypeTerrain().getCoutDeplacement() >= 999) continue;
+
+                visited.add(voisin);
+                cameFrom.put(voisin, current);
+                queue.add(voisin);
+            }
+        }
+    }
+
+    return null;
+}
+
 
 
 }

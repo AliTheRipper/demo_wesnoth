@@ -1,9 +1,5 @@
 package model;
 
-import javax.swing.ImageIcon;
-
-import view.BoardPanel;
-
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.Serializable;
@@ -40,6 +36,8 @@ public class Unite implements Serializable {
     private final Joueur joueur; // ← keep only this
     private boolean aAttaqueCeTour = false; // Nouveau champ
     private boolean aBougeCeTour = false;
+
+    private boolean enFuiteDansVillage = false;
 
 
 
@@ -152,7 +150,16 @@ public class Unite implements Serializable {
 
    public void setPosition(Hexagone hex) {
     this.position = hex;
-}
+    }
+
+    public boolean estEnFuiteDansVillage() {
+        return enFuiteDansVillage;
+    }
+    
+    public void setEnFuiteDansVillage(boolean enFuite) {
+        this.enFuiteDansVillage = enFuite;
+    }
+    
 
 
     /* ------------------------ Manip -------------------------------- */
@@ -169,13 +176,21 @@ public class Unite implements Serializable {
                 int oldPv = pointsVie;
                 pointsVie = Math.min(pointsVie + recuperation, pointsVieMax);
                 pcs.firePropertyChange("pv", oldPv, pointsVie);
-
+            
                 int healed = pointsVie - oldPv;
                 if (healed > 0) {
                     pcs.firePropertyChange("healed", null, healed);  // 🔔 Trigger healing animation
                 }
-            } 
-        } else {
+            
+                // Vérifie si on peut quitter le village
+                if (enFuiteDansVillage && pointsVie >= pointsVieMax / 2) {
+                    System.out.println("💪 " + nom + " a récupéré ≥ 50% PV, quitte le village");
+                    enFuiteDansVillage = false;
+                }
+            }
+            
+        } 
+        else {
             System.out.println("  Ne peut pas se reposer (attaque ou pas de position)");
         }
     
@@ -333,6 +348,14 @@ public class Unite implements Serializable {
     public int getPointsVieMax() {
         return this.pointsVieMax;
     }
+
+    public boolean peutAller(Hexagone destination) {
+        if (destination == null) return false;
+        if (destination.getUnite() != null) return false;
+        int cout = destination.getTypeTerrain().getCoutDeplacement();
+        return cout <= pointsDeplacement;
+    }
+    
 
 }
 

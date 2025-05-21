@@ -18,7 +18,7 @@ public class MainMenu extends JFrame {
     };
 
     private JLabel unitLabel;
-    private Font gothicFont;
+    public static Font gothicFont;
     Color hoverColor = new Color(60, 90, 150);
     Color buttonBg = new Color(30, 40, 60);
     Color borderGold = new Color(212, 175, 55);
@@ -33,7 +33,7 @@ public class MainMenu extends JFrame {
         setResizable(false);
         loadCustomFont();
 
-        BackgroundPanel background = new BackgroundPanel("resources/background.jpg");
+        BackgroundPanel background = new BackgroundPanel("resources/background.png");
         background.setLayout(new BorderLayout());
         setContentPane(background);
 
@@ -46,8 +46,8 @@ public class MainMenu extends JFrame {
         String[] btnLabels = {
                 "Commencer une Partie",
                 "Parties Sauvegardees",
-                "Éditeur de Map",
-                "À propos du jeu",
+                "Editeur de Map",
+                "A propos du jeu",
                 "Quitter"
         };
 
@@ -99,7 +99,7 @@ public class MainMenu extends JFrame {
         unitLabel.setPreferredSize(new Dimension(500, 40));
         unitLabel.setOpaque(false);
 
-        JButton prev = new JButton("Précédent");
+        JButton prev = new JButton("Precedent");
         JButton next = new JButton("Suivant");
 
         for (JButton b : new JButton[]{prev, next}) {
@@ -187,7 +187,7 @@ public class MainMenu extends JFrame {
             panel.setBackground(bg);
             panel.setBorder(BorderFactory.createLineBorder(borderColor, 2));
 
-            JLabel message = new JLabel("<html><center>Jeu de stratégie au tour par tour.<br>Créé par Yahya et Ilias.</center></html>", SwingConstants.CENTER);
+            JLabel message = new JLabel("<html><center>Jeu de strategie au tour par tour.<br>Cree par Khettou Hajar, Hijazi Yahya, Halmi Ilias, Zifouti Ali et Shel Hazem.</center></html>", SwingConstants.CENTER);
             message.setFont(font);
             message.setForeground(fg);
             message.setBorder(BorderFactory.createEmptyBorder(20, 20, 10, 20));
@@ -238,11 +238,11 @@ public class MainMenu extends JFrame {
         overlay.setOpaque(true);
 
         JPanel panel = new JPanel(new BorderLayout());
-        panel.setPreferredSize(new Dimension(400, 180));
+        panel.setPreferredSize(new Dimension(420, 180));
         panel.setBackground(new Color(20, 20, 30));
         panel.setBorder(BorderFactory.createLineBorder(new Color(212, 175, 55), 2));
 
-        JLabel label = new JLabel("<html><center>Êtes-vous sûr de vouloir quitter le jeu ?</center></html>", SwingConstants.CENTER);
+        JLabel label = new JLabel("<html><center>Etes-vous sur de vouloir quitter le jeu ?</center></html>", SwingConstants.CENTER);
         label.setForeground(Color.WHITE);
         label.setFont(gothicFont.deriveFont(Font.PLAIN, 16));
         label.setBorder(BorderFactory.createEmptyBorder(20, 20, 10, 20));
@@ -289,7 +289,6 @@ public class MainMenu extends JFrame {
             gothicFont = Font.createFont(Font.TRUETYPE_FONT, new File("resources/fonts/UnifrakturCook-Bold.ttf")).deriveFont(13f);
             GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(gothicFont);
         } catch (Exception e) {
-            System.err.println("Police personnalisée non chargée. Utilisation de la police par défaut.");
             gothicFont = new Font("Serif", Font.PLAIN, 14);
         }
     }
@@ -322,7 +321,7 @@ public class MainMenu extends JFrame {
 
         File[] saves = folder.listFiles((dir, name) -> name.endsWith(".save"));
         if (saves == null || saves.length == 0) {
-            JOptionPane.showMessageDialog(this, "Aucune sauvegarde trouvée.");
+            JOptionPane.showMessageDialog(this, "Aucune sauvegarde trouvee.");
             return;
         }
 

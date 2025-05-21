@@ -32,7 +32,8 @@ public class GameWindow extends JPanel {
         setLayout(new BorderLayout());
 
         // Initialisation des composants
-        infoPanel = new InfoPanel(manager.joueur1.getNom(), manager.joueur2.getNom(), manager.plateau);
+        infoPanel = new InfoPanel(manager.joueur1.getNom(), manager.joueur2.getNom(), manager.plateau, MainMenu.gothicFont);
+
         boardPanel = new BoardPanel(infoPanel, manager);
         infoPanel.getMiniMapPanel().setBoardPanel(boardPanel);
 

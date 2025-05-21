@@ -53,8 +53,8 @@ public class StartDialog extends JDialog {
         joueur2Field.setBorder(BorderFactory.createLineBorder(new Color(70, 120, 180)));
 
         //IA
-        JLabel label1 = new JLabel("Nom du joueur 1 :");
-        JLabel label2 = new JLabel("Nom du joueur 2 :");
+        JLabel label1 = new JLabel("Joueur 1 :");
+        JLabel label2 = new JLabel("Joueur 2 :");
         
         label1.setForeground(Color.LIGHT_GRAY);
         label2.setForeground(Color.LIGHT_GRAY);
@@ -76,7 +76,7 @@ public class StartDialog extends JDialog {
         form.add(joueur2Field, gbc);
         
         // ligne 3 : checkbox IA
-        iaCheckbox = new JCheckBox("Joueur 2 est une IA");
+        iaCheckbox = new JCheckBox("Joueur IA");
         iaCheckbox.setBackground(bg);
         iaCheckbox.setForeground(Color.LIGHT_GRAY);
         iaCheckbox.setFont(gothicFont.deriveFont(Font.PLAIN, 12));

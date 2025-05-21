@@ -4,6 +4,8 @@ import model.Arme;
 import model.Unite;
 
 import javax.swing.*;
+import javax.swing.border.TitledBorder;
+
 import java.awt.*;
 
 public class FicheCombatDialog extends JDialog {
@@ -13,7 +15,9 @@ public class FicheCombatDialog extends JDialog {
     private int decision = DECISION_ANNULER;
 
     public FicheCombatDialog(JFrame parent, Unite attaquant, Unite defenseur) {
-        super(parent, "Combat", true);
+        super(parent, "", true);
+setUndecorated(true); // ✅ this removes title bar & X button
+
         setLayout(new BorderLayout());
         setSize(600, 400);
         setLocationRelativeTo(parent);
@@ -33,17 +37,23 @@ public class FicheCombatDialog extends JDialog {
         // === Statistiques de combat ===
         JPanel statsPanel = new JPanel(new GridLayout(0, 1));
         statsPanel.setBackground(InfoPanel.BACKGROUND);
-        statsPanel.setBorder(BorderFactory.createTitledBorder("Prevision de combat"));
+TitledBorder statsBorder = BorderFactory.createTitledBorder("Prevision de combat");
+statsBorder.setTitleColor(InfoPanel.TEXT);
+statsBorder.setTitleFont(InfoPanel.GOTHIC_FALLBACK.deriveFont(Font.BOLD, 14f));
+statsBorder.setBorder(BorderFactory.createLineBorder(new Color(212, 175, 55)));
+statsPanel.setBorder(statsBorder);
+
+
 
         int degatsEstimes = attaquant.getAttaque() - defenseur.getDefense();
         degatsEstimes = Math.max(1, degatsEstimes);
 
-        JLabel dmgLabel = new JLabel("Degats estimes: " + degatsEstimes);
-        JLabel pvLabel = new JLabel("PV restants estimes: " + Math.max(0, defenseur.getPointsVie() - degatsEstimes));
+        JLabel dmgLabel = new JLabel("Degats estimes : " + degatsEstimes);
+        JLabel pvLabel = new JLabel("PV restants estimes : " + Math.max(0, defenseur.getPointsVie() - degatsEstimes));
 
         for (JLabel lbl : new JLabel[] { dmgLabel, pvLabel }) {
             lbl.setForeground(InfoPanel.TEXT);
-            lbl.setFont(InfoPanel.gothic.deriveFont(14f));
+            lbl.setFont(InfoPanel.GOTHIC_FALLBACK.deriveFont(14f));
             statsPanel.add(lbl);
         }
 
@@ -52,12 +62,19 @@ public class FicheCombatDialog extends JDialog {
         // === Armes ===
         JPanel armesPanel = new JPanel(new GridLayout(0, 1));
         armesPanel.setBackground(InfoPanel.BACKGROUND);
-        armesPanel.setBorder(BorderFactory.createTitledBorder("Armes disponibles"));
+TitledBorder armesBorder = BorderFactory.createTitledBorder("Armes disponibles");
+armesBorder.setTitleColor(InfoPanel.TEXT);
+armesBorder.setTitleFont(InfoPanel.GOTHIC_FALLBACK.deriveFont(Font.BOLD, 14f));
+armesBorder.setBorder(BorderFactory.createLineBorder(new Color(212, 175, 55)));
+armesPanel.setBorder(armesBorder);
+
+
+
 
         for (Arme arme : attaquant.getArmes()) {
             JLabel armeLabel = new JLabel(arme.getNom() + ": " + arme.getDegats() + " degats");
             armeLabel.setForeground(InfoPanel.TEXT);
-            armeLabel.setFont(InfoPanel.gothic.deriveFont(14f));
+            armeLabel.setFont(InfoPanel.GOTHIC_FALLBACK.deriveFont(14f));
             armesPanel.add(armeLabel);
         }
 
@@ -89,7 +106,13 @@ public class FicheCombatDialog extends JDialog {
 
     private JPanel createUnitePanel(Unite unite, String role) {
         JPanel panel = new JPanel(new BorderLayout());
-        panel.setBorder(BorderFactory.createTitledBorder(role));
+ TitledBorder unitBorder = BorderFactory.createTitledBorder(role);
+unitBorder.setTitleColor(InfoPanel.TEXT);
+unitBorder.setTitleFont(InfoPanel.GOTHIC_FALLBACK.deriveFont(Font.BOLD, 14f));
+unitBorder.setBorder(BorderFactory.createLineBorder(new Color(212, 175, 55)));
+panel.setBorder(unitBorder);
+
+
         panel.setBackground(InfoPanel.BACKGROUND);
 
         // Image
@@ -104,14 +127,14 @@ public class FicheCombatDialog extends JDialog {
         stats.setBackground(InfoPanel.BACKGROUND);
 
         JLabel nom = new JLabel(unite.getNom());
-        JLabel pv = new JLabel("PV: " + unite.getPointsVie());
-        JLabel atk = new JLabel("Attaque: " + unite.getAttaque());
-        JLabel def = new JLabel("Defense: " + unite.getDefense());
-        JLabel canAttack = new JLabel("Attaque possible: " + (unite.peutAttaquer() ? "Oui" : "Non"));
+        JLabel pv = new JLabel("PV : " + unite.getPointsVie());
+        JLabel atk = new JLabel("Attaque : " + unite.getAttaque());
+        JLabel def = new JLabel("Defense : " + unite.getDefense());
+        JLabel canAttack = new JLabel("Attaque possible : " + (unite.peutAttaquer() ? "Oui" : "Non"));
 
         for (JLabel l : new JLabel[] { nom, pv, atk, def, canAttack }) {
             l.setForeground(InfoPanel.TEXT);
-            l.setFont(InfoPanel.gothic.deriveFont(13f));
+            l.setFont(InfoPanel.GOTHIC_FALLBACK.deriveFont(13f));
             stats.add(l);
         }
 

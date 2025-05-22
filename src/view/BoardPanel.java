@@ -1198,7 +1198,7 @@ dialog.setLocationRelativeTo(gameWindow);
 
     JLabel label = new JLabel("Felicitations " + winnerName + ", vous avez gagne !", SwingConstants.CENTER);
     label.setForeground(Color.WHITE);
-    label.setFont(InfoPanel.gothic.deriveFont(Font.BOLD, 18f));
+    label.setFont(InfoPanel.GOTHIC_FALLBACK.deriveFont(Font.BOLD, 18f));
     label.setAlignmentX(Component.CENTER_ALIGNMENT);
     label.setBorder(BorderFactory.createEmptyBorder(20, 20, 10, 20));
 

@@ -521,17 +521,18 @@ lbl.setHorizontalAlignment(SwingConstants.CENTER);
     public static void showStyledTurnDialog(JFrame parent, String joueurNom) {
     JDialog dialog = new JDialog(parent, "Tour", false); 
     dialog.setUndecorated(true);
-    dialog.setSize(170, 70);
+    dialog.setSize(350, 70);
     dialog.setLocationRelativeTo(parent);
 
     JPanel content = new JPanel(new BorderLayout());
     content.setBackground(BACKGROUND);
     content.setBorder(BorderFactory.createLineBorder(GOLD, 2));
 
-    JLabel label = new JLabel("Tour de " + joueurNom, SwingConstants.CENTER);
+    JLabel label = new JLabel("<html><div style='text-align: center;'>Tour de<br>" + joueurNom + "</div></html>", SwingConstants.CENTER);
+
     label.setForeground(TEXT);
     label.setFont(GOTHIC_FALLBACK.deriveFont(Font.BOLD, 14f));
-    label.setBorder(BorderFactory.createEmptyBorder(20, 20, 10, 20));
+    label.setBorder(BorderFactory.createEmptyBorder(20, 0, 10, 0));
     content.add(label, BorderLayout.CENTER);
 
     dialog.setContentPane(content);

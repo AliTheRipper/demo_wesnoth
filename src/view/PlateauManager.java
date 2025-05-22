@@ -88,7 +88,7 @@ m.plateau.setJoueur2(m.joueur2);
         h1j1.setUnite(u1j1);
         u1j1.setPosition(h1j1);
         j1.ajouterUnite(u1j1);
-  /*   
+    
         Unite u2j1 = nouvelleUnite("Soldat", "resources/soldat.png", j1);
         Hexagone h2j1 = plat.getHexagone(34, 27);
         h2j1.setUnite(u2j1);
@@ -149,7 +149,7 @@ m.plateau.setJoueur2(m.joueur2);
         h5j2.setUnite(u5j2);
         u5j2.setPosition(h5j2);
         j2.ajouterUnite(u5j2);
-     */
+    
         Unite u6j2 = nouvelleUnite("Archer", "resources/archer.png", j2);
         Hexagone h6j2 = plat.getHexagone(8, 21);
         h6j2.setUnite(u6j2);

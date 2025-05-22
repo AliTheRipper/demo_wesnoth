@@ -5,8 +5,11 @@ import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.text.Normalizer;
 import java.util.*;
 import java.util.List;
+import java.util.Queue;
+
 import javax.sound.sampled.*;
 import javax.swing.*;
 import javax.swing.Timer; 
@@ -1183,43 +1186,58 @@ public void checkVictory() {
 }
 
 private void showVictoryDialog(String winnerName, boolean isIA) {
-    JDialog dialog = new JDialog((JFrame) SwingUtilities.getWindowAncestor(this), "Fin de partie", true);
-    dialog.setUndecorated(true);
-    dialog.setSize(500, 180);
-    Window gameWindow = SwingUtilities.getWindowAncestor(this);
-    dialog.setLocationRelativeTo(gameWindow);
-    dialog.setLayout(new BorderLayout());
+    Window parentWindow = SwingUtilities.getWindowAncestor(this);
 
+    JDialog dialog = new JDialog((JFrame) parentWindow, "Fin de partie", true);
+    dialog.setUndecorated(true);
+    dialog.setSize(720, 130);
+    dialog.setLocationRelativeTo(parentWindow);
+    dialog.setLayout(new BorderLayout());  // ensures full fill
+
+    // === CONTENT PANEL ===
     JPanel content = new JPanel();
     content.setBackground(InfoPanel.BACKGROUND);
     content.setBorder(BorderFactory.createLineBorder(new Color(212, 175, 55), 2));
     content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
 
-    String message = isIA
-        ? "😢 Défaite... L’IA a gagné cette partie."
-        : "🎉 Félicitations " + winnerName + ", vous avez remporté la victoire !";
+    // === MESSAGE ===
+    String raw = isIA
+        ? "Defaite... L’IA a gagne cette partie."
+        : "Felicitations " + winnerName + ", vous avez remporte la victoire !";
 
-    JLabel label = new JLabel(message, SwingConstants.CENTER);
+    // Strip accents for font safety
+    String message = Normalizer.normalize(raw, Normalizer.Form.NFD)
+                               .replaceAll("[\\p{InCombiningDiacriticalMarks}]", "");
+
+    JLabel label = new JLabel("<html><div style='text-align: center;'>" + message + "</div></html>", SwingConstants.CENTER);
     label.setForeground(Color.WHITE);
-    label.setFont(InfoPanel.GOTHIC_FALLBACK.deriveFont(Font.BOLD, 18f));
+    label.setFont(InfoPanel.GOTHIC_FALLBACK.deriveFont(Font.BOLD, 16f));
     label.setAlignmentX(Component.CENTER_ALIGNMENT);
     label.setBorder(BorderFactory.createEmptyBorder(20, 20, 10, 20));
 
-    JPanel btns = new JPanel(new FlowLayout());
-    btns.setBackground(InfoPanel.BACKGROUND);
+    // === BUTTON PANEL ===
+    JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 40, 15));
+    buttonsPanel.setBackground(InfoPanel.BACKGROUND);
 
     JButton replay = InfoPanel.createStyledButton("Nouvelle partie");
     JButton menu = InfoPanel.createStyledButton("Menu principal");
 
-    btns.add(replay);
-    btns.add(menu);
+    buttonsPanel.add(replay);
+    buttonsPanel.add(menu);
 
     content.add(label);
-    content.add(btns);
-    dialog.setContentPane(content);
+    content.add(buttonsPanel);
 
+    // Add content to dialog
+    dialog.setContentPane(content);
+    dialog.getRootPane().setBorder(BorderFactory.createLineBorder(new Color(212, 175, 55), 2));
+
+    // === ACTIONS ===
     replay.addActionListener(e -> {
-        dialog.dispose();
+        dialog.dispose(); // close dialog first
+        Window window = SwingUtilities.getWindowAncestor(this);
+        if (window != null) window.dispose(); // close game window
+
         GameWindow newGame = new GameWindow(new MainMenu(), PlateauManager.initialiserNouvellePartie("Joueur 1", "Joueur 2", false));
         JFrame frame = new JFrame("Nouvelle Partie");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -1231,13 +1249,15 @@ private void showVictoryDialog(String winnerName, boolean isIA) {
 
     menu.addActionListener(e -> {
         dialog.dispose();
-        Window w = SwingUtilities.getWindowAncestor(this);
-        if (w != null) w.dispose();
+        Window window = SwingUtilities.getWindowAncestor(this);
+        if (window != null) window.dispose(); // close game window
         new MainMenu().showMainMenu();
     });
 
     dialog.setVisible(true);
 }
+
+
 
     private static class ShakeEffect {
         int x, y;

@@ -11,11 +11,15 @@ public class MainMenu extends JFrame {
     private static GameWindow currentGame = null;
     private int unitIndex = 0;
 
-    private final String[] unitDescriptions = {
-            "<html><b>Archer :</b> Unité rapide, efficace à distance.</html>",
-            "<html><b>Soldat :</b> Équilibré en attaque et défense.</html>",
-            "<html><b>Cavalier :</b> Très mobile, forte attaque.</html>"
-    };
+private final String[] unitDescriptions = {
+    "<html><div style='text-align: center;'><b>Archer :</b> Unite a distance, attaque avec un arc longue portee et un poignard en melee. Bonne mobilite.</html>",
+    "<html><div style='text-align: center;'><b>Soldat :</b> Unite equilibree, bien armee pour le combat rapproche avec une epee solide.</html>",
+    "<html><div style='text-align: center;'><b>Cavalier :</b> Unite tres mobile, inflige de lourds degats au corps-a-corps avec sa lance.</html>",
+    "<html><div style='text-align: center;'><b>Mage :</b> Attaquant a distance, faible en defense mais puissant avec ses eclairs magiques.</html>",
+    "<html><div style='text-align: center;'><b>Fantassin :</b> Unite robuste et puissante au corps-a-corps, armee d'une hache.</html>",
+    "<html><div style='text-align: center;'><b>Voleur :</b> Agile et rapide, ideal pour les frappes legeres et les manœuvres d escarmouche avec sa dague.</html>"
+};
+
 
     private JLabel unitLabel;
     public static Font gothicFont;

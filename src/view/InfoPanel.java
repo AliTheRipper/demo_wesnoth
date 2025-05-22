@@ -1,6 +1,7 @@
 package view;
 import java.awt.*;
 import java.io.File;
+import java.util.Map;
 
 import javax.swing.*;
 import model.Hexagone;
@@ -58,6 +59,14 @@ private final JLabel coordLabel = new JLabel("Coord : -", SwingConstants.CENTER)
     private final JButton zoomOutButton = new JButton("-");
     private MiniMapPanel miniMapPanel;
 
+private static final Map<String, String> UNIT_DESCRIPTIONS = Map.of(
+    "Archer", "Unite a distance, efficace pour harceler l ennemi a longue portee.",
+    "Soldat", "Unite equilibree avec une bonne defense et attaque en melee.",
+    "Cavalier", "Tres mobile, il excelle dans les attaques rapides.",
+    "Mage", "Inflige de lourds degats a distance, mais reste fragile.",
+    "Fantassin", "Robuste au corps a corps avec une hache redoutable.",
+    "Voleur", "Rapide et discret, ideal pour les escarmouches et les fuites."
+);
 
 
 private final Font gothic;
@@ -303,8 +312,10 @@ joueurLabel.setText("Joueur : " + joueurNom);
 }
 
 
-        descriptionLabel.setText(
-                "Description : Un combattant redoutable.\nSes competences sont redoutees sur tous les champs de bataille.");
+String nom = u.getNom();
+String description = UNIT_DESCRIPTIONS.getOrDefault(nom, "Unité sans description.");
+descriptionLabel.setText("Description : " + description);
+
         attaqueDetailsLabel.setText("Armes : " + u.getArmes().stream()
                 .map(arme -> arme.getNom())
                 .reduce((a, b) -> a + ", " + b).orElse("-"));

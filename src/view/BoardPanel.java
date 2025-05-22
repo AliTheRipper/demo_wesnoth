@@ -7,8 +7,6 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.*;
 import java.util.List;
-import java.util.Queue;
-
 import javax.sound.sampled.*;
 import javax.swing.*;
 import javax.swing.Timer; 
@@ -1162,7 +1160,7 @@ private int getBaseHeight() {
             return System.currentTimeMillis() - timestamp > 1000; // 3 secondes
         }
     }
-private void checkVictory() {
+public void checkVictory() {
     int countJ1 = 0, countJ2 = 0;
 
     for (int y = 0; y < plateau.getHauteur(); y++) {
@@ -1176,19 +1174,20 @@ private void checkVictory() {
     }
 
     if (countJ1 == 0) {
-        showVictoryDialog(joueurs.get(1).getNom());
+        Joueur gagnant = joueurs.get(1);
+        showVictoryDialog(gagnant.getNom(), gagnant.estIA());
     } else if (countJ2 == 0) {
-        showVictoryDialog(joueurs.get(0).getNom());
+        Joueur gagnant = joueurs.get(0);
+        showVictoryDialog(gagnant.getNom(), gagnant.estIA());
     }
 }
 
-private void showVictoryDialog(String winnerName) {
-    JDialog dialog = new JDialog((JFrame) SwingUtilities.getWindowAncestor(this), "Victoire", true);
+private void showVictoryDialog(String winnerName, boolean isIA) {
+    JDialog dialog = new JDialog((JFrame) SwingUtilities.getWindowAncestor(this), "Fin de partie", true);
     dialog.setUndecorated(true);
     dialog.setSize(500, 180);
     Window gameWindow = SwingUtilities.getWindowAncestor(this);
-dialog.setLocationRelativeTo(gameWindow);
-
+    dialog.setLocationRelativeTo(gameWindow);
     dialog.setLayout(new BorderLayout());
 
     JPanel content = new JPanel();
@@ -1196,7 +1195,11 @@ dialog.setLocationRelativeTo(gameWindow);
     content.setBorder(BorderFactory.createLineBorder(new Color(212, 175, 55), 2));
     content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
 
-    JLabel label = new JLabel("Felicitations " + winnerName + ", vous avez gagne !", SwingConstants.CENTER);
+    String message = isIA
+        ? "😢 Défaite... L’IA a gagné cette partie."
+        : "🎉 Félicitations " + winnerName + ", vous avez remporté la victoire !";
+
+    JLabel label = new JLabel(message, SwingConstants.CENTER);
     label.setForeground(Color.WHITE);
     label.setFont(InfoPanel.GOTHIC_FALLBACK.deriveFont(Font.BOLD, 18f));
     label.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -1217,8 +1220,7 @@ dialog.setLocationRelativeTo(gameWindow);
 
     replay.addActionListener(e -> {
         dialog.dispose();
-        GameWindow newGame = new GameWindow(new MainMenu(), PlateauManager.initialiserNouvellePartie("Joueur 1", "Joueur 2", false)
-);
+        GameWindow newGame = new GameWindow(new MainMenu(), PlateauManager.initialiserNouvellePartie("Joueur 1", "Joueur 2", false));
         JFrame frame = new JFrame("Nouvelle Partie");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setContentPane(newGame);

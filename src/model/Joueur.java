@@ -102,6 +102,8 @@ for (Unite unite : unites) {
                 : "aucune position";
             System.out.println("   - " + unite.getNom() + " à " + pos);
         }
+
+        board.checkVictory();
     
 
     }

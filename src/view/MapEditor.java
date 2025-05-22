@@ -7,6 +7,7 @@ import javax.swing.*;
 import model.*;
 
 public class MapEditor extends JFrame {
+
     private Hexagone[][] grid;
     private TypeTerrain selectedTerrain = TypeTerrain.GREEN;
 
@@ -20,10 +21,9 @@ public class MapEditor extends JFrame {
     private int panelPaddingY = 0;
     private Point lastDragPoint;
 
-
     public MapEditor() {
         setTitle("Éditeur de Map");
-        setExtendedState(JFrame.MAXIMIZED_BOTH); // Plein écran
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
 
@@ -33,10 +33,10 @@ public class MapEditor extends JFrame {
     }
 
     private void calculateMapSize() {
-        // Calcul dynamique selon la résolution écran
+
         Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
-        int hexWidth = (int)(hexSize * 1.5);
-        int hexHeight = (int)(Math.sqrt(3) * hexSize);
+        int hexWidth = (int) (hexSize * 1.5);
+        int hexHeight = (int) (Math.sqrt(3) * hexSize);
 
         mapWidth = (screen.width - 2 * panelPadding) / hexWidth;
         mapHeight = (screen.height - 2 * panelPadding) / (hexHeight * 3 / 4);
@@ -66,10 +66,10 @@ public class MapEditor extends JFrame {
 
             @Override
             public Dimension getPreferredSize() {
-                int hexWidth = (int)(1.5 * hexSize);
+                int hexWidth = (int) (1.5 * hexSize);
                 double hexHeight = Math.sqrt(3) * hexSize;
                 int width = mapWidth * hexWidth + 2 * panelPaddingX;
-                int height = (int)(mapHeight * (hexHeight * 0.75)) + 2 * panelPaddingY;
+                int height = (int) (mapHeight * (hexHeight * 0.75)) + 2 * panelPaddingY;
                 return new Dimension(width, height);
             }
 
@@ -84,7 +84,9 @@ public class MapEditor extends JFrame {
         mapPanel.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseDragged(MouseEvent e) {
-                if (lastDragPoint == null) return;
+                if (lastDragPoint == null) {
+                    return;
+                }
 
                 JViewport viewport = (JViewport) mapPanel.getParent();
                 Point currentPoint = SwingUtilities.convertPoint(mapPanel, e.getPoint(), mapPanel.getParent());
@@ -95,7 +97,6 @@ public class MapEditor extends JFrame {
                 Point viewPos = viewport.getViewPosition();
                 viewPos.translate(dx, dy);
 
-                // Clamp la position à l'intérieur de la carte
                 int maxX = mapPanel.getWidth() - viewport.getWidth();
                 int maxY = mapPanel.getHeight() - viewport.getHeight();
                 viewPos.x = Math.max(0, Math.min(viewPos.x, maxX));
@@ -106,11 +107,9 @@ public class MapEditor extends JFrame {
             }
         });
 
-
         mapPanel.setBackground(new Color(240, 240, 240));
         mapPanel.addMouseListener(new MapMouseListener());
 
-        // Panneau des outils
         JPanel toolsPanel = new JPanel();
         toolsPanel.setLayout(new BoxLayout(toolsPanel, BoxLayout.Y_AXIS));
         toolsPanel.setBorder(BorderFactory.createTitledBorder("Terrains"));
@@ -124,9 +123,9 @@ public class MapEditor extends JFrame {
             terrainGroup.add(btn);
             toolsPanel.add(btn);
 
-           if (terrain == TypeTerrain.GREEN) {
-    btn.setSelected(true);
-}
+            if (terrain == TypeTerrain.GREEN) {
+                btn.setSelected(true);
+            }
 
         }
 
@@ -158,15 +157,15 @@ public class MapEditor extends JFrame {
     }
 
     private void drawMap(Graphics g) {
-        Graphics2D g2d = (Graphics2D)g;
+        Graphics2D g2d = (Graphics2D) g;
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         double hexHeight = Math.sqrt(3) * hexSize;
 
         for (int x = 0; x < mapWidth; x++) {
             for (int y = 0; y < mapHeight; y++) {
-                int xPos = panelPaddingX + (int)(x * 1.5 * hexSize);
-                int yPos = panelPaddingY + (int)(y * hexHeight);
+                int xPos = panelPaddingX + (int) (x * 1.5 * hexSize);
+                int yPos = panelPaddingY + (int) (y * hexHeight);
                 if (x % 2 == 1) {
                     yPos += hexHeight / 2;
                 }
@@ -179,9 +178,9 @@ public class MapEditor extends JFrame {
     private void drawHexagon(Graphics2D g, int x, int y, TypeTerrain terrain) {
         Polygon hex = new Polygon();
         for (int i = 0; i < 6; i++) {
-            double angle = Math.toRadians(60 * i); // Orientation plate en haut
-            int xi = (int)(x + hexSize * Math.cos(angle));
-            int yi = (int)(y + hexSize * Math.sin(angle));
+            double angle = Math.toRadians(60 * i);
+            int xi = (int) (x + hexSize * Math.cos(angle));
+            int yi = (int) (y + hexSize * Math.sin(angle));
             hex.addPoint(xi, yi);
         }
 
@@ -194,8 +193,8 @@ public class MapEditor extends JFrame {
 
     private Point getHexCenter(int x, int y) {
         double hexHeight = Math.sqrt(3) * hexSize;
-        int xPos = (int)(x * 1.5 * hexSize);
-        int yPos = (int)(y * hexHeight + ((x % 2) * hexHeight / 2));
+        int xPos = (int) (x * 1.5 * hexSize);
+        int yPos = (int) (y * hexHeight + ((x % 2) * hexHeight / 2));
         return new Point(xPos + hexSize, yPos + hexSize);
     }
 
@@ -231,9 +230,10 @@ public class MapEditor extends JFrame {
     }
 
     private class MapMouseListener extends MouseAdapter {
+
         @Override
         public void mouseClicked(MouseEvent e) {
-            // Ajuster pour prendre en compte le scroll
+
             Point mouse = e.getPoint();
             JViewport viewport = (JViewport) mapPanel.getParent();
             Point viewPos = viewport.getViewPosition();
@@ -245,8 +245,8 @@ public class MapEditor extends JFrame {
                     Polygon hex = new Polygon();
                     for (int i = 0; i < 6; i++) {
                         double angle = Math.toRadians(60 * i);
-                        int hx = (int)(center.x + hexSize * Math.cos(angle));
-                        int hy = (int)(center.y + hexSize * Math.sin(angle));
+                        int hx = (int) (center.x + hexSize * Math.cos(angle));
+                        int hy = (int) (center.y + hexSize * Math.sin(angle));
                         hex.addPoint(hx, hy);
                     }
 

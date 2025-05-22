@@ -8,18 +8,18 @@ import javax.sound.sampled.*;
 import javax.swing.*;
 
 public class MainMenu extends JFrame {
+
     private static GameWindow currentGame = null;
     private int unitIndex = 0;
 
-private final String[] unitDescriptions = {
-    "<html><div style='text-align: center;'><b>Archer :</b> Unite a distance, attaque avec un arc longue portee et un poignard en melee. Bonne mobilite.</html>",
-    "<html><div style='text-align: center;'><b>Soldat :</b> Unite equilibree, bien armee pour le combat rapproche avec une epee solide.</html>",
-    "<html><div style='text-align: center;'><b>Cavalier :</b> Unite tres mobile, inflige de lourds degats au corps-a-corps avec sa lance.</html>",
-    "<html><div style='text-align: center;'><b>Mage :</b> Attaquant a distance, faible en defense mais puissant avec ses eclairs magiques.</html>",
-    "<html><div style='text-align: center;'><b>Fantassin :</b> Unite robuste et puissante au corps-a-corps, armee d'une hache.</html>",
-    "<html><div style='text-align: center;'><b>Voleur :</b> Agile et rapide, ideal pour les frappes legeres et les manœuvres d escarmouche avec sa dague.</html>"
-};
-
+    private final String[] unitDescriptions = {
+        "<html><div style='text-align: center;'><b>Archer :</b> Unite a distance, attaque avec un arc longue portee et un poignard en melee. Bonne mobilite.</html>",
+        "<html><div style='text-align: center;'><b>Soldat :</b> Unite equilibree, bien armee pour le combat rapproche avec une epee solide.</html>",
+        "<html><div style='text-align: center;'><b>Cavalier :</b> Unite tres mobile, inflige de lourds degats au corps-a-corps avec sa lance.</html>",
+        "<html><div style='text-align: center;'><b>Mage :</b> Attaquant a distance, faible en defense mais puissant avec ses eclairs magiques.</html>",
+        "<html><div style='text-align: center;'><b>Fantassin :</b> Unite robuste et puissante au corps-a-corps, armee d'une hache.</html>",
+        "<html><div style='text-align: center;'><b>Voleur :</b> Agile et rapide, ideal pour les frappes legeres et les manœuvres d escarmouche avec sa dague.</html>"
+    };
 
     private JLabel unitLabel;
     public static Font gothicFont;
@@ -41,18 +41,17 @@ private final String[] unitDescriptions = {
         background.setLayout(new BorderLayout());
         setContentPane(background);
 
-        // -------- Buttons Panel (Right) --------
         JPanel boutons = new JPanel();
         boutons.setLayout(new BoxLayout(boutons, BoxLayout.Y_AXIS));
         boutons.setOpaque(false);
         boutons.setBorder(BorderFactory.createEmptyBorder(300, 100, 300, 100));
 
         String[] btnLabels = {
-                "Commencer une Partie",
-                "Parties Sauvegardees",
-                "Editeur de Map",
-                "A propos du jeu",
-                "Quitter"
+            "Commencer une Partie",
+            "Parties Sauvegardees",
+            "Editeur de Map",
+            "A propos du jeu",
+            "Quitter"
         };
 
         JButton[] buttons = new JButton[btnLabels.length];
@@ -72,7 +71,6 @@ private final String[] unitDescriptions = {
             btn.setMaximumSize(new Dimension(200, 100));
             btn.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-            // Hover effect
             btn.addMouseListener(new java.awt.event.MouseAdapter() {
                 public void mouseEntered(java.awt.event.MouseEvent evt) {
                     btn.setBackground(hoverColor);
@@ -90,7 +88,6 @@ private final String[] unitDescriptions = {
 
         background.add(boutons, BorderLayout.EAST);
 
-        // -------- Info Box Panel (Bottom Left) --------
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 40, 20));
         bottomPanel.setOpaque(false);
 
@@ -141,32 +138,31 @@ private final String[] unitDescriptions = {
         bottomPanel.add(UnitinfoPanel);
         background.add(bottomPanel, BorderLayout.SOUTH);
 
-        // -------- Button Logic --------
         buttons[0].addActionListener(e -> {
-    StartDialog dialog = new StartDialog(this);
-    dialog.setVisible(true);
+            StartDialog dialog = new StartDialog(this);
+            dialog.setVisible(true);
 
-    String nom1 = dialog.getJoueur1();
-    String nom2 = dialog.getJoueur2();
-    boolean joueur2IA = dialog.isJoueur2IA();
+            String nom1 = dialog.getJoueur1();
+            String nom2 = dialog.getJoueur2();
+            boolean joueur2IA = dialog.isJoueur2IA();
 
-    if (nom1 != null && nom2 != null) {
-        PlateauManager manager = PlateauManager.initialiserNouvellePartie(nom1, nom2, joueur2IA);
+            if (nom1 != null && nom2 != null) {
+                PlateauManager manager = PlateauManager.initialiserNouvellePartie(nom1, nom2, joueur2IA);
 
-        manager.nomJoueur1 = nom1;
-        manager.nomJoueur2 = nom2;
-        manager.joueur1.setNom(nom1);
-        manager.joueur2.setNom(nom2);
+                manager.nomJoueur1 = nom1;
+                manager.nomJoueur2 = nom2;
+                manager.joueur1.setNom(nom1);
+                manager.joueur2.setNom(nom2);
 
-        getContentPane().removeAll();
-        currentGame = new GameWindow(this, manager);
-        getContentPane().add(currentGame, BorderLayout.CENTER);
+                getContentPane().removeAll();
+                currentGame = new GameWindow(this, manager);
+                getContentPane().add(currentGame, BorderLayout.CENTER);
 
-        revalidate();
-        repaint();
-        requestFocusInWindow();
-    }
-});
+                revalidate();
+                repaint();
+                requestFocusInWindow();
+            }
+        });
 
         buttons[1].addActionListener(e -> showStyledSaveDialog());
 
@@ -321,7 +317,9 @@ private final String[] unitDescriptions = {
 
     private void showStyledSaveDialog() {
         File folder = new File("sauvegardes");
-        if (!folder.exists()) folder.mkdirs();
+        if (!folder.exists()) {
+            folder.mkdirs();
+        }
 
         File[] saves = folder.listFiles((dir, name) -> name.endsWith(".save"));
         if (saves == null || saves.length == 0) {
@@ -357,14 +355,25 @@ private final String[] unitDescriptions = {
         JScrollPane scrollPane = new JScrollPane(list);
 
         searchField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
-            public void insertUpdate(javax.swing.event.DocumentEvent e) { filter(); }
-            public void removeUpdate(javax.swing.event.DocumentEvent e) { filter(); }
-            public void changedUpdate(javax.swing.event.DocumentEvent e) { filter(); }
+            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                filter();
+            }
+
+            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                filter();
+            }
+
+            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                filter();
+            }
+
             void filter() {
                 String text = searchField.getText().toLowerCase();
                 model.clear();
                 for (String name : noms) {
-                    if (name.toLowerCase().contains(text)) model.addElement(name);
+                    if (name.toLowerCase().contains(text)) {
+                        model.addElement(name);
+                    }
                 }
             }
         });
@@ -396,6 +405,7 @@ private final String[] unitDescriptions = {
                 public void mouseEntered(java.awt.event.MouseEvent evt) {
                     b.setBackground(new Color(60, 90, 150));
                 }
+
                 public void mouseExited(java.awt.event.MouseEvent evt) {
                     b.setBackground(buttonBg);
                 }
@@ -426,6 +436,7 @@ private final String[] unitDescriptions = {
 }
 
 class BackgroundPanel extends JPanel {
+
     private final Image background;
 
     public BackgroundPanel(String imagePath) {

@@ -6,14 +6,14 @@ import java.util.List;
 import model.*;
 
 public class PlateauManager implements Serializable {
+
     public PlateauDeJeu plateau;
     public String nomJoueur1;
     public String nomJoueur2;
     public Joueur joueur1;
     public Joueur joueur2;
-    public Joueur joueurActif; // ← ❶ type Joueur (plus int)
+    public Joueur joueurActif;
 
-    //IA
     public static PlateauManager initialiserNouvellePartie(String nom1, String nom2, boolean joueur2IA) {
         PlateauManager m = new PlateauManager();
 
@@ -22,32 +22,30 @@ public class PlateauManager implements Serializable {
 
         m.plateau = new PlateauDeJeu("map/map.txt", "map/decor.txt");
 
-// Ajoute cette ligne pour associer les joueurs au plateau
-m.plateau.setJoueur1(m.joueur1);
-m.plateau.setJoueur2(m.joueur2);
+        m.plateau.setJoueur1(m.joueur1);
+        m.plateau.setJoueur2(m.joueur2);
 
         placerUnitesParJoueur(m.plateau, m.joueur1, m.joueur2);
 
-        m.joueurActif = m.joueur1; // ← ❷ premier joueur actif
+        m.joueurActif = m.joueur1;
 
-         //IA
         if (m.joueurActif.estIA()) {
-            //m.joueurActif.jouerTour();
+
             m.joueurActif = m.joueur1;
         }
 
         List<Joueur> tousLesJoueurs = List.of(m.joueur1, m.joueur2);
         m.joueur1.setTousLesJoueurs(tousLesJoueurs);
         m.joueur2.setTousLesJoueurs(tousLesJoueurs);
-        
 
         return m;
     }
 
     public static void sauvegarderDansFichier(PlateauManager data, String nom) {
         File folder = new File("sauvegardes");
-        if (!folder.exists())
+        if (!folder.exists()) {
             folder.mkdirs();
+        }
 
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("sauvegardes/" + nom + ".save"))) {
             oos.writeObject(data);
@@ -59,104 +57,102 @@ m.plateau.setJoueur2(m.joueur2);
     }
 
     public static PlateauManager chargerDepuisFichier(String nom) {
-    try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("sauvegardes/" + nom + ".save"))) {
-        PlateauManager loaded = (PlateauManager) ois.readObject();
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("sauvegardes/" + nom + ".save"))) {
+            PlateauManager loaded = (PlateauManager) ois.readObject();
 
-        // 🔧 FIX: restore icons manually
-        for (int y = 0; y < loaded.plateau.getHauteur(); y++) {
-            for (int x = 0; x < loaded.plateau.getLargeur(); x++) {
-                Unite u = loaded.plateau.getHexagone(x, y).getUnite();
-                if (u != null) {
-                       u.reinitialiserIcone();
-    u.setPosition(loaded.plateau.getHexagone(x, y)); // 👈 ADD THIS
-}
+            for (int y = 0; y < loaded.plateau.getHauteur(); y++) {
+                for (int x = 0; x < loaded.plateau.getLargeur(); x++) {
+                    Unite u = loaded.plateau.getHexagone(x, y).getUnite();
+                    if (u != null) {
+                        u.reinitialiserIcone();
+                        u.setPosition(loaded.plateau.getHexagone(x, y));
+                    }
+                }
             }
+
+            return loaded;
+
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+            return null;
         }
-
-        return loaded;
-
-    } catch (IOException | ClassNotFoundException e) {
-        e.printStackTrace();
-        return null;
     }
-}
 
-      private static void placerUnitesParJoueur(PlateauDeJeu plat, Joueur j1, Joueur j2) {
-        // Joueur 1
+    private static void placerUnitesParJoueur(PlateauDeJeu plat, Joueur j1, Joueur j2) {
+
         Unite u1j1 = nouvelleUnite("Mage", "resources/mage.png", j1);
         Hexagone h1j1 = plat.getHexagone(33, 27);
         h1j1.setUnite(u1j1);
         u1j1.setPosition(h1j1);
         j1.ajouterUnite(u1j1);
-    
+
         Unite u2j1 = nouvelleUnite("Soldat", "resources/soldat.png", j1);
         Hexagone h2j1 = plat.getHexagone(34, 27);
         h2j1.setUnite(u2j1);
         u2j1.setPosition(h2j1);
         j1.ajouterUnite(u2j1);
-    
+
         Unite u3j1 = nouvelleUnite("Cavalier", "resources/cavalier.png", j1);
         Hexagone h3j1 = plat.getHexagone(34, 28);
         h3j1.setUnite(u3j1);
         u3j1.setPosition(h3j1);
         j1.ajouterUnite(u3j1);
-    
+
         Unite u4j1 = nouvelleUnite("Fantassin", "resources/fantassin.png", j1);
         Hexagone h4j1 = plat.getHexagone(35, 27);
         h4j1.setUnite(u4j1);
         u4j1.setPosition(h4j1);
         j1.ajouterUnite(u4j1);
-    
+
         Unite u5j1 = nouvelleUnite("Voleur", "resources/voleur.png", j1);
         Hexagone h5j1 = plat.getHexagone(35, 28);
         h5j1.setUnite(u5j1);
         u5j1.setPosition(h5j1);
         j1.ajouterUnite(u5j1);
-    
+
         Unite u6j1 = nouvelleUnite("Archer", "resources/archer.png", j1);
         Hexagone h6j1 = plat.getHexagone(36, 28);
         h6j1.setUnite(u6j1);
         u6j1.setPosition(h6j1);
         j1.ajouterUnite(u6j1);
-    
-        // Joueur 2 
+
         Unite u1j2 = nouvelleUnite("Mage", "resources/mage.png", j2);
         Hexagone h1j2 = plat.getHexagone(5, 20);
         h1j2.setUnite(u1j2);
         u1j2.setPosition(h1j2);
         j2.ajouterUnite(u1j2);
-    
+
         Unite u2j2 = nouvelleUnite("Soldat", "resources/soldat.png", j2);
         Hexagone h2j2 = plat.getHexagone(6, 20);
         h2j2.setUnite(u2j2);
         u2j2.setPosition(h2j2);
         j2.ajouterUnite(u2j2);
-    
+
         Unite u3j2 = nouvelleUnite("Cavalier", "resources/cavalier.png", j2);
         Hexagone h3j2 = plat.getHexagone(6, 21);
         h3j2.setUnite(u3j2);
         u3j2.setPosition(h3j2);
         j2.ajouterUnite(u3j2);
-    
+
         Unite u4j2 = nouvelleUnite("Fantassin", "resources/fantassin.png", j2);
         Hexagone h4j2 = plat.getHexagone(7, 20);
         h4j2.setUnite(u4j2);
         u4j2.setPosition(h4j2);
         j2.ajouterUnite(u4j2);
-    
+
         Unite u5j2 = nouvelleUnite("Voleur", "resources/voleur.png", j2);
-        Hexagone h5j2 = plat.getHexagone(7, 21 );
+        Hexagone h5j2 = plat.getHexagone(7, 21);
         h5j2.setUnite(u5j2);
         u5j2.setPosition(h5j2);
         j2.ajouterUnite(u5j2);
-    
+
         Unite u6j2 = nouvelleUnite("Archer", "resources/archer.png", j2);
         Hexagone h6j2 = plat.getHexagone(8, 21);
         h6j2.setUnite(u6j2);
         u6j2.setPosition(h6j2);
         j2.ajouterUnite(u6j2);
     }
-    
+
     private static Unite nouvelleUnite(String nom, String img, Joueur owner) {
         int pv = 30;
         int att = 5;
@@ -208,16 +204,14 @@ m.plateau.setJoueur2(m.joueur2);
         return u;
     }
 
-
-
     public void passerAuJoueurSuivant(BoardPanel board) {
         joueurActif = (joueurActif == joueur1) ? joueur2 : joueur1;
-    
+
         System.out.println("🔄 Nouveau joueur actif : " + joueurActif.getNom());
-    
+
         if (joueurActif.estIA()) {
             joueurActif.jouerTour(board);
         }
     }
-    
+
 }

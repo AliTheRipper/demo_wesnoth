@@ -7,16 +7,27 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Représente le plateau de jeu, contenant des hexagones, des joueurs et des
+ * unités. Le plateau est initialisé à partir d'un fichier de terrain et
+ * éventuellement d'un fichier de décor.
+ */
 public class PlateauDeJeu implements Serializable {
+
     private int largeur;
     private int hauteur;
     private Hexagone[][] hexagones;
     private Joueur joueur1;
     private Joueur joueur2;
+
     public PlateauDeJeu(String terrainFile) {
         this(terrainFile, null);
     }
 
+    /**
+     * Constructeur de la classe PlateauDeJeu. Charge le plateau à partir d'un
+     * fichier de terrain et d'un fichier de décor.
+     */
     public PlateauDeJeu(String terrainFile, String decorFile) {
         try {
             List<String> terrainLines = Files.readAllLines(Paths.get(terrainFile));
@@ -36,8 +47,7 @@ public class PlateauDeJeu implements Serializable {
                     //IA
                     Hexagone hex = new Hexagone(x, y, terrain);
                     hex.setPlateau(this); // pour l'IA
-                    hexagones[x][y] = hex;  
-
+                    hexagones[x][y] = hex;
 
                     if (decorLine != null && x < decorLine.length()) {
                         char decoChar = decorLine.charAt(x);
@@ -53,37 +63,66 @@ public class PlateauDeJeu implements Serializable {
         }
     }
 
+    /**
+     * Convertit un caractère en type de terrain.
+     */
     private TypeTerrain convertirSymbole(char c) {
         switch (c) {
-            case 'G': return TypeTerrain.GREEN;
-            case 'P': return TypeTerrain.STONE_PATH;
-            case 'F': return TypeTerrain.LEAF;
-            case 'M': return TypeTerrain.BASIC;
-            case 'H': return TypeTerrain.REGULAR;
-            case 'V': return TypeTerrain.REGULAR_TILE;
-            case 'C': return TypeTerrain.RUINED_KEEP;
-            case 'R': return TypeTerrain.RUIN;
-            case 'B': return TypeTerrain.BEACH;
-            case 'D': return TypeTerrain.DIRT;
-            case 'Y': return TypeTerrain.DRY;
-            case 'J': return TypeTerrain.SEMI_DRY;
-            case 'L': return TypeTerrain.LEAF;
-            case 'O': return TypeTerrain.OCEAN;
-            case 'K': return TypeTerrain.KELP;
-            case 'S': return TypeTerrain.SUNKEN_RUIN;
-            case 'W': return TypeTerrain.COAST;
-            case 'E': return TypeTerrain.COAST_GREY;
-            case 'X': return TypeTerrain.FORD;
-            case 'A': return TypeTerrain.WATER;
-            default: return TypeTerrain.GREEN;
+            case 'G':
+                return TypeTerrain.GREEN;
+            case 'P':
+                return TypeTerrain.STONE_PATH;
+            case 'F':
+                return TypeTerrain.LEAF;
+            case 'M':
+                return TypeTerrain.BASIC;
+            case 'H':
+                return TypeTerrain.REGULAR;
+            case 'V':
+                return TypeTerrain.REGULAR_TILE;
+            case 'C':
+                return TypeTerrain.RUINED_KEEP;
+            case 'R':
+                return TypeTerrain.RUIN;
+            case 'B':
+                return TypeTerrain.BEACH;
+            case 'D':
+                return TypeTerrain.DIRT;
+            case 'Y':
+                return TypeTerrain.DRY;
+            case 'J':
+                return TypeTerrain.SEMI_DRY;
+            case 'L':
+                return TypeTerrain.LEAF;
+            case 'O':
+                return TypeTerrain.OCEAN;
+            case 'K':
+                return TypeTerrain.KELP;
+            case 'S':
+                return TypeTerrain.SUNKEN_RUIN;
+            case 'W':
+                return TypeTerrain.COAST;
+            case 'E':
+                return TypeTerrain.COAST_GREY;
+            case 'X':
+                return TypeTerrain.FORD;
+            case 'A':
+                return TypeTerrain.WATER;
+            default:
+                return TypeTerrain.GREEN;
         }
     }
 
+    /**
+     * Convertit un caractère en décoration.
+     */
     private Decoration convertirDecoration(char c) {
         return Decoration.fromSymbol(c);
     }
 
-
+    /**
+     * Retourne l'hexagone à la position (x, y).
+     */
     public Hexagone getHexagone(int x, int y) {
         return hexagones[x][y];
     }
@@ -96,6 +135,9 @@ public class PlateauDeJeu implements Serializable {
         return hauteur;
     }
 
+    /**
+     * Retourne la liste des hexagones visibles.
+     */
     public int getCoutDeplacement(TypeTerrain terrain) {
         switch (terrain) {
             case GREEN:
@@ -138,17 +180,30 @@ public class PlateauDeJeu implements Serializable {
         }
     }
 
-public int getBonusDefense(Hexagone hex) {
-    if (hex.getTypeTerrain().getCoutDeplacement() >= 999 &&
-        (hex.getDecoration() == Decoration.WOOD_NS ||
-         hex.getDecoration() == Decoration.WOOD_SE ||
-         hex.getDecoration() == Decoration.WOOD_SW ||
-         hex.getDecoration() == Decoration.STONE_BRIDGE_NS)) {
-        return TypeTerrain.GREEN.getBonusDefense(); // Same as grass
+    /**
+     * Retourne le coût de déplacement pour un hexagone donné.
+     */
+    public int getCoutDeplacement(Hexagone hex) {
+        if (hex.getTypeTerrain().getCoutDeplacement() >= 999
+                && (hex.getDecoration() == Decoration.WOOD_NS
+                || hex.getDecoration() == Decoration.WOOD_SE
+                || hex.getDecoration() == Decoration.WOOD_SW
+                || hex.getDecoration() == Decoration.STONE_BRIDGE_NS)) {
+            return TypeTerrain.GREEN.getCoutDeplacement();
+        }
+        return hex.getTypeTerrain().getCoutDeplacement();
     }
-    return hex.getTypeTerrain().getBonusDefense();
-}
 
+    public int getBonusDefense(Hexagone hex) {
+        if (hex.getTypeTerrain().getCoutDeplacement() >= 999
+                && (hex.getDecoration() == Decoration.WOOD_NS
+                || hex.getDecoration() == Decoration.WOOD_SE
+                || hex.getDecoration() == Decoration.WOOD_SW
+                || hex.getDecoration() == Decoration.STONE_BRIDGE_NS)) {
+            return TypeTerrain.GREEN.getBonusDefense();
+        }
+        return hex.getTypeTerrain().getBonusDefense();
+    }
 
     public List<Unite> getToutesLesUnites() {
         List<Unite> unites = new ArrayList<>();
@@ -162,7 +217,6 @@ public int getBonusDefense(Hexagone hex) {
         }
         return unites;
     }
-
 
     public Joueur getJoueur1() {
         return joueur1;
@@ -179,7 +233,5 @@ public int getBonusDefense(Hexagone hex) {
     public void setJoueur2(Joueur joueur) {
         this.joueur2 = joueur;
     }
-    
-
 
 }

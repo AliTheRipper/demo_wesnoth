@@ -21,9 +21,23 @@ public enum TypeUnite {
         this.pointsVieMax = pointsVieMax;
     }
 
-    public int getAttaque() { return attaque; }
-    public int getDefense() { return defense; }
-    public int getDeplacement() { return deplacement; }
-    public int getChampDeVision() { return vision; }
-    public int getPointsVieMax() { return pointsVieMax; }
+    public int getAttaque() {
+        return attaque;
+    }
+
+    public int getDefense() {
+        return defense;
+    }
+
+    public int getDeplacement() {
+        return deplacement;
+    }
+
+    public int getChampDeVision() {
+        return vision;
+    }
+
+    public int getPointsVieMax() {
+        return pointsVieMax;
+    }
 }

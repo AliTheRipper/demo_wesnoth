@@ -1,4 +1,5 @@
 package view;
+
 import java.awt.*;
 import java.io.File;
 import java.util.Map;
@@ -11,19 +12,17 @@ import model.TypeTerrain;
 import model.Unite;
 
 /**
- * Panneau latéral affichant les informations du joueur : terrain occupé,
- * bonus de défense, statistiques de l'unité sélectionnée ainsi que les
- * actions courantes (fin de tour, annulation, sauvegarde…).
+ * Panneau latéral affichant les informations du joueur : terrain occupé, bonus
+ * de défense, statistiques de l'unité sélectionnée ainsi que les actions
+ * courantes (fin de tour, annulation, sauvegarde…).
  */
 public class InfoPanel extends JPanel {
 
-    /* ───────────────── TITRES / INFOS GÉNÉRALES ───────────────── */
     private final JLabel joueurActifLabel = new JLabel("Joueur actif : ", SwingConstants.CENTER);
     private final JLabel terrainEtDefenseLabel = new JLabel("-", SwingConstants.CENTER);
-// ────────────── New field ──────────────
-private final JLabel coordLabel = new JLabel("Coord : -", SwingConstants.CENTER);
 
-    /* ───────────────── IMAGE & STATS DE L'UNITÉ ───────────────── */
+    private final JLabel coordLabel = new JLabel("Coord : -", SwingConstants.CENTER);
+
     private final JLabel uniteImageLabel = new JLabel();
 
     private final JLabel nomLabel = new JLabel("Nom : -");
@@ -33,12 +32,9 @@ private final JLabel coordLabel = new JLabel("Coord : -", SwingConstants.CENTER)
     private final JLabel defenseLabel = new JLabel("Defense : -");
     private final JLabel deplacementLabel = new JLabel("Deplacement : -");
 
-    /* ───────────────── DESCRIPTION & ARMES ───────────────── */
     private final JTextArea descriptionLabel = new JTextArea("Description : -");
-   private final JTextArea attaqueDetailsLabel = new JTextArea("Armes : -");
+    private final JTextArea attaqueDetailsLabel = new JTextArea("Armes : -");
 
-
-    /* ───────────────── BOUTONS DE CONTRÔLE ───────────────── */
     private final JButton finTourButton = new JButton("Fin du tour");
     private final JButton annulerMouvementButton = new JButton("Annuler mouvement");
     private final JButton sauvegarderButton = new JButton("Sauvegarder");
@@ -48,7 +44,6 @@ private final JLabel coordLabel = new JLabel("Coord : -", SwingConstants.CENTER)
     private final String nomJoueur2;
     private final PlateauDeJeu plateau;
 
-    /* ───────────────── THÈME COULEUR ───────────────── */
     public static final Color BACKGROUND = new Color(20, 20, 30);
     private static final Color GOLD = new Color(212, 175, 55);
     public static final Color TEXT = Color.WHITE;
@@ -59,69 +54,60 @@ private final JLabel coordLabel = new JLabel("Coord : -", SwingConstants.CENTER)
     private final JButton zoomOutButton = new JButton("-");
     private MiniMapPanel miniMapPanel;
 
-private static final Map<String, String> UNIT_DESCRIPTIONS = Map.of(
-    "Archer", "Unite a distance, efficace pour harceler l ennemi a longue portee.",
-    "Soldat", "Unite equilibree avec une bonne defense et attaque en melee.",
-    "Cavalier", "Tres mobile, il excelle dans les attaques rapides.",
-    "Mage", "Inflige de lourds degats a distance, mais reste fragile.",
-    "Fantassin", "Robuste au corps a corps avec une hache redoutable.",
-    "Voleur", "Rapide et discret, ideal pour les escarmouches et les fuites."
-);
+    private static final Map<String, String> UNIT_DESCRIPTIONS = Map.of(
+            "Archer", "Unite a distance, efficace pour harceler l ennemi a longue portee.",
+            "Soldat", "Unite equilibree avec une bonne defense et attaque en melee.",
+            "Cavalier", "Tres mobile, il excelle dans les attaques rapides.",
+            "Mage", "Inflige de lourds degats a distance, mais reste fragile.",
+            "Fantassin", "Robuste au corps a corps avec une hache redoutable.",
+            "Voleur", "Rapide et discret, ideal pour les escarmouches et les fuites."
+    );
 
+    private final Font gothic;
 
-private final Font gothic;
+    public static Font GOTHIC_FALLBACK;
 
-public static Font GOTHIC_FALLBACK;
-
-static {
-    try {
-        GOTHIC_FALLBACK = Font.createFont(Font.TRUETYPE_FONT, new File("resources/fonts/UnifrakturCook-Bold.ttf"))
-                              .deriveFont(Font.PLAIN, 16f);
-    } catch (Exception e) {
-        GOTHIC_FALLBACK = new Font("Serif", Font.PLAIN, 16);
-        System.err.println("Erreur chargement police gothique fallback : " + e.getMessage());
+    static {
+        try {
+            GOTHIC_FALLBACK = Font.createFont(Font.TRUETYPE_FONT, new File("resources/fonts/UnifrakturCook-Bold.ttf"))
+                    .deriveFont(Font.PLAIN, 16f);
+        } catch (Exception e) {
+            GOTHIC_FALLBACK = new Font("Serif", Font.PLAIN, 16);
+            System.err.println("Erreur chargement police gothique fallback : " + e.getMessage());
+        }
     }
-}
 
-    /* ═════════════════════════════════════════════════════════════ */
-    /* Constructeur */
-    /* ═════════════════════════════════════════════════════════════ */
     public InfoPanel(String nomJoueur1, String nomJoueur2, PlateauDeJeu plateau, Font gothicFont) {
-    this.nomJoueur1 = nomJoueur1;
-    this.nomJoueur2 = nomJoueur2;
-    this.plateau = plateau;
-    this.gothic = gothicFont;
-
+        this.nomJoueur1 = nomJoueur1;
+        this.nomJoueur2 = nomJoueur2;
+        this.plateau = plateau;
+        this.gothic = gothicFont;
 
         setLayout(new BorderLayout());
-        setPreferredSize(new Dimension(300, 0)); // largeur propre
+        setPreferredSize(new Dimension(300, 0));
         setMinimumSize(new Dimension(250, 0));
         setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
         setBackground(BACKGROUND);
 
-      /* ---------- TOP PANEL with MiniMap and Joueur Actif ---------- */
-JPanel topPanel = new JPanel();
-topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.Y_AXIS));
-topPanel.setBackground(BACKGROUND);
+        JPanel topPanel = new JPanel();
+        topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.Y_AXIS));
+        topPanel.setBackground(BACKGROUND);
 
-// MiniMap first
-miniMapPanel = new MiniMapPanel(plateau, null);
-miniMapPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
-topPanel.add(Box.createVerticalStrut(0));
-topPanel.add(miniMapPanel);
-topPanel.add(Box.createVerticalStrut(10));
+        miniMapPanel = new MiniMapPanel(plateau, null);
+        miniMapPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        topPanel.add(Box.createVerticalStrut(0));
+        topPanel.add(miniMapPanel);
+        topPanel.add(Box.createVerticalStrut(10));
 
-// Joueur actif below minimap
-joueurActifLabel.setFont(gothic.deriveFont(Font.BOLD, 18f));
-joueurActifLabel.setForeground(TEXT);
-joueurActifLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-joueurActifLabel.setBorder(BorderFactory.createEmptyBorder(0, 10, 5, 10));
-topPanel.add(joueurActifLabel);
-topPanel.add(Box.createVerticalStrut(10));
+        joueurActifLabel.setFont(gothic.deriveFont(Font.BOLD, 18f));
+        joueurActifLabel.setForeground(TEXT);
+        joueurActifLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        joueurActifLabel.setBorder(BorderFactory.createEmptyBorder(0, 10, 5, 10));
+        topPanel.add(joueurActifLabel);
+        topPanel.add(Box.createVerticalStrut(10));
 
-add(topPanel, BorderLayout.NORTH);
+        add(topPanel, BorderLayout.NORTH);
 
-        /* ---------- Zone centrale (scrollable) ---------- */
         JPanel center = new JPanel();
         center.setLayout(new BoxLayout(center, BoxLayout.Y_AXIS));
         center.setBackground(BACKGROUND);
@@ -131,25 +117,23 @@ add(topPanel, BorderLayout.NORTH);
         terrainEtDefenseLabel.setForeground(TEXT);
         terrainEtDefenseLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         center.add(terrainEtDefenseLabel);
-coordLabel.setFont(gothic.deriveFont(Font.PLAIN, 13f));
-coordLabel.setForeground(TEXT);
-coordLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-center.add(coordLabel);
-center.add(Box.createVerticalStrut(5));
+        coordLabel.setFont(gothic.deriveFont(Font.PLAIN, 13f));
+        coordLabel.setForeground(TEXT);
+        coordLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        center.add(coordLabel);
+        center.add(Box.createVerticalStrut(5));
 
-        // Image & stats
         JPanel stats = new JPanel();
-stats.setLayout(new BoxLayout(stats, BoxLayout.X_AXIS));
-stats.setBackground(BACKGROUND);
-stats.setOpaque(false);
-stats.setAlignmentX(Component.CENTER_ALIGNMENT);
+        stats.setLayout(new BoxLayout(stats, BoxLayout.X_AXIS));
+        stats.setBackground(BACKGROUND);
+        stats.setOpaque(false);
+        stats.setAlignmentX(Component.CENTER_ALIGNMENT);
         stats.setBackground(BACKGROUND);
         stats.setOpaque(false);
 
-
-       uniteImageLabel.setPreferredSize(new Dimension(64, 64));
-uniteImageLabel.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10)); // spacing
-stats.add(uniteImageLabel);
+        uniteImageLabel.setPreferredSize(new Dimension(64, 64));
+        uniteImageLabel.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
+        stats.add(uniteImageLabel);
 
         stats.add(uniteImageLabel, BorderLayout.WEST);
 
@@ -158,19 +142,15 @@ stats.add(uniteImageLabel);
         right.setBackground(BACKGROUND);
         right.setOpaque(false);
 
-        for (JLabel l : new JLabel[] { nomLabel, joueurLabel, pvLabel, attaqueLabel, defenseLabel, deplacementLabel }) {
-    l.setFont(gothic.deriveFont(Font.PLAIN, 13f));
-    l.setForeground(TEXT);
-    l.setBorder(BorderFactory.createEmptyBorder(2, 10, 2, 5));
-    right.add(l);
-}
+        for (JLabel l : new JLabel[]{nomLabel, joueurLabel, pvLabel, attaqueLabel, defenseLabel, deplacementLabel}) {
+            l.setFont(gothic.deriveFont(Font.PLAIN, 13f));
+            l.setForeground(TEXT);
+            l.setBorder(BorderFactory.createEmptyBorder(2, 10, 2, 5));
+            right.add(l);
+        }
 
-
-        //stats.add(Box.createRigidArea(new Dimension(10, 0)));
         stats.add(right, BorderLayout.CENTER);
         center.add(stats);
-
-        // Description & armes
 
         descriptionLabel.setFont(gothic.deriveFont(Font.PLAIN, 12f));
         descriptionLabel.setForeground(TEXT);
@@ -185,84 +165,73 @@ stats.add(uniteImageLabel);
         attaqueDetailsLabel.setOpaque(false);
         attaqueDetailsLabel.setLineWrap(true);
         attaqueDetailsLabel.setWrapStyleWord(true);
-        attaqueDetailsLabel.setRows(1); // avoid auto-expansion
-        attaqueDetailsLabel.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10)); // no top/bottom gap
-// Panel for description and attack details
-JPanel textPanel = new JPanel();
-textPanel.setLayout(new BoxLayout(textPanel, BoxLayout.Y_AXIS));
-textPanel.setBackground(BACKGROUND);
-textPanel.setOpaque(false);
+        attaqueDetailsLabel.setRows(1);
+        attaqueDetailsLabel.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
 
-// Description
-descriptionLabel.setFont(gothic.deriveFont(Font.PLAIN, 12f));
-descriptionLabel.setForeground(TEXT);
-descriptionLabel.setEditable(false);
-descriptionLabel.setOpaque(false);
-descriptionLabel.setLineWrap(true);
-descriptionLabel.setWrapStyleWord(true);
-descriptionLabel.setRows(3); // prevents vertical stretch
-descriptionLabel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50)); // limit height
-descriptionLabel.setBorder(BorderFactory.createEmptyBorder(6, 10, 2, 10));
+        JPanel textPanel = new JPanel();
+        textPanel.setLayout(new BoxLayout(textPanel, BoxLayout.Y_AXIS));
+        textPanel.setBackground(BACKGROUND);
+        textPanel.setOpaque(false);
 
-// Armes
-attaqueDetailsLabel.setFont(gothic.deriveFont(Font.PLAIN, 12f));
-attaqueDetailsLabel.setForeground(TEXT);
-attaqueDetailsLabel.setEditable(false);
-attaqueDetailsLabel.setOpaque(false);
-attaqueDetailsLabel.setLineWrap(true);
-attaqueDetailsLabel.setWrapStyleWord(true);
-attaqueDetailsLabel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 20));
-attaqueDetailsLabel.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
+        descriptionLabel.setFont(gothic.deriveFont(Font.PLAIN, 12f));
+        descriptionLabel.setForeground(TEXT);
+        descriptionLabel.setEditable(false);
+        descriptionLabel.setOpaque(false);
+        descriptionLabel.setLineWrap(true);
+        descriptionLabel.setWrapStyleWord(true);
+        descriptionLabel.setRows(3);
+        descriptionLabel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
+        descriptionLabel.setBorder(BorderFactory.createEmptyBorder(6, 10, 2, 10));
 
-textPanel.add(descriptionLabel);
-textPanel.add(Box.createVerticalStrut(2));
-textPanel.add(attaqueDetailsLabel);
+        attaqueDetailsLabel.setFont(gothic.deriveFont(Font.PLAIN, 12f));
+        attaqueDetailsLabel.setForeground(TEXT);
+        attaqueDetailsLabel.setEditable(false);
+        attaqueDetailsLabel.setOpaque(false);
+        attaqueDetailsLabel.setLineWrap(true);
+        attaqueDetailsLabel.setWrapStyleWord(true);
+        attaqueDetailsLabel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 20));
+        attaqueDetailsLabel.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
 
-center.add(textPanel);
+        textPanel.add(descriptionLabel);
+        textPanel.add(Box.createVerticalStrut(2));
+        textPanel.add(attaqueDetailsLabel);
 
+        center.add(textPanel);
 
-        // Ajoute le panneau central dans un JScrollPane
         JScrollPane scroll = new JScrollPane(center);
         scroll.setBorder(null);
         scroll.setOpaque(false);
         scroll.getViewport().setOpaque(false);
         scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
-        scroll.getVerticalScrollBar().setUnitIncrement(12); // défilement fluide
+        scroll.getVerticalScrollBar().setUnitIncrement(12);
 
         add(scroll, BorderLayout.CENTER);
 
-        /* ---------- Boutons ---------- */
         JPanel south = new JPanel(new GridLayout(0, 1, 0, 10));
         south.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
         south.setBackground(BACKGROUND);
-        for (JButton b : new JButton[] {
-    finTourButton,
-    annulerMouvementButton,
-    sauvegarderButton,
-    finPartieButton }) {
-    styliseBouton(b);
-    south.add(b);
-}
+        for (JButton b : new JButton[]{
+            finTourButton,
+            annulerMouvementButton,
+            sauvegarderButton,
+            finPartieButton}) {
+            styliseBouton(b);
+            south.add(b);
+        }
 
-// Add zoom buttons side by side
-JPanel zoomPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
-zoomPanel.setBackground(BACKGROUND);
-styliseBouton(zoomInButton);
-styliseBouton(zoomOutButton);
-zoomPanel.add(zoomInButton);
-zoomPanel.add(zoomOutButton);
-south.add(zoomPanel);
+        JPanel zoomPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
+        zoomPanel.setBackground(BACKGROUND);
+        styliseBouton(zoomInButton);
+        styliseBouton(zoomOutButton);
+        zoomPanel.add(zoomInButton);
+        zoomPanel.add(zoomOutButton);
+        south.add(zoomPanel);
 
         add(south, BorderLayout.SOUTH);
 
         majJoueurActif(new Joueur(nomJoueur1, false, ""));
     }
-
-
-    /* ═════════════════════════════════════════════════════════════ */
-    /* Mise à jour dynamique */
-    /* ═════════════════════════════════════════════════════════════ */
 
     public void majInfos(Unite u) {
         if (u == null) {
@@ -281,14 +250,14 @@ south.add(zoomPanel);
 
         nomLabel.setText("Nom : " + u.getNom());
         String joueurNom = u.getJoueur().getNom();
-if (joueurNom.equals("Humain 1")) {
-    joueurNom = nomJoueur1;
-} else if (joueurNom.equals("Humain 2")) {
-    joueurNom = nomJoueur2;
-} else if (u.getJoueur().estIA() || joueurNom.equals("IA")) {
-    joueurNom = "Robot";
-}
-joueurLabel.setText("Joueur : " + joueurNom);
+        if (joueurNom.equals("Humain 1")) {
+            joueurNom = nomJoueur1;
+        } else if (joueurNom.equals("Humain 2")) {
+            joueurNom = nomJoueur2;
+        } else if (u.getJoueur().estIA() || joueurNom.equals("IA")) {
+            joueurNom = "Robot";
+        }
+        joueurLabel.setText("Joueur : " + joueurNom);
 
         pvLabel.setText("PV : " + u.getPointsVie());
         attaqueLabel.setText("Attaque : " + u.getAttaque());
@@ -296,56 +265,52 @@ joueurLabel.setText("Joueur : " + joueurNom);
         deplacementLabel.setText("Deplacement : " + u.getDeplacementRestant());
 
         if (u.getIcone() != null) {
-    Image img = u.getIcone().getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH);
-    uniteImageLabel.setIcon(new ImageIcon(img));
-} else {
-    uniteImageLabel.setIcon(null); // fallback
-}
-
+            Image img = u.getIcone().getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH);
+            uniteImageLabel.setIcon(new ImageIcon(img));
+        } else {
+            uniteImageLabel.setIcon(null);
+        }
 
         Hexagone hex = u.getPosition();
         if (hex != null) {
-    TypeTerrain tt = hex.getTypeTerrain();
-    terrainEtDefenseLabel.setText("Bonus defense : " + tt.getBonusDefense() + "%");
-} else {
-    terrainEtDefenseLabel.setText("Bonus defense : ?");
-}
+            TypeTerrain tt = hex.getTypeTerrain();
+            terrainEtDefenseLabel.setText("Bonus defense : " + tt.getBonusDefense() + "%");
+        } else {
+            terrainEtDefenseLabel.setText("Bonus defense : ?");
+        }
 
-
-String nom = u.getNom();
-String description = UNIT_DESCRIPTIONS.getOrDefault(nom, "Unité sans description.");
-descriptionLabel.setText("Description : " + description);
+        String nom = u.getNom();
+        String description = UNIT_DESCRIPTIONS.getOrDefault(nom, "Unité sans description.");
+        descriptionLabel.setText("Description : " + description);
 
         attaqueDetailsLabel.setText("Armes : " + u.getArmes().stream()
                 .map(arme -> arme.getNom())
                 .reduce((a, b) -> a + ", " + b).orElse("-"));
     }
+
     public MiniMapPanel getMiniMapPanel() {
         return miniMapPanel;
     }
-
 
     public void majDeplacement(int val) {
         deplacementLabel.setText("Deplacement : " + val);
     }
 
- public void majJoueurActif(Joueur j) {
-    String affichage;
+    public void majJoueurActif(Joueur j) {
+        String affichage;
 
-    if (j.equals(plateau.getJoueur1())) {
-        affichage = nomJoueur1;
-    } else if (j.equals(plateau.getJoueur2())) {
-        affichage = nomJoueur2;
-    } else if (j.estIA()) {
-        affichage = "Robot";
-    } else {
-        affichage = j.getNom();
+        if (j.equals(plateau.getJoueur1())) {
+            affichage = nomJoueur1;
+        } else if (j.equals(plateau.getJoueur2())) {
+            affichage = nomJoueur2;
+        } else if (j.estIA()) {
+            affichage = "Robot";
+        } else {
+            affichage = j.getNom();
+        }
+
+        joueurActifLabel.setText("Joueur actif : " + affichage);
     }
-
-    joueurActifLabel.setText("Joueur actif : " + affichage);
-}
-
-
 
     public JButton getZoomInButton() {
         return zoomInButton;
@@ -355,10 +320,6 @@ descriptionLabel.setText("Description : " + description);
         return zoomOutButton;
     }
 
-
-    /* ═════════════════════════════════════════════════════════════ */
-    /* Style des boutons */
-    /* ═════════════════════════════════════════════════════════════ */
     private void styliseBouton(JButton b) {
         b.setFont(gothic.deriveFont(Font.BOLD, 13f));
         b.setForeground(Color.WHITE);
@@ -379,9 +340,6 @@ descriptionLabel.setText("Description : " + description);
         });
     }
 
-    /* ═════════════════════════════════════════════════════════════ */
-    /* Accesseurs boutons */
-    /* ═════════════════════════════════════════════════════════════ */
     public JButton getFinTourButton() {
         return finTourButton;
     }
@@ -398,59 +356,53 @@ descriptionLabel.setText("Description : " + description);
         return finPartieButton;
     }
 
-    /* ═════════════════════════════════════════════════════════════ */
-    /* Dialogues statiques ré‑utilisables */
-    /* ═════════════════════════════════════════════════════════════ */
     public static boolean showStyledConfirmDialog(JFrame parent) {
-    JDialog d = new JDialog(parent, "Confirmation", true);
-    d.setUndecorated(true);
-    d.setSize(550, 120);
-    d.setLocationRelativeTo(parent);
-    d.setLayout(new BorderLayout());
+        JDialog d = new JDialog(parent, "Confirmation", true);
+        d.setUndecorated(true);
+        d.setSize(550, 120);
+        d.setLocationRelativeTo(parent);
+        d.setLayout(new BorderLayout());
 
-    // Label container to center the text properly
-    JPanel textPanel = new JPanel(new GridBagLayout());
-    textPanel.setBackground(BACKGROUND);
+        JPanel textPanel = new JPanel(new GridBagLayout());
+        textPanel.setBackground(BACKGROUND);
 
-    JLabel lbl = new JLabel("Etes vous sur de vouloir terminer la partie ?");
-    lbl.setForeground(TEXT);
-    lbl.setFont(GOTHIC_FALLBACK.deriveFont(Font.BOLD, 16f));
-    lbl.setHorizontalAlignment(SwingConstants.CENTER);
+        JLabel lbl = new JLabel("Etes vous sur de vouloir terminer la partie ?");
+        lbl.setForeground(TEXT);
+        lbl.setFont(GOTHIC_FALLBACK.deriveFont(Font.BOLD, 16f));
+        lbl.setHorizontalAlignment(SwingConstants.CENTER);
 
-    textPanel.add(lbl);
+        textPanel.add(lbl);
 
-    // Buttons
-    JPanel btns = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
-    btns.setBackground(BACKGROUND);
-    JButton yes = createStyledButton("Oui");
-    JButton no = createStyledButton("Annuler");
-    btns.add(yes);
-    btns.add(no);
+        JPanel btns = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
+        btns.setBackground(BACKGROUND);
+        JButton yes = createStyledButton("Oui");
+        JButton no = createStyledButton("Annuler");
+        btns.add(yes);
+        btns.add(no);
 
-    // Content container
-    JPanel content = new JPanel(new BorderLayout());
-    content.setBackground(BACKGROUND);
-    content.setBorder(BorderFactory.createLineBorder(GOLD, 2));
-    content.add(textPanel, BorderLayout.CENTER);
-    content.add(btns, BorderLayout.SOUTH);
-    final boolean[] res = new boolean[1];
+        JPanel content = new JPanel(new BorderLayout());
+        content.setBackground(BACKGROUND);
+        content.setBorder(BorderFactory.createLineBorder(GOLD, 2));
+        content.add(textPanel, BorderLayout.CENTER);
+        content.add(btns, BorderLayout.SOUTH);
+        final boolean[] res = new boolean[1];
 
-    yes.addActionListener(e -> {
-        res[0] = true;
-        d.dispose();
-    });
+        yes.addActionListener(e -> {
+            res[0] = true;
+            d.dispose();
+        });
 
-    no.addActionListener(e -> {
-        res[0] = false;
-        d.dispose();
-    });
+        no.addActionListener(e -> {
+            res[0] = false;
+            d.dispose();
+        });
 
-    d.setContentPane(content);
-    d.setVisible(true);
+        d.setContentPane(content);
+        d.setVisible(true);
 
-    return res[0];
+        return res[0];
 
-}
+    }
 
     public static String showCustomInputDialog(Component parent) {
         JTextField input = new JTextField();
@@ -458,16 +410,15 @@ descriptionLabel.setText("Description : " + description);
         input.setBackground(BTN_BG);
         input.setCaretColor(TEXT);
         input.setBorder(BorderFactory.createCompoundBorder(
-    BorderFactory.createLineBorder(GOLD, 1),
-    BorderFactory.createEmptyBorder(10, 10, 10, 10)
-));
-
+                BorderFactory.createLineBorder(GOLD, 1),
+                BorderFactory.createEmptyBorder(10, 10, 10, 10)
+        ));
 
         JLabel lbl = new JLabel("Nom de la sauvegarde :");
         lbl.setForeground(TEXT);
         lbl.setFont(GOTHIC_FALLBACK.deriveFont(Font.BOLD, 16f));
-lbl.setMaximumSize(new Dimension(460, 60));
-lbl.setHorizontalAlignment(SwingConstants.CENTER);
+        lbl.setMaximumSize(new Dimension(460, 60));
+        lbl.setHorizontalAlignment(SwingConstants.CENTER);
 
         JPanel main = new JPanel(new BorderLayout(10, 10));
         main.setBackground(BACKGROUND);
@@ -529,111 +480,113 @@ lbl.setHorizontalAlignment(SwingConstants.CENTER);
         });
         return b;
     }
+
     public static void showStyledTurnDialog(JFrame parent, String joueurNom) {
-    JDialog dialog = new JDialog(parent, "Tour", false); 
-    dialog.setUndecorated(true);
-    dialog.setSize(350, 70);
-    dialog.setLocationRelativeTo(parent);
+        JDialog dialog = new JDialog(parent, "Tour", false);
+        dialog.setUndecorated(true);
+        dialog.setSize(350, 70);
+        dialog.setLocationRelativeTo(parent);
 
-    JPanel content = new JPanel(new BorderLayout());
-    content.setBackground(BACKGROUND);
-    content.setBorder(BorderFactory.createLineBorder(GOLD, 2));
+        JPanel content = new JPanel(new BorderLayout());
+        content.setBackground(BACKGROUND);
+        content.setBorder(BorderFactory.createLineBorder(GOLD, 2));
 
-    JLabel label = new JLabel("<html><div style='text-align: center;'>Tour de<br>" + joueurNom + "</div></html>", SwingConstants.CENTER);
+        JLabel label = new JLabel("<html><div style='text-align: center;'>Tour de<br>" + joueurNom + "</div></html>", SwingConstants.CENTER);
 
-    label.setForeground(TEXT);
-    label.setFont(GOTHIC_FALLBACK.deriveFont(Font.BOLD, 14f));
-    label.setBorder(BorderFactory.createEmptyBorder(20, 0, 10, 0));
-    content.add(label, BorderLayout.CENTER);
+        label.setForeground(TEXT);
+        label.setFont(GOTHIC_FALLBACK.deriveFont(Font.BOLD, 14f));
+        label.setBorder(BorderFactory.createEmptyBorder(20, 0, 10, 0));
+        content.add(label, BorderLayout.CENTER);
 
-    dialog.setContentPane(content);
-    dialog.setVisible(true);
+        dialog.setContentPane(content);
+        dialog.setVisible(true);
 
-    // Auto-close after 5 seconds
-    Timer timer = new Timer(2000, e -> dialog.dispose());
-    timer.setRepeats(false);
-    timer.start();
-}
-public static void showStyledWarningDialog(JFrame parent, String message, String titre) {
-    JDialog dialog = new JDialog(parent, titre, true);
-    dialog.setUndecorated(true);
-    dialog.setSize(500, 160); // slightly taller to fit multiline text
-
-    dialog.setLocationRelativeTo(parent);
-    dialog.setLayout(new BorderLayout());
-
-    JPanel content = new JPanel();
-    content.setBackground(BACKGROUND);
-    content.setBorder(BorderFactory.createLineBorder(GOLD, 2));
-    content.setLayout(new BorderLayout());
-
-
-    JLabel lbl = new JLabel(message, SwingConstants.CENTER);
-    lbl.setForeground(TEXT);
-    lbl.setFont(GOTHIC_FALLBACK.deriveFont(Font.BOLD, 16f));
-    lbl.setMaximumSize(new Dimension(460, 60));
-lbl.setHorizontalAlignment(SwingConstants.CENTER);
-
-    lbl.setBorder(BorderFactory.createEmptyBorder(20, 20, 10, 20));
-    lbl.setAlignmentX(Component.CENTER_ALIGNMENT);
-    content.add(lbl);
-
-    JButton ok = createStyledButton("OK");
-    ok.addActionListener(e -> dialog.dispose());
-
-    JPanel btnPanel = new JPanel();
-    btnPanel.setBackground(BACKGROUND);
-    btnPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-    btnPanel.add(ok);
-
-    content.add(btnPanel);
-    dialog.setContentPane(content);
-    dialog.setVisible(true);
-}
-public static void showStyledInfoDialog(JFrame parent, String message, String titre) {
-    JDialog dialog = new JDialog(parent, titre, true);
-    dialog.setUndecorated(true);
-    dialog.setSize(450, 160);
-    dialog.setLocationRelativeTo(parent);
-
-    JPanel content = new JPanel(new GridBagLayout()); // GridBagLayout allows full centering
-    content.setBackground(BACKGROUND);
-    content.setBorder(BorderFactory.createLineBorder(GOLD, 2));
-
-    GridBagConstraints gbc = new GridBagConstraints();
-    gbc.gridx = 0;
-    gbc.gridy = 0;
-    gbc.insets = new Insets(10, 20, 10, 20);
-    gbc.anchor = GridBagConstraints.CENTER;
-
-    JLabel lbl = new JLabel(message, SwingConstants.CENTER);
-    lbl.setForeground(TEXT);
-    lbl.setFont(GOTHIC_FALLBACK.deriveFont(Font.BOLD, 16f));
-    lbl.setHorizontalAlignment(SwingConstants.CENTER);
-    content.add(lbl, gbc);
-
-    JButton ok = createStyledButton("OK");
-    ok.addActionListener(e -> dialog.dispose());
-
-    gbc.gridy = 1;
-    gbc.insets = new Insets(10, 0, 10, 0);
-    content.add(ok, gbc);
-
-    dialog.setContentPane(content);
-    dialog.setVisible(true);
-}
-
-
-/** Met à jour l’affichage des coordonnées survolées */
-public void majCoordonnees(int x, int y) {
-    if (x >= 0 && y >= 0) {
-        coordLabel.setText("coordonnees : " + x + " , " + y);
-    } else {
-        coordLabel.setText("coordonnees : -");
+        Timer timer = new Timer(2000, e -> dialog.dispose());
+        timer.setRepeats(false);
+        timer.start();
     }
-    coordLabel.revalidate();
-coordLabel.repaint();
 
-}
+    public static void showStyledWarningDialog(JFrame parent, String message, String titre) {
+        JDialog dialog = new JDialog(parent, titre, true);
+        dialog.setUndecorated(true);
+        dialog.setSize(500, 160);
+
+        dialog.setLocationRelativeTo(parent);
+        dialog.setLayout(new BorderLayout());
+
+        JPanel content = new JPanel();
+        content.setBackground(BACKGROUND);
+        content.setBorder(BorderFactory.createLineBorder(GOLD, 2));
+        content.setLayout(new BorderLayout());
+
+        JLabel lbl = new JLabel(message, SwingConstants.CENTER);
+        lbl.setForeground(TEXT);
+        lbl.setFont(GOTHIC_FALLBACK.deriveFont(Font.BOLD, 16f));
+        lbl.setMaximumSize(new Dimension(460, 60));
+        lbl.setHorizontalAlignment(SwingConstants.CENTER);
+
+        lbl.setBorder(BorderFactory.createEmptyBorder(20, 20, 10, 20));
+        lbl.setAlignmentX(Component.CENTER_ALIGNMENT);
+        content.add(lbl);
+
+        JButton ok = createStyledButton("OK");
+        ok.addActionListener(e -> dialog.dispose());
+
+        JPanel btnPanel = new JPanel();
+        btnPanel.setBackground(BACKGROUND);
+        btnPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        btnPanel.add(ok);
+
+        content.add(btnPanel);
+        dialog.setContentPane(content);
+        dialog.setVisible(true);
+    }
+
+    public static void showStyledInfoDialog(JFrame parent, String message, String titre) {
+        JDialog dialog = new JDialog(parent, titre, true);
+        dialog.setUndecorated(true);
+        dialog.setSize(450, 160);
+        dialog.setLocationRelativeTo(parent);
+
+        JPanel content = new JPanel(new GridBagLayout());
+        content.setBackground(BACKGROUND);
+        content.setBorder(BorderFactory.createLineBorder(GOLD, 2));
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.insets = new Insets(10, 20, 10, 20);
+        gbc.anchor = GridBagConstraints.CENTER;
+
+        JLabel lbl = new JLabel(message, SwingConstants.CENTER);
+        lbl.setForeground(TEXT);
+        lbl.setFont(GOTHIC_FALLBACK.deriveFont(Font.BOLD, 16f));
+        lbl.setHorizontalAlignment(SwingConstants.CENTER);
+        content.add(lbl, gbc);
+
+        JButton ok = createStyledButton("OK");
+        ok.addActionListener(e -> dialog.dispose());
+
+        gbc.gridy = 1;
+        gbc.insets = new Insets(10, 0, 10, 0);
+        content.add(ok, gbc);
+
+        dialog.setContentPane(content);
+        dialog.setVisible(true);
+    }
+
+    /**
+     * Met à jour l’affichage des coordonnées survolées
+     */
+    public void majCoordonnees(int x, int y) {
+        if (x >= 0 && y >= 0) {
+            coordLabel.setText("coordonnees : " + x + " , " + y);
+        } else {
+            coordLabel.setText("coordonnees : -");
+        }
+        coordLabel.revalidate();
+        coordLabel.repaint();
+
+    }
 
 }

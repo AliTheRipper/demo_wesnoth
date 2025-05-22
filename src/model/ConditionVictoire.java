@@ -1,8 +1,12 @@
 package model;
 
-// package model ou scenario
+/**
+ * Condition de victoire : élimination de toutes les unités ennemies.
+ *
+ */
 public interface ConditionVictoire {
-    boolean estRemplie(PlateauDeJeu plateau, Joueur joueurActif);
-    String getMessageVictoire(); // Affiché quand on gagne
-}
 
+    boolean estRemplie(PlateauDeJeu plateau, Joueur joueurActif);
+
+    String getMessageVictoire();
+}

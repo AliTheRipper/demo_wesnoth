@@ -8,49 +8,48 @@ import javax.swing.*;
 import model.*;
 
 public class MiniMapPanel extends JPanel {
+
     private PlateauDeJeu plateau;
     private BoardPanel boardPanel;
     private Map<TypeTerrain, Image> terrainIcons = new HashMap<>();
 
     public MiniMapPanel(PlateauDeJeu plateau, BoardPanel boardPanel) {
-    this.plateau = plateau;
-    this.boardPanel = boardPanel;
+        this.plateau = plateau;
+        this.boardPanel = boardPanel;
 
-    setPreferredSize(new Dimension(120, 200));
-    setBackground(new Color(20, 20, 30));
-    setOpaque(true);
-    setBorder(null);
+        setPreferredSize(new Dimension(120, 200));
+        setBackground(new Color(20, 20, 30));
+        setOpaque(true);
+        setBorder(null);
 
-    for (TypeTerrain type : TypeTerrain.values()) {
-        ImageIcon icon = type.getIcon();
-        Image original = icon.getImage();
+        for (TypeTerrain type : TypeTerrain.values()) {
+            ImageIcon icon = type.getIcon();
+            Image original = icon.getImage();
 
-        // Crop center square part of the icon to remove hex effect
-        if (original instanceof BufferedImage img) {
-            int cropSize = Math.min(img.getWidth(), img.getHeight()) / 2;
-int startX = (img.getWidth() - cropSize) / 2;
-int startY = (img.getHeight() - cropSize) / 2;
+            if (original instanceof BufferedImage img) {
+                int cropSize = Math.min(img.getWidth(), img.getHeight()) / 2;
+                int startX = (img.getWidth() - cropSize) / 2;
+                int startY = (img.getHeight() - cropSize) / 2;
 
-BufferedImage squareCrop = img.getSubimage(startX, startY, cropSize, cropSize);
-Image scaled = squareCrop.getScaledInstance(10, 10, Image.SCALE_SMOOTH);
-terrainIcons.put(type, scaled);  // ✅ YOU FORGOT THIS LINE
+                BufferedImage squareCrop = img.getSubimage(startX, startY, cropSize, cropSize);
+                Image scaled = squareCrop.getScaledInstance(10, 10, Image.SCALE_SMOOTH);
+                terrainIcons.put(type, scaled);
 
+            } else {
 
-
-        } else {
-            // fallback: use default image scaled
-            terrainIcons.put(type, original.getScaledInstance(10, 10, Image.SCALE_SMOOTH));
+                terrainIcons.put(type, original.getScaledInstance(10, 10, Image.SCALE_SMOOTH));
+            }
         }
+        new Timer(30, e -> repaint()).start();
+
     }
-    new Timer(30, e -> repaint()).start(); // Refresh every 30ms (≈33 FPS)
-
-}
-
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        if (plateau == null || boardPanel == null) return;
+        if (plateau == null || boardPanel == null) {
+            return;
+        }
 
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
@@ -61,9 +60,8 @@ terrainIcons.put(type, scaled);  // ✅ YOU FORGOT THIS LINE
         int cellWidth = getWidth() / cols;
         int cellHeight = getHeight() / rows;
         int offsetX = (getWidth() - (cellWidth * cols)) / 2;
-       int offsetY = 30 + (getHeight() - (cellHeight * rows) - 10) / 2;
+        int offsetY = 30 + (getHeight() - (cellHeight * rows) - 10) / 2;
 
-        // ✅ Draw terrain images
         for (int y = 0; y < rows; y++) {
             for (int x = 0; x < cols; x++) {
                 TypeTerrain type = plateau.getHexagone(x, y).getTypeTerrain();
@@ -81,7 +79,6 @@ terrainIcons.put(type, scaled);  // ✅ YOU FORGOT THIS LINE
             }
         }
 
-        // ✅ Draw viewport
         Container parent = boardPanel.getParent();
         while (parent != null && !(parent instanceof JViewport)) {
             parent = parent.getParent();
@@ -108,15 +105,24 @@ terrainIcons.put(type, scaled);  // ✅ YOU FORGOT THIS LINE
 
     private Color mapColorFromTerrain(TypeTerrain type) {
         return switch (type) {
-            case GREEN        -> new Color(144, 238, 144);
-            case LEAF         -> new Color(34, 139, 34);
-            case REGULAR      -> new Color(189, 183, 107);
-            case BASIC        -> new Color(105, 105, 105);
-            case REGULAR_TILE -> new Color(222, 184, 135);
-            case RUINED_KEEP  -> new Color(169, 169, 169);
-            case OCEAN        -> new Color(30, 144, 255);
-            case SUNKEN_RUIN  -> new Color(0, 105, 180);
-            default           -> Color.GRAY;
+            case GREEN ->
+                new Color(144, 238, 144);
+            case LEAF ->
+                new Color(34, 139, 34);
+            case REGULAR ->
+                new Color(189, 183, 107);
+            case BASIC ->
+                new Color(105, 105, 105);
+            case REGULAR_TILE ->
+                new Color(222, 184, 135);
+            case RUINED_KEEP ->
+                new Color(169, 169, 169);
+            case OCEAN ->
+                new Color(30, 144, 255);
+            case SUNKEN_RUIN ->
+                new Color(0, 105, 180);
+            default ->
+                Color.GRAY;
         };
     }
 
@@ -125,6 +131,6 @@ terrainIcons.put(type, scaled);  // ✅ YOU FORGOT THIS LINE
     }
 
     public void updateMiniMap() {
-        repaint(); // ✅ Call this frequently
+        repaint();
     }
 }

@@ -38,8 +38,8 @@ public class BoardPanel extends JPanel {
     private InfoPanel infoPanel;
     private final java.util.List<DamageText> splash = new ArrayList<>();
 
-    private final List<Joueur> joueurs; // injected from your controller
-    private Joueur joueurActif; // instead of int joueurActif = 1;
+    private final List<Joueur> joueurs; 
+    private Joueur joueurActif; 
     private final List<ShakeEffect> shakeEffects = new ArrayList<>();
     private final Image explosionGif = new ImageIcon("resources/explosion.gif").getImage();
 
@@ -52,7 +52,7 @@ public class BoardPanel extends JPanel {
 
 
 
-    // Directions for hex grid neighbors (even-q layout)
+    
 private static final int[][] EVEN_Q_DIRS = {
     {+1, 0}, {0, -1}, {-1, -1},
     {-1, 0}, {-1, +1}, {0, +1}
@@ -71,14 +71,14 @@ private static final int[][] ODD_Q_DIRS = {
 private int offsetX = HEX_SIZE;
 private int offsetY = HEX_SIZE;
 
-    //private final Image backgroundImage = new ImageIcon("resources/plaine.png").getImage();
+    
     private double scale = 1.0;
     private final double ZOOM_STEP = 0.1;
     private final double MIN_SCALE = 0.635;
     private final double MAX_SCALE = 2.5;
     private final List<Trace> tracesDeplacement = new ArrayList<>();
 
-    private final Image traceImage = new ImageIcon("resources/step.png").getImage(); // chemin vers l’image
+    private final Image traceImage = new ImageIcon("resources/step.png").getImage(); 
     private boolean isNight = false;
 
 
@@ -87,22 +87,22 @@ private int offsetY = HEX_SIZE;
 
     public void annulerDernierDeplacement() {
         if (derniereUniteDeplacee != null && derniereXDepart != -1 && derniereYDepart != -1) {
-            // Trouve sa position actuelle
+            
             for (int y = 0; y < plateau.getHauteur(); y++) {
                 for (int x = 0; x < plateau.getLargeur(); x++) {
                     Hexagone hex = plateau.getHexagone(x, y);
                     if (hex.getUnite() == derniereUniteDeplacee) {
-                        hex.setUnite(null); // on enlève de là
+                        hex.setUnite(null); 
                         break;
                     }
                 }
             }
 
-            // On la remet à sa position de départ
+            
             plateau.getHexagone(derniereXDepart, derniereYDepart).setUnite(derniereUniteDeplacee);
             derniereUniteDeplacee.resetDeplacement();
 
-            // Mise à jour affichage
+            
             uniteSelectionnee = derniereUniteDeplacee;
             selX = derniereXDepart;
             selY = derniereYDepart;
@@ -113,7 +113,7 @@ private int offsetY = HEX_SIZE;
             infoPanel.majInfos(uniteSelectionnee);
             infoPanel.majDeplacement(uniteSelectionnee.getDeplacementRestant());
 
-            // Réinitialise pour éviter d’annuler plusieurs fois
+            
             derniereUniteDeplacee = null;
             derniereXDepart = -1;
             derniereYDepart = -1;
@@ -132,7 +132,7 @@ private int offsetY = HEX_SIZE;
 }
 
 
-    // ───── REMPLACEZ ENTIEREMENT la méthode ─────
+    
     
     private void handleClick(int mouseX, int mouseY) {
         
@@ -147,9 +147,9 @@ private int offsetY = HEX_SIZE;
             Hexagone hex = plateau.getHexagone(hoveredCol, hoveredRow);
             Unite unite = hex.getUnite();
 
-            // Cas 1 : Sélection d'une unité alliée
+            
             if (unite != null && unite.getJoueur() == joueurActif) {
-                tracesDeplacement.clear(); // Nettoyer les anciennes traces
+                tracesDeplacement.clear(); 
 
                 uniteSelectionnee = unite;
                 selX = hoveredCol;
@@ -165,7 +165,7 @@ private int offsetY = HEX_SIZE;
                 infoPanel.majDeplacement(uniteSelectionnee.getDeplacementRestant());
             }
 
-            // Cas 2 : Attaque ennemi voisin
+            
             else if (uniteSelectionnee != null && unite != null
                     && unite.getJoueur() != joueurActif
                     && estVoisin(selX, selY, hoveredCol, hoveredRow)) {
@@ -200,7 +200,7 @@ private int offsetY = HEX_SIZE;
                     int cx = r.x + r.width / 2;
                     int cy = r.y + r.height / 2;
 
-                    Color couleurDegats = degatsReels >= 10 ? new Color(180, 0, 0) : // gros coup
+                    Color couleurDegats = degatsReels >= 10 ? new Color(180, 0, 0) : 
                             degatsReels <= 2 ? Color.GRAY :
                                     Color.RED;
 
@@ -230,7 +230,7 @@ private int offsetY = HEX_SIZE;
                 infoPanel.getMiniMapPanel().updateMiniMap();
             }
 
-            // Cas 3 : Déplacement sur une case accessible
+            
             else if (uniteSelectionnee != null && hex.getUnite() == null && accessibles.contains(hex)) {
                 int distance = calculerDistanceHex(selX, selY, hoveredCol, hoveredRow);
                 uniteSelectionnee.reduireDeplacement(distance);
@@ -244,7 +244,7 @@ private int offsetY = HEX_SIZE;
                     tracesDeplacement.add(new Trace(p));
                 }
 
-                uniteSelectionnee.setPosition(hex); // ✅ obligatoire
+                uniteSelectionnee.setPosition(hex); 
 
 
                 derniereUniteDeplacee = uniteSelectionnee;
@@ -261,7 +261,7 @@ private int offsetY = HEX_SIZE;
                 infoPanel.majDeplacement(uniteSelectionnee.getDeplacementRestant());
             }
 
-            // Cas 4 : Clic ailleurs = désélection
+            
             else {
                 uniteSelectionnee = null;
                 selX = selY = -1;
@@ -283,7 +283,7 @@ private void ajouterUnite(String nom, String imagePath,
 
         int pv = 30, att = 5, dep = 5;
 
-        switch (nom) { // ajustement des stats
+        switch (nom) { 
             case "Mage" -> {
                 pv = 24;
                 att = 7;
@@ -316,7 +316,7 @@ private void ajouterUnite(String nom, String imagePath,
             }
         }
 
-        Joueur owner = joueurs.get(numJoueur - 1); // 1→0, 2→1
+        Joueur owner = joueurs.get(numJoueur - 1); 
         Unite u = new Unite(nom, imagePath, owner, pv, att, dep);
         plateau.getHexagone(x, y).setUnite(u);
     }
@@ -386,8 +386,8 @@ infoPanel.majCoordonnees(hoveredCol, hoveredRow);
         int stepX = (int) (1.5 * HEX_SIZE);
         int stepY = (int) (Math.sqrt(3) * HEX_SIZE);
 
-        int offsetX = 25; // Alignement top-left
-        int offsetY = 15; // Alignement top-left
+        int offsetX = 25; 
+        int offsetY = 15; 
 
         int x = col * stepX + offsetX;
         int y = row * stepY + offsetY;
@@ -410,17 +410,17 @@ infoPanel.majCoordonnees(hoveredCol, hoveredRow);
         int rows = plateau.getHauteur();
         int stepX = (int) (1.5 * HEX_SIZE);
         int stepY = (int) (Math.sqrt(3) * HEX_SIZE);
-        int offsetX = 25; // Alignement top-left
-        int offsetY = 15; // Alignement top-left
+        int offsetX = 25; 
+        int offsetY = 15; 
 
         Graphics2D g2 = (Graphics2D) g.create();
-        //////////////////////////////
+        
         g2.scale(scale, scale);
-        ///////////////////////////////
-        // Active un rendu lisse
+        
+        
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-       // PASS 1: Draw hex and terrain image
+       
 for (int col = 0; col < cols; col++) {
     for (int row = 0; row < rows; row++) {
         int x = col * stepX + offsetX;
@@ -430,7 +430,7 @@ for (int col = 0; col < cols; col++) {
     }
 }
 
-// PASS 2: Draw decorations
+
 for (int col = 0; col < cols; col++) {
     for (int row = 0; row < rows; row++) {
         int x = col * stepX + offsetX;
@@ -440,7 +440,7 @@ for (int col = 0; col < cols; col++) {
     }
 }
 
-// PASS 3: Draw units
+
 for (int col = 0; col < cols; col++) {
     for (int row = 0; row < rows; row++) {
         int x = col * stepX + offsetX;
@@ -450,7 +450,7 @@ for (int col = 0; col < cols; col++) {
     }
 }
 
-// PASS 4: Draw overlays (selection, fog, etc.)
+
 for (int col = 0; col < cols; col++) {
     for (int row = 0; row < rows; row++) {
         int x = col * stepX + offsetX;
@@ -461,24 +461,24 @@ for (int col = 0; col < cols; col++) {
 }
 
         if (isNight) {
-            g2.setColor(new Color(0, 0, 30, 100)); // bleu nuit semi-transparent
+            g2.setColor(new Color(0, 0, 30, 100)); 
             g2.fillRect(0, 0, (int)(getWidth() / scale), (int)(getHeight() / scale));
 
         }
 
 
-// --- Draw border fog ---
+
 int fogThickness = 30;
 Graphics2D gFog = (Graphics2D) g.create();
-gFog.setColor(new Color(20, 20, 30)); // semi-transparent black
+gFog.setColor(new Color(20, 20, 30)); 
 
-// Top
+
 gFog.fillRect(0, -5, getWidth(), fogThickness);
-// Bottom
+
 gFog.fillRect(0, getHeight() - fogThickness + 17, getWidth(), fogThickness);
-// Left
+
 gFog.fillRect(0, 0, fogThickness - 7, getHeight());
-// Right
+
 gFog.fillRect(getWidth() - fogThickness + 10, 0, fogThickness, getHeight());
 
 gFog.dispose();
@@ -489,7 +489,7 @@ gFog.dispose();
     private void drawHexAndTerrain(Graphics2D g2, int centerX, int centerY, int col, int row) {
     Polygon hex = createHexagon(col, row);
 
-    // Fill background with average color
+    
     TypeTerrain terrainType = plateau.getHexagone(col, row).getTypeTerrain();
     Color fillColor = Color.GRAY;
     try {
@@ -503,13 +503,13 @@ gFog.dispose();
         gImg.dispose();
         fillColor = new Color(buffered.getRGB(buffered.getWidth()/2, buffered.getHeight()/2));
     } catch (Exception e) {
-        // Ignore if image is missing
+        
     }
 
     g2.setColor(fillColor);
     g2.fillPolygon(hex);
 
-    // Draw terrain image
+    
     Image terrainImage = terrainType.getIcon().getImage();
     int imgWidth = (int) (HEX_WIDTH * 1.2);
     int imgHeight = HEX_HEIGHT;
@@ -528,9 +528,9 @@ private void drawUnit(Graphics2D g2, int centerX, int centerY, int col, int row)
  private void drawOverlays(Graphics2D g2, int centerX, int centerY, int col, int row) {
     Polygon hex = createHexagon(col, row);
 
-    // 1. Fill accessible
+    
         if (accessibles.contains(plateau.getHexagone(col, row))) {
-    g2.setColor(new Color(0, 255, 0, 40)); // soft green inside
+    g2.setColor(new Color(0, 255, 0, 40)); 
     g2.fillPolygon(hex);
 
     boolean isBorder = false;
@@ -551,7 +551,7 @@ for (int[] dir : dirs) {
     }
 
     if (isBorder) {
-        g2.setColor(new Color(0, 255, 0)); // consistent strong green
+        g2.setColor(new Color(0, 255, 0)); 
         g2.setStroke(new BasicStroke(2));
         g2.drawPolygon(hex);
     }
@@ -559,21 +559,21 @@ for (int[] dir : dirs) {
 
 
 
-    // 3. Outline survol
+    
     if (col == hoveredCol && row == hoveredRow) {
         g2.setColor(Color.CYAN);
         g2.setStroke(new BasicStroke(2));
         g2.drawPolygon(hex);
     }
 
-    // 4. Selection
+    
     if (col == selX && row == selY) {
         g2.setColor(Color.YELLOW);
         g2.setStroke(new BasicStroke(3));
         g2.drawPolygon(hex);
     }
 
-    // 5. Bonus defense
+    
     if (col == hoveredCol && row == hoveredRow && accessibles.contains(plateau.getHexagone(col, row))) {
         int bonus = plateau.getBonusDefense(plateau.getHexagone(col, row));
         String text = bonus + "%";
@@ -585,7 +585,7 @@ for (int[] dir : dirs) {
         g2.drawString(text, centerX - textWidth / 2, centerY + textHeight / 2);
     }
 
-    // 6. Fog of war
+    
     if (visionActive 
         && !plateau.getHexagone(col, row).isVisible()
         && !(col == hoveredCol && row == hoveredRow)
@@ -594,7 +594,7 @@ for (int[] dir : dirs) {
         g2.fillPolygon(hex);
     }
 
-    // 7. Traces
+    
     for (Trace trace : tracesDeplacement) {
         if (trace.position.x == col && trace.position.y == row) {
             int taille = HEX_SIZE / 2;
@@ -605,7 +605,7 @@ for (int[] dir : dirs) {
         }
     }
 
-     // 8. Damage splash
+     
      for (DamageText dt : splash) {
          g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, dt.alpha));
          g2.setColor(dt.color);
@@ -619,7 +619,7 @@ for (int[] dir : dirs) {
              }
          }
 
-         // ✅ Use dt.txt if set, otherwise fallback to dt.dmg
+         
          String txt = (dt.txt != null) ? dt.txt : String.valueOf(dt.dmg);
          FontMetrics fm = g2.getFontMetrics();
          g2.drawString(txt, dt.x - fm.stringWidth(txt) / 2 + offset.x,
@@ -648,7 +648,7 @@ for (int[] dir : dirs) {
         if (decor != Decoration.NONE) {
             Image decorImg = decor.getIcon().getImage();
 
-            int decorWidth = (int) (HEX_SIZE * 1.8) ; // ajuster si nécessaire
+            int decorWidth = (int) (HEX_SIZE * 1.8) ; 
             int decorHeight = (int) (HEX_SIZE * 1.8);
 
             Point offset = plateau.getHexagone(col, row).getDecorOffset();
@@ -670,7 +670,7 @@ public Dimension getPreferredSize() {
 }
 
 private boolean areAdjacentByLand(Hexagone from, Hexagone to) {
-    // Allow if both tiles are land
+    
     boolean fromIsLand = from.getTypeTerrain().getCoutDeplacement() < 999;
     boolean toIsLand = to.getTypeTerrain().getCoutDeplacement() < 999;
 
@@ -707,7 +707,7 @@ private boolean areAdjacentByLand(Hexagone from, Hexagone to) {
 
         for (int[] dir : dirs) {
             int nx = x + dir[0], ny = y + dir[1];
-// stay in bounds
+
             if (nx <= 0 || ny <= 0 || nx >= plateau.getLargeur() - 1 || ny >= plateau.getHauteur() - 1) {
                 continue;
             }
@@ -728,7 +728,7 @@ private boolean areAdjacentByLand(Hexagone from, Hexagone to) {
     isCurrentWater && !isWater && !isBridge(currentHex);
 
 
-            // only enqueue if move is valid
+            
             if ((neighbor.getUnite() == null || neighbor == plateau.getHexagone(startX, startY))
                     && (!isWater || bridge)
                     && !pathCrossesWater
@@ -745,7 +745,7 @@ private boolean areAdjacentByLand(Hexagone from, Hexagone to) {
 }
 
     private int calculerDistanceHex(int x1, int y1, int x2, int y2) {
-        // Conversion des coordonnées offset en coordonnées cubes
+        
         int[] cube1 = offsetToCube(x1, y1);
         int[] cube2 = offsetToCube(x2, y2);
 
@@ -788,7 +788,7 @@ private boolean areAdjacentByLand(Hexagone from, Hexagone to) {
         DamageText(int x, int y, String txt, Color color) {
             this.x = x;
             this.y = y;
-            this.dmg = 0; // ignoré si texte
+            this.dmg = 0; 
             this.txt = txt;
             this.color = color;
         }
@@ -822,7 +822,7 @@ private boolean areAdjacentByLand(Hexagone from, Hexagone to) {
         this.joueurs = List.of(manager.joueur1, manager.joueur2);
         this.joueurActif = manager.joueurActif;
 
-        // Configuration des écouteurs de souris
+        
         addMouseMotionListener(new MouseMotionAdapter() {
             public void mouseMoved(MouseEvent e) {
                 updateHoveredHexagon(e.getX(), e.getY());
@@ -860,7 +860,7 @@ private boolean areAdjacentByLand(Hexagone from, Hexagone to) {
             }
         });
 
-        // Configuration du défilement au bord (auto scroll)
+        
         MouseMotionAdapter scrollAdapter = new MouseMotionAdapter() {
             public void mouseMoved(MouseEvent e) {
                 PointerInfo pointerInfo = MouseInfo.getPointerInfo();
@@ -895,14 +895,14 @@ private boolean areAdjacentByLand(Hexagone from, Hexagone to) {
         };
         addMouseMotionListener(scrollAdapter);
 
-        // Timer pour les animations de dégâts
+        
         damageTimer = new Timer(30, e -> {
             splash.forEach(DamageText::tick);
             splash.removeIf(DamageText::isDead);
             shakeEffects.removeIf(se -> !se.isActive());
             healingEffects.forEach(HealingEffect::tick);
             healingEffects.removeIf(HealingEffect::isDone);
-            gifExplosions.removeIf(GifExplosion::isExpired); // ✅ nettoyage des gifs
+            gifExplosions.removeIf(GifExplosion::isExpired); 
             repaint();
         });
 
@@ -910,27 +910,27 @@ private boolean areAdjacentByLand(Hexagone from, Hexagone to) {
 
         damageTimer.start();
 
-        // Configuration du passage automatique de tour
+        
         PropertyChangeListener tourListener = evt -> SwingUtilities.invokeLater(this::checkAutoEndTurn);
 
-// Ajout des écouteurs à toutes les unités
+
         for (int y = 0; y < plateau.getHauteur(); y++) {
             for (int x = 0; x < plateau.getLargeur(); x++) {
                 Unite u = plateau.getHexagone(x, y).getUnite();
                 if (u != null) {
                     u.addPropertyChangeListener(tourListener);
 
-                    // 🎯 Affichage du soin (texte vert + icône)
+                    
                     u.addPropertyChangeListener(evt -> {
                         if ("healed".equals(evt.getPropertyName())) {
                             int healedAmount = (int) evt.getNewValue();
                             if (u.getPosition() != null) {
                                 Point center = getHexCenter(u.getPosition().getX(), u.getPosition().getY());
 
-                                // Affichage texte "+N" en vert
+                                
                                 splash.add(new DamageText(center.x, center.y, "+" + healedAmount, new Color(0, 200, 0)));
 
-                                // Effet de soin visuel (ex. icône heart.png)
+                                
                                 healingEffects.add(new HealingEffect(center.x, center.y));
                             }
                         }
@@ -939,14 +939,14 @@ private boolean areAdjacentByLand(Hexagone from, Hexagone to) {
             }
         }
 
-// ⏱️ Nettoyage des traces (petits pas)
+
         Timer traceCleaner = new Timer(100, e -> {
             tracesDeplacement.removeIf(Trace::isExpired);
             repaint();
         });
         traceCleaner.start();
 
-// 🌗 Cycle jour/nuit
+
         Timer cycleJourNuit = new Timer(90_000, e -> {
             isNight = !isNight;
             repaint();
@@ -960,7 +960,7 @@ private boolean areAdjacentByLand(Hexagone from, Hexagone to) {
         int stepX = (int) (HEX_WIDTH * 0.9);
         int stepY = (int) (HEX_HEIGHT * 0.85);
 
-        int offsetX = 0; // Si tu veux aligné à gauche
+        int offsetX = 0; 
         int offsetY = 0;
 
         int x = col * stepX + offsetX;
@@ -1008,24 +1008,24 @@ private boolean areAdjacentByLand(Hexagone from, Hexagone to) {
         }
         }
         joueurActif = (joueurActif == joueurs.get(0)) ? joueurs.get(1) : joueurs.get(0);
-        // Réinitialisation des unités du nouveau joueur
+        
         for (int y = 0; y < plateau.getHauteur(); y++) {
             for (int x = 0; x < plateau.getLargeur(); x++) {
                 Unite u = plateau.getHexagone(x, y).getUnite();
                 if (u != null && u.getJoueur() == joueurActif) {
-                    u.seReposer(); // <=== ADD THIS LINE
+                    u.seReposer(); 
                     u.resetDeplacement();
                     u.setAAttaqueCeTour(false);
                 }
 
             }
         }
-        // Nettoyage de l'interface
+        
         uniteSelectionnee = null;
         selX = selY = -1;
         accessibles.clear();
         visionActive = false;
-        // Mise à jour de l'affichage
+        
         infoPanel.majJoueurActif(joueurActif);
         infoPanel.majInfos(null);
         infoPanel.majDeplacement(0);
@@ -1055,7 +1055,7 @@ public void zoomAt(Point mouseInComponent, boolean zoomIn) {
         Dimension viewSize = scrollPane.getViewport().getExtentSize();
 
         if (scaledSize.width < viewSize.width || scaledSize.height < viewSize.height) {
-            return; // Prevent zooming out beyond the visible area
+            return; 
         }
     }
 
@@ -1137,7 +1137,7 @@ private int getBaseHeight() {
         }
     }
 
-    // Reconstruct path
+    
     List<Point> path = new ArrayList<>();
     Point current = end;
     while (current != null && cameFrom.containsKey(current.x + "," + current.y)) {
@@ -1149,10 +1149,10 @@ private int getBaseHeight() {
 }
 
 
-    /////////////////////////////////////////////CLASE TRACE/////////////////////////////
+    
     private static class Trace {
         Point position;
-        long timestamp; // en millisecondes
+        long timestamp; 
 
         Trace(Point position) {
             this.position = position;
@@ -1160,7 +1160,7 @@ private int getBaseHeight() {
         }
 
         boolean isExpired() {
-            return System.currentTimeMillis() - timestamp > 1000; // 3 secondes
+            return System.currentTimeMillis() - timestamp > 1000; 
         }
     }
 public void checkVictory() {
@@ -1192,20 +1192,20 @@ private void showVictoryDialog(String winnerName, boolean isIA) {
     dialog.setUndecorated(true);
     dialog.setSize(720, 130);
     dialog.setLocationRelativeTo(parentWindow);
-    dialog.setLayout(new BorderLayout());  // ensures full fill
+    dialog.setLayout(new BorderLayout());  
 
-    // === CONTENT PANEL ===
+    
     JPanel content = new JPanel();
     content.setBackground(InfoPanel.BACKGROUND);
     content.setBorder(BorderFactory.createLineBorder(new Color(212, 175, 55), 2));
     content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
 
-    // === MESSAGE ===
+    
     String raw = isIA
         ? "Defaite... L’IA a gagne cette partie."
         : "Felicitations " + winnerName + ", vous avez remporte la victoire !";
 
-    // Strip accents for font safety
+    
     String message = Normalizer.normalize(raw, Normalizer.Form.NFD)
                                .replaceAll("[\\p{InCombiningDiacriticalMarks}]", "");
 
@@ -1215,7 +1215,7 @@ private void showVictoryDialog(String winnerName, boolean isIA) {
     label.setAlignmentX(Component.CENTER_ALIGNMENT);
     label.setBorder(BorderFactory.createEmptyBorder(20, 20, 10, 20));
 
-    // === BUTTON PANEL ===
+    
     JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 40, 15));
     buttonsPanel.setBackground(InfoPanel.BACKGROUND);
 
@@ -1228,15 +1228,15 @@ private void showVictoryDialog(String winnerName, boolean isIA) {
     content.add(label);
     content.add(buttonsPanel);
 
-    // Add content to dialog
+    
     dialog.setContentPane(content);
     dialog.getRootPane().setBorder(BorderFactory.createLineBorder(new Color(212, 175, 55), 2));
 
-    // === ACTIONS ===
+    
     replay.addActionListener(e -> {
-        dialog.dispose(); // close dialog first
+        dialog.dispose(); 
         Window window = SwingUtilities.getWindowAncestor(this);
-        if (window != null) window.dispose(); // close game window
+        if (window != null) window.dispose(); 
 
         GameWindow newGame = new GameWindow(new MainMenu(), PlateauManager.initialiserNouvellePartie("Joueur 1", "Joueur 2", false));
         JFrame frame = new JFrame("Nouvelle Partie");
@@ -1250,7 +1250,7 @@ private void showVictoryDialog(String winnerName, boolean isIA) {
     menu.addActionListener(e -> {
         dialog.dispose();
         Window window = SwingUtilities.getWindowAncestor(this);
-        if (window != null) window.dispose(); // close game window
+        if (window != null) window.dispose(); 
         new MainMenu().showMainMenu();
     });
 
@@ -1311,11 +1311,11 @@ private void showVictoryDialog(String winnerName, boolean isIA) {
         }
 
         boolean isDone() {
-            return ticks > 45; // 45 ticks × 30ms ≈ 1.35s
+            return ticks > 45; 
         }
 
         int getOffsetY() {
-            return 0; // 🔁 FIXE : ne monte plus
+            return 0; 
         }
     }
 
@@ -1348,7 +1348,7 @@ splash.add(new DamageText(cx, cy, -dmg, couleurDegats));
     }
 
 
- //IA
+ 
     public Joueur getJoueurActif() {
         return joueurActif;
     }

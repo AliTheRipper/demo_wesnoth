@@ -5,6 +5,10 @@ import java.util.ArrayList;
 import java.util.List;
 import model.*;
 
+/**
+ * PlateauManager gère l'état global d'une partie, y compris les joueurs, le
+ * plateau de jeu, la gestion des tours, et la sauvegarde/chargement.
+ */
 public class PlateauManager implements Serializable {
 
     public PlateauDeJeu plateau;
@@ -14,6 +18,15 @@ public class PlateauManager implements Serializable {
     public Joueur joueur2;
     public Joueur joueurActif;
 
+    /**
+     * Initialise une nouvelle partie avec deux joueurs et place leurs unités
+     * sur le plateau.
+     *
+     * @param nom1 nom du joueur 1
+     * @param nom2 nom du joueur 2 ou IA
+     * @param joueur2IA vrai si le joueur 2 est une IA
+     * @return instance de PlateauManager configurée
+     */
     public static PlateauManager initialiserNouvellePartie(String nom1, String nom2, boolean joueur2IA) {
         PlateauManager m = new PlateauManager();
 
@@ -41,6 +54,12 @@ public class PlateauManager implements Serializable {
         return m;
     }
 
+    /**
+     * Sauvegarde l'état actuel de la partie dans un fichier.
+     *
+     * @param data instance de PlateauManager à sauvegarder
+     * @param nom nom du fichier de sauvegarde (sans extension)
+     */
     public static void sauvegarderDansFichier(PlateauManager data, String nom) {
         File folder = new File("sauvegardes");
         if (!folder.exists()) {
@@ -56,6 +75,12 @@ public class PlateauManager implements Serializable {
         }
     }
 
+    /**
+     * Charge une partie précédemment sauvegardée depuis un fichier.
+     *
+     * @param nom nom du fichier de sauvegarde (sans extension)
+     * @return instance restaurée de PlateauManager ou null en cas d'erreur
+     */
     public static PlateauManager chargerDepuisFichier(String nom) {
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("sauvegardes/" + nom + ".save"))) {
             PlateauManager loaded = (PlateauManager) ois.readObject();
@@ -78,6 +103,13 @@ public class PlateauManager implements Serializable {
         }
     }
 
+    /**
+     * Place les unités initiales sur le plateau pour les deux joueurs.
+     *
+     * @param plat plateau de jeu
+     * @param j1 joueur 1
+     * @param j2 joueur 2
+     */
     private static void placerUnitesParJoueur(PlateauDeJeu plat, Joueur j1, Joueur j2) {
 
         Unite u1j1 = nouvelleUnite("Mage", "resources/mage.png", j1);
@@ -153,6 +185,15 @@ public class PlateauManager implements Serializable {
         j2.ajouterUnite(u6j2);
     }
 
+    /**
+     * Crée une unité avec des caractéristiques et des armes spécifiques en
+     * fonction de son nom.
+     *
+     * @param nom type de l’unité (ex : "Mage", "Soldat")
+     * @param img chemin vers l’image de l’unité
+     * @param owner joueur propriétaire de l’unité
+     * @return une instance de Unite configurée
+     */
     private static Unite nouvelleUnite(String nom, String img, Joueur owner) {
         int pv = 30;
         int att = 5;
@@ -204,6 +245,11 @@ public class PlateauManager implements Serializable {
         return u;
     }
 
+    /**
+     * Passe au joueur suivant et déclenche son tour si c'est une IA.
+     *
+     * @param board le panneau principal du jeu pour interagir avec l'IA
+     */
     public void passerAuJoueurSuivant(BoardPanel board) {
         joueurActif = (joueurActif == joueur1) ? joueur2 : joueur1;
 

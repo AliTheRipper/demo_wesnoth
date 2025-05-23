@@ -6,6 +6,15 @@ package model;
  */
 public class ConditionElimination implements ConditionVictoire {
 
+    /**
+     * Vérifie si la condition de victoire est remplie pour le joueur actif. La
+     * victoire est acquise si aucune unité ennemie n'est présente sur le
+     * plateau.
+     *
+     * @param plateau Plateau de jeu contenant les unités
+     * @param joueurActif Le joueur dont on vérifie la victoire
+     * @return true si toutes les unités ennemies ont été éliminées, false sinon
+     */
     @Override
     public boolean estRemplie(PlateauDeJeu plateau, Joueur joueurActif) {
 
@@ -20,6 +29,12 @@ public class ConditionElimination implements ConditionVictoire {
         return true;
     }
 
+    /**
+     * Retourne le message à afficher lorsqu’un joueur remporte la partie par
+     * élimination.
+     *
+     * @return Message de victoire
+     */
     @Override
     public String getMessageVictoire() {
         return "Tous les ennemis ont été éliminés !";

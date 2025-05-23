@@ -7,12 +7,23 @@ import java.util.Map;
 import javax.swing.*;
 import model.*;
 
+/**
+ * MiniMapPanel displays a simplified, real-time overview of the game board. It
+ * visualizes terrain types and shows the viewport indicator of the main board.
+ */
 public class MiniMapPanel extends JPanel {
 
     private PlateauDeJeu plateau;
     private BoardPanel boardPanel;
     private Map<TypeTerrain, Image> terrainIcons = new HashMap<>();
 
+    /**
+     * Initializes the mini-map with terrain icons and starts a timer to refresh
+     * it periodically.
+     *
+     * @param plateau the game board data model
+     * @param boardPanel the main game view panel
+     */
     public MiniMapPanel(PlateauDeJeu plateau, BoardPanel boardPanel) {
         this.plateau = plateau;
         this.boardPanel = boardPanel;
@@ -44,6 +55,10 @@ public class MiniMapPanel extends JPanel {
 
     }
 
+    /**
+     * Draws the mini-map by rendering terrain tiles and highlighting the
+     * visible area of the main board.
+     */
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -103,6 +118,13 @@ public class MiniMapPanel extends JPanel {
         }
     }
 
+    /**
+     * Provides a fallback color representation for a given terrain type if no
+     * image is available.
+     *
+     * @param type the terrain type
+     * @return the corresponding fallback color
+     */
     private Color mapColorFromTerrain(TypeTerrain type) {
         return switch (type) {
             case GREEN ->
@@ -126,10 +148,20 @@ public class MiniMapPanel extends JPanel {
         };
     }
 
+    /**
+     * Sets the reference to the main BoardPanel, used to compute viewport
+     * overlay.
+     *
+     * @param bp the BoardPanel instance
+     */
     public void setBoardPanel(BoardPanel bp) {
         this.boardPanel = bp;
     }
 
+    /**
+     * Triggers a repaint of the mini-map, typically after scrolling or state
+     * change.
+     */
     public void updateMiniMap() {
         repaint();
     }

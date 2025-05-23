@@ -45,7 +45,13 @@ public class Joueur implements Serializable {
     public PlateauDeJeu getPlateau() {
         return plateau;
     }
-
+/**
+ * Constructeur du joueur.
+ *
+ * @param nom     Nom du joueur
+ * @param estIA   true si le joueur est contrôlé par l’IA, false sinon
+ * @param couleur Couleur associée au joueur (code hexadécimal)
+ */
     public Joueur(String nom, boolean estIA, String couleur) {
         this.nom = nom;
         this.estIA = estIA;
@@ -56,7 +62,11 @@ public class Joueur implements Serializable {
     public List<Unite> getUnites() {
         return unites;
     }
-
+/**
+ * Ajoute une unité à la liste des unités du joueur.
+ *
+ * @param u Unité à ajouter
+ */
     public void ajouterUnite(Unite u) {
         unites.add(u);
     }
@@ -76,7 +86,13 @@ public class Joueur implements Serializable {
     public String getCouleur() {
         return couleur;
     }
-
+/**
+ * Exécute le tour du joueur.
+ * Si le joueur est une IA, elle évalue ses unités et prend des décisions :
+ * déplacement, attaque, fuite vers village ou repos.
+ *
+ * @param board Référence au plateau graphique pour déclencher des actions visuelles
+ */
     public void jouerTour(BoardPanel board) {
         Set<Hexagone> hexasOccupes = new HashSet<>();
         Unite cibleCommune = null;
@@ -102,7 +118,13 @@ public class Joueur implements Serializable {
         board.checkVictory();
 
     }
-
+/**
+ * Exécute le tour du joueur.
+ * Si le joueur est une IA, elle évalue ses unités et prend des décisions :
+ * déplacement, attaque, fuite vers village ou repos.
+ *
+ * @param board Référence au plateau graphique pour déclencher des actions visuelles
+ */
     public Ordre creerOrdrePourUnite(Unite uniteIA, Unite cibleCommune, BoardPanel board, Set<Hexagone> hexasOccupes) {
         if (!uniteIA.estVivant() || uniteIA.getDeplacementRestant() <= 0 || uniteIA.getPosition() == null) {
             return new OrdreRepos(uniteIA);
@@ -216,7 +238,14 @@ public class Joueur implements Serializable {
         return new OrdreRepos(uniteIA);
 
     }
-
+/**
+ * Calcule la distance hexagonale entre deux hexagones.
+ * Utilise la conversion en coordonnées cubiques pour une distance exacte sur grille hexagonale.
+ *
+ * @param a Hexagone de départ
+ * @param b Hexagone d’arrivée
+ * @return Distance entre les deux hexagones
+ */
     private int calculerDistance(Hexagone a, Hexagone b) {
         if (a == null || b == null) {
             return Integer.MAX_VALUE;
@@ -291,7 +320,12 @@ public class Joueur implements Serializable {
 
         return null;
     }
-
+/**
+ * Cherche un village sûr (éloigné des ennemis) pour qu’une unité affaiblie s’y réfugie.
+ *
+ * @param unite Unité en fuite
+ * @return Hexagone village sûr ou null si aucun disponible
+ */
     private Hexagone chercherCaseLoin(Unite unite) {
         PlateauDeJeu plateau = unite.getPlateau();
         Hexagone position = unite.getPosition();
@@ -381,7 +415,12 @@ public class Joueur implements Serializable {
 
         return null;
     }
-
+/**
+ * Recherche la meilleure cible à attaquer sur tout le plateau (utilisé pour IA).
+ * Sélectionne la cible avec le plus faible nombre de PV.
+ *
+ * @return Unité ennemie prioritaire, ou null si aucune n’est disponible
+ */
     private Unite trouverCibleGlobale() {
         Unite meilleure = null;
         int minScore = Integer.MAX_VALUE;
@@ -407,7 +446,12 @@ public class Joueur implements Serializable {
 
         return meilleure;
     }
-
+/**
+ * Cherche un village que l’unité peut atteindre avec ses points de déplacement actuels.
+ *
+ * @param unite Unité concernée
+ * @return Hexagone village atteignable ou null si aucun trouvé
+ */
     private Hexagone chercherVillageAccessible(Unite unite) {
         Hexagone meilleure = null;
         int minDistance = Integer.MAX_VALUE;
@@ -430,7 +474,12 @@ public class Joueur implements Serializable {
 
         return meilleure;
     }
-
+/**
+ * Cherche le village libre le plus proche, sans condition d’accessibilité immédiate.
+ *
+ * @param unite Unité concernée
+ * @return Hexagone village le plus proche ou null
+ */
     private Hexagone chercherVillageProche(Unite unite) {
         PlateauDeJeu plateau = unite.getPlateau();
         Hexagone meilleure = null;
@@ -457,7 +506,14 @@ public class Joueur implements Serializable {
         int dy = a.getY() - b.getY();
         return Math.abs(dx) + Math.abs(dy);
     }
-
+/**
+ * Recherche une case atteignable proche d’un objectif donné.
+ * Implémente une recherche en largeur (BFS) pour trouver un chemin.
+ *
+ * @param unite   Unité qui se déplace
+ * @param cible   Cible vers laquelle se rapprocher
+ * @return Hexagone à atteindre ou null si aucun chemin trouvé
+ */
     private Hexagone chercherCaseProche(Unite unite, Hexagone objectif) {
         PlateauDeJeu plateau = unite.getPlateau();
         Hexagone depart = unite.getPosition();

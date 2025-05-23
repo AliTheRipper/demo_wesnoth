@@ -4,20 +4,38 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
+/**
+ * Classe principale représentant la fenêtre de jeu. Gère l’interface
+ * utilisateur, le plateau graphique (BoardPanel), les informations affichées
+ * (InfoPanel), ainsi que les interactions telles que le zoom, la sauvegarde, la
+ * fin de tour ou le retour au menu.
+ */
 public class GameWindow extends JPanel {
 
+    private MainMenu menu;
     private PlateauManager manager;
     private BoardPanel boardPanel;
     private InfoPanel infoPanel;
-    private MainMenu menu;
-    private MapEditor mapEditor;
 
+    /**
+     * Constructeur pour lancer une nouvelle partie à partir d’un PlateauManager
+     * donné.
+     *
+     * @param menu Référence au menu principal
+     * @param manager Gestionnaire de plateau contenant l’état initial du jeu
+     */
     public GameWindow(MainMenu menu, PlateauManager manager) {
         this.menu = menu;
         this.manager = manager;
         lancerUIAvec(manager);
     }
 
+    /**
+     * Constructeur pour charger une partie à partir d’un nom de sauvegarde.
+     *
+     * @param menu Référence au menu principal
+     * @param nomSauvegarde Nom du fichier de sauvegarde à charger
+     */
     public GameWindow(MainMenu menu, String nomSauvegarde) {
         this.menu = menu;
         this.manager = PlateauManager.chargerDepuisFichier(nomSauvegarde);
@@ -29,6 +47,12 @@ public class GameWindow extends JPanel {
         }
     }
 
+    /**
+     * Initialise l’interface utilisateur avec le plateau de jeu et les
+     * panneaux.
+     *
+     * @param manager Gestionnaire du plateau à afficher
+     */
     private void lancerUIAvec(PlateauManager manager) {
         setLayout(new BorderLayout());
 
@@ -43,6 +67,10 @@ public class GameWindow extends JPanel {
 
     }
 
+    /**
+     * Configure la disposition des composants UI, attache les écouteurs aux
+     * boutons, et centre la vue sur le plateau.
+     */
     private void configurerUI() {
 
         infoPanel.setPreferredSize(new Dimension(400, 0));
@@ -159,6 +187,10 @@ public class GameWindow extends JPanel {
         autoScrollTimer.start();
     }
 
+    /**
+     * Configure les actions des boutons de zoom, annulation, et sauvegarde dans
+     * le panneau latéral.
+     */
     private void configurerBoutons() {
 
         infoPanel.getAnnulerMouvementButton().addActionListener(e -> boardPanel.annulerDernierDeplacement());
@@ -179,14 +211,6 @@ public class GameWindow extends JPanel {
 
     }
 
-    private void retourAuMenu() {
-        menu.showMainMenu();
-        Window w = SwingUtilities.getWindowAncestor(this);
-        if (w != null) {
-            w.dispose();
-        }
-    }
-
     private void sauvegarderPartie() {
         String nom = InfoPanel.showCustomInputDialog(this);
         if (nom != null && !nom.isEmpty()) {
@@ -200,27 +224,19 @@ public class GameWindow extends JPanel {
         }
     }
 
-    private void ouvrirEditeurMap() {
-        if (mapEditor == null || !mapEditor.isVisible()) {
-            mapEditor = new MapEditor();
-            mapEditor.setLocationRelativeTo(this);
-            mapEditor.setVisible(true);
-
-            mapEditor.addWindowListener(new WindowAdapter() {
-                @Override
-                public void windowClosed(WindowEvent e) {
-
-                    boardPanel.repaint();
-                }
-            });
-        }
-    }
-
+    /**
+     * Constructeur par défaut pour démarrer une partie classique avec deux
+     * joueurs.
+     */
     public GameWindow() {
         this(new MainMenu(), PlateauManager.initialiserNouvellePartie("Joueur 1", "Joueur 2", false));
 
     }
 
+    /**
+     * Rafraîchit l’interface utilisateur pour refléter l’état actuel du jeu
+     * (joueur actif, plateau).
+     */
     public void refreshUI() {
         infoPanel.majJoueurActif(manager.joueurActif);
         boardPanel.repaint();

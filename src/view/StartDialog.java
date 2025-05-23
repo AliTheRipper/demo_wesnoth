@@ -4,6 +4,10 @@ import java.awt.*;
 import java.io.File;
 import javax.swing.*;
 
+/**
+ * Boîte de dialogue de démarrage permettant de saisir les noms des joueurs et
+ * de spécifier si le deuxième joueur est une IA.
+ */
 public class StartDialog extends JDialog {
 
     private JTextField joueur1Field = new JTextField(15);
@@ -15,6 +19,11 @@ public class StartDialog extends JDialog {
 
     private JCheckBox iaCheckbox;
 
+    /**
+     * Crée une nouvelle boîte de dialogue pour configurer les joueurs.
+     *
+     * @param parent la fenêtre parente sur laquelle la boîte est centrée
+     */
     public StartDialog(JFrame parent) {
         super(parent, "", true);
         setUndecorated(true);
@@ -125,6 +134,13 @@ public class StartDialog extends JDialog {
         setLocationRelativeTo(parent);
     }
 
+    /**
+     * Crée un bouton personnalisé avec un style gothique et des effets de
+     * survol.
+     *
+     * @param text le texte du bouton
+     * @return un JButton stylisé
+     */
     private JButton createStyledButton(String text) {
         JButton button = new JButton(text);
         button.setFont(gothicFont.deriveFont(Font.PLAIN, 14));
@@ -150,6 +166,13 @@ public class StartDialog extends JDialog {
         return button;
     }
 
+    /**
+     * Affiche une boîte de dialogue d'avertissement si les champs sont
+     * incomplets.
+     *
+     * @param parent le composant parent pour positionner la fenêtre
+     * d'avertissement
+     */
     private void showStyledWarning(Component parent) {
         JDialog warning = new JDialog((JFrame) parent, true);
         warning.setUndecorated(true);
@@ -184,6 +207,12 @@ public class StartDialog extends JDialog {
         warning.setVisible(true);
     }
 
+    /**
+     * Retourne le nom saisi pour le joueur 1 et 2 si le formulaire a été
+     * validé.
+     *
+     * @return le nom du joueur 1 et 2 ou null si annulé
+     */
     public String getJoueur1() {
         return validerClique ? joueur1 : null;
     }
@@ -192,6 +221,10 @@ public class StartDialog extends JDialog {
         return validerClique ? joueur2 : null;
     }
 
+    /**
+     * Charge une police personnalisée pour le style gothique. Utilise une
+     * police de secours si échec.
+     */
     private void loadCustomFont() {
         try {
             gothicFont = Font.createFont(Font.TRUETYPE_FONT, new File("resources/fonts/UnifrakturCook-Bold.ttf")).deriveFont(16f);
@@ -201,6 +234,11 @@ public class StartDialog extends JDialog {
         }
     }
 
+    /**
+     * Indique si le joueur 2 est défini comme une IA.
+     *
+     * @return true si le joueur 2 est une IA, sinon false
+     */
     public boolean isJoueur2IA() {
         return iaCheckbox.isSelected();
     }

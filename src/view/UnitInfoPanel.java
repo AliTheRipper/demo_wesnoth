@@ -3,8 +3,16 @@ package view;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * Panneau affichant les informations d'une unité sélectionnée dans le menu
+ * principal. Utilisé pour présenter les descriptions des différentes unités
+ * jouables.
+ */
 public class UnitInfoPanel extends JPanel {
 
+    /**
+     * Initialise le panneau avec un fond personnalisé et une bordure stylisée.
+     */
     public UnitInfoPanel() {
         setLayout(new BorderLayout());
         setOpaque(true);
@@ -16,6 +24,12 @@ public class UnitInfoPanel extends JPanel {
         ));
     }
 
+    /**
+     * Dessine un fond semi-transparent noir pour renforcer la lisibilité des
+     * informations affichées.
+     *
+     * @param g l'objet Graphics utilisé pour le rendu
+     */
     @Override
     protected void paintComponent(Graphics g) {
         Graphics2D g2 = (Graphics2D) g.create();

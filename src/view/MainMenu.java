@@ -7,6 +7,13 @@ import java.util.List;
 import javax.sound.sampled.*;
 import javax.swing.*;
 
+/**
+ * Fenêtre principale du jeu affichant le menu de démarrage. Permet de lancer
+ * une nouvelle partie, charger une sauvegarde, ouvrir l’éditeur de carte,
+ * consulter les crédits ou quitter le jeu. Gère également l'affichage d'une
+ * animation musicale de fond et la navigation entre les descriptions des unités
+ * disponibles.
+ */
 public class MainMenu extends JFrame {
 
     private static GameWindow currentGame = null;
@@ -27,6 +34,10 @@ public class MainMenu extends JFrame {
     Color buttonBg = new Color(30, 40, 60);
     Color borderGold = new Color(212, 175, 55);
 
+    /**
+     * Initialise et affiche le menu principal du jeu avec tous les boutons et
+     * les effets graphiques/stylistiques correspondants.
+     */
     public MainMenu() {
         setTitle("Wargame - Menu Principal");
         setUndecorated(true);
@@ -187,7 +198,7 @@ public class MainMenu extends JFrame {
             panel.setBackground(bg);
             panel.setBorder(BorderFactory.createLineBorder(borderColor, 2));
 
-            JLabel message = new JLabel("<html><center>Jeu de strategie au tour par tour.<br>Cree par Khettou Hajar, Hijazi Yahya, Halmi Ilias, Zifouti Ali et Shel Hazem.</center></html>", SwingConstants.CENTER);
+            JLabel message = new JLabel("<html><center>EMPIRE IN WAR<br>Cree par Khettou Hajar, Hijazi Yahya, Halmi Ilias, Zifouti Ali et Shel Hazem.</center></html>", SwingConstants.CENTER);
             message.setFont(font);
             message.setForeground(fg);
             message.setBorder(BorderFactory.createEmptyBorder(20, 20, 10, 20));
@@ -232,6 +243,9 @@ public class MainMenu extends JFrame {
         playMusic("resources/music.wav");
     }
 
+    /**
+     * Affiche un panneau de superposition pour confirmer la fermeture du jeu.
+     */
     private void showQuitOverlay() {
         JPanel overlay = new JPanel(new GridBagLayout());
         overlay.setBackground(new Color(0, 0, 0, 180));
@@ -279,11 +293,21 @@ public class MainMenu extends JFrame {
         no.addActionListener(e -> overlay.setVisible(false));
     }
 
+    /**
+     * Met à jour la description de l’unité actuellement affichée dans la
+     * bannière inférieure.
+     *
+     * @param direction +1 pour suivant, -1 pour précédent
+     */
     private void updateUnitInfo(int direction) {
         unitIndex = (unitIndex + direction + unitDescriptions.length) % unitDescriptions.length;
         unitLabel.setText(unitDescriptions[unitIndex]);
     }
 
+    /**
+     * Charge et applique une police personnalisée utilisée pour l'ensemble de
+     * l’interface.
+     */
     private void loadCustomFont() {
         try {
             gothicFont = Font.createFont(Font.TRUETYPE_FONT, new File("resources/fonts/UnifrakturCook-Bold.ttf")).deriveFont(13f);
@@ -293,6 +317,11 @@ public class MainMenu extends JFrame {
         }
     }
 
+    /**
+     * Joue la musique de fond en boucle.
+     *
+     * @param filePath Chemin vers le fichier audio à lire
+     */
     private void playMusic(String filePath) {
         try {
             AudioInputStream audio = AudioSystem.getAudioInputStream(new File(filePath));
@@ -306,15 +335,25 @@ public class MainMenu extends JFrame {
         }
     }
 
+    /**
+     * Réinitialise l’instance de la partie en cours (GameWindow).
+     */
     public static void clearCurrentGame() {
         currentGame = null;
     }
 
+    /**
+     * Affiche à nouveau le menu principal en supprimant le contenu actuel.
+     */
     public void showMainMenu() {
         getContentPane().removeAll();
         new MainMenu();
     }
 
+    /**
+     * Affiche une boîte de dialogue personnalisée permettant de choisir une
+     * sauvegarde existante parmi les fichiers présents.
+     */
     private void showStyledSaveDialog() {
         File folder = new File("sauvegardes");
         if (!folder.exists()) {
@@ -435,14 +474,28 @@ public class MainMenu extends JFrame {
     }
 }
 
+/**
+ * Panneau personnalisé utilisé pour afficher une image de fond redimensionnée
+ * dynamiquement.
+ */
 class BackgroundPanel extends JPanel {
 
     private final Image background;
 
+    /**
+     * Crée un panneau avec une image de fond à partir du chemin fourni.
+     *
+     * @param imagePath Chemin vers l'image à afficher
+     */
     public BackgroundPanel(String imagePath) {
         background = new ImageIcon(imagePath).getImage();
     }
 
+    /**
+     * Dessine l’image de fond pour qu’elle s’ajuste à la taille de la fenêtre.
+     *
+     * @param g Contexte graphique
+     */
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);

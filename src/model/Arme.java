@@ -23,6 +23,16 @@ public class Arme implements java.io.Serializable {
         this.precision = precision;
     }
 
+    /**
+     * Constructeur principal pour créer une arme avec des caractéristiques
+     * complètes.
+     *
+     * @param nom Nom de l'arme
+     * @param type Type de l'arme ("mêlée" ou "distance")
+     * @param portee Portée maximale en hexagones
+     * @param degats Dégâts infligés par coup
+     * @param precision Pourcentage de précision (0 à 100)
+     */
     public Arme(String nom, int portee, int degats, boolean estDistance) {
         this(nom, estDistance ? "distance" : "mêlée", portee, degats, 60);
     }
@@ -59,6 +69,11 @@ public class Arme implements java.io.Serializable {
                 nom, type, degats, coups, precision);
     }
 
+    /**
+     * Surcharge de la méthode toString pour retourner la description de l'arme.
+     *
+     * @return Description formatée de l'arme
+     */
     @Override
     public String toString() {
         return getDescription();

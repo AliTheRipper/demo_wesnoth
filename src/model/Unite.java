@@ -35,9 +35,9 @@ public class Unite implements Serializable {
 
     private final Joueur joueur;
     private boolean aAttaqueCeTour = false;
-    private boolean aBougeCeTour = false;
 
     private boolean enFuiteDansVillage = false;
+    private boolean aBougeCeTour;
 
     private int calculDegats(Unite cible, TypeTerrain terrain) {
         if (armes.isEmpty()) {
@@ -61,7 +61,12 @@ public class Unite implements Serializable {
     }
 
     /**
-     * Constructeur complet (moteur)
+     * Constructeur principal pour le moteur de jeu.
+     *
+     * @param nom Nom de l’unité
+     * @param typeUnite Type d’unité (définit les stats de base)
+     * @param joueur Joueur propriétaire de l’unité
+     * @param armes Liste des armes associées à l’unité
      */
     public Unite(String nom, TypeUnite typeUnite,
             Joueur joueur, List<Arme> armes) {
@@ -85,7 +90,14 @@ public class Unite implements Serializable {
     }
 
     /**
-     * Constructeur simplifié (créations rapides dans la vue)
+     * Constructeur simplifié pour l’interface graphique.
+     *
+     * @param nom Nom de l’unité
+     * @param imagePath Chemin de l’image de l’unité
+     * @param joueur Joueur propriétaire
+     * @param pv Points de vie
+     * @param att Attaque
+     * @param dep Déplacement
      */
     public Unite(String nom, String imagePath, Joueur joueur,
             int pv, int att, int dep) {
@@ -159,11 +171,10 @@ public class Unite implements Serializable {
     }
 
     /**
-     * Alias demandé par OrdreRepos.java
+     * Repos de l’unité sur un village (récupération de PV). Réinitialise l’état
+     * de déplacement et d’attaque si possible.
      */
     public void seReposer() {
-
-        System.out.println(">>>> [Repos] " + nom + " est sur : " + (position != null ? position.getTypeTerrain() : "null"));
 
         if (!aAttaqueCeTour && position != null) {
             TypeTerrain type = position.getTypeTerrain();
@@ -207,12 +218,20 @@ public class Unite implements Serializable {
         this.icone = new ImageIcon(this.cheminImage);
     }
 
+    /**
+     * Réinitialise les points de déplacement de l’unité à leur maximum.
+     */
     public void resetDeplacement() {
         int oldValue = pointsDeplacement;
         pointsDeplacement = pointsDeplacementMax;
         pcs.firePropertyChange("deplacement", oldValue, pointsDeplacement);
     }
 
+    /**
+     * Réduit les points de déplacement restants d’un certain coût.
+     *
+     * @param cout Coût en points de déplacement
+     */
     public void reduireDeplacement(int cout) {
         int oldValue = pointsDeplacement;
         pointsDeplacement = Math.max(0, pointsDeplacement - cout);
@@ -220,7 +239,12 @@ public class Unite implements Serializable {
     }
 
     /**
-     * Renvoie la quantité de dégâts réellement infligés (0 si raté).
+     * Effectue une attaque contre une unité cible. Tient compte de la
+     * précision, des dégâts de l’arme, et du terrain.
+     *
+     * @param cible Unité ciblée
+     * @param terrain Terrain sur lequel la cible se trouve
+     * @return Dégâts réellement infligés
      */
     public int attaquer(Unite cible, TypeTerrain terrain) {
         if (!peutAttaquer() || armes.isEmpty()) {
@@ -255,7 +279,10 @@ public class Unite implements Serializable {
     }
 
     /**
-     * Déplacement simple (utilisé par OrdreDeplacement)
+     * Tente de déplacer l’unité vers l’hexagone donné.
+     *
+     * @param destination Case cible
+     * @return true si le déplacement a réussi, false sinon
      */
     public boolean seDeplacer(Hexagone destination) {
         if (destination == null) {
@@ -284,10 +311,19 @@ public class Unite implements Serializable {
         return true;
     }
 
+    /**
+     * Ajoute un écouteur d’événements pour les changements de propriétés (PV,
+     * déplacement, etc).
+     */
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         pcs.addPropertyChangeListener(listener);
     }
 
+    /**
+     * Vérifie si l’unité peut encore attaquer pendant ce tour.
+     *
+     * @return true si elle peut attaquer, false sinon
+     */
     public boolean peutAttaquer() {
         return !aAttaqueCeTour;
     }
@@ -298,11 +334,22 @@ public class Unite implements Serializable {
         this.pcs.firePropertyChange("aAttaqueCeTour", oldValue, aAttaque);
     }
 
+    /**
+     * Réinitialise les états de tour de l’unité (attaque et déplacement).
+     */
     public void resetTour() {
         this.aAttaqueCeTour = false;
         this.aBougeCeTour = false;
     }
 
+    /**
+     * Frappe l’unité cible avec une attaque calculée sans vérifier la
+     * précision.
+     *
+     * @param cible Unité à frapper
+     * @param terrain Terrain de la cible
+     * @return true si la cible est tuée, false sinon
+     */
     public boolean frapper(Unite cible, TypeTerrain terrain) {
         if (!peutAttaquer()) {
             return false;
@@ -338,6 +385,12 @@ public class Unite implements Serializable {
         return this.pointsVieMax;
     }
 
+    /**
+     * Vérifie si l’unité peut se déplacer vers une case donnée.
+     *
+     * @param destination Hexagone cible
+     * @return true si la case est atteignable
+     */
     public boolean peutAller(Hexagone destination) {
         if (destination == null) {
             return false;

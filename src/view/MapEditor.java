@@ -6,6 +6,11 @@ import java.io.*;
 import javax.swing.*;
 import model.*;
 
+/**
+ * MapEditor is a Swing-based tool allowing users to create, edit, save, and
+ * load custom hexagonal terrain maps. It supports terrain selection,
+ * interactive painting, viewport dragging, and serialization of the grid.
+ */
 public class MapEditor extends JFrame {
 
     private Hexagone[][] grid;
@@ -21,6 +26,10 @@ public class MapEditor extends JFrame {
     private int panelPaddingY = 0;
     private Point lastDragPoint;
 
+    /**
+     * Initializes the map editor window, sets up map dimensions and UI
+     * components.
+     */
     public MapEditor() {
         setTitle("Éditeur de Map");
         setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -32,6 +41,10 @@ public class MapEditor extends JFrame {
         setupUI();
     }
 
+    /**
+     * Calculates the default width and height of the hex map based on screen
+     * dimensions and hex size.
+     */
     private void calculateMapSize() {
 
         Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
@@ -44,6 +57,9 @@ public class MapEditor extends JFrame {
         mapHeight = 50;
     }
 
+    /**
+     * Initializes the 2D hex grid with default terrain (GREEN).
+     */
     private void initializeGrid() {
         grid = new Hexagone[mapWidth][mapHeight];
         for (int x = 0; x < mapWidth; x++) {
@@ -54,6 +70,10 @@ public class MapEditor extends JFrame {
         }
     }
 
+    /**
+     * Constructs and arranges the UI components including terrain buttons, map
+     * panel, and control buttons.
+     */
     private void setupUI() {
         JPanel mainPanel = new JPanel(new BorderLayout());
 
@@ -156,6 +176,10 @@ public class MapEditor extends JFrame {
         add(mainPanel);
     }
 
+    /**
+     * Renders the entire hex grid using the selected terrain images. Called
+     * during repainting of the mapPanel.
+     */
     private void drawMap(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -175,6 +199,10 @@ public class MapEditor extends JFrame {
         }
     }
 
+    /**
+     * Draws a single hex tile at the specified screen coordinates using the
+     * terrain's image.
+     */
     private void drawHexagon(Graphics2D g, int x, int y, TypeTerrain terrain) {
         Polygon hex = new Polygon();
         for (int i = 0; i < 6; i++) {
@@ -191,6 +219,10 @@ public class MapEditor extends JFrame {
 
     }
 
+    /**
+     * Computes the pixel center of a hexagon in the grid based on its grid
+     * coordinates.
+     */
     private Point getHexCenter(int x, int y) {
         double hexHeight = Math.sqrt(3) * hexSize;
         int xPos = (int) (x * 1.5 * hexSize);
@@ -198,6 +230,10 @@ public class MapEditor extends JFrame {
         return new Point(xPos + hexSize, yPos + hexSize);
     }
 
+    /**
+     * Opens a file dialog to save the current grid state to a .map file via
+     * serialization.
+     */
     private void saveMap() {
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setCurrentDirectory(new File("maps"));
@@ -212,6 +248,9 @@ public class MapEditor extends JFrame {
         }
     }
 
+    /**
+     * Loads a previously saved hex grid from a .map file and repaints the map.
+     */
     private void loadMap() {
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setCurrentDirectory(new File("maps"));
@@ -229,6 +268,10 @@ public class MapEditor extends JFrame {
         }
     }
 
+    /**
+     * Handles mouse clicks on the map to paint the selected terrain on clicked
+     * hex cells.
+     */
     private class MapMouseListener extends MouseAdapter {
 
         @Override

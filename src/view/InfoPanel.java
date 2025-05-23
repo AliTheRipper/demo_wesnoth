@@ -76,7 +76,14 @@ public class InfoPanel extends JPanel {
             System.err.println("Erreur chargement police gothique fallback : " + e.getMessage());
         }
     }
-
+/**
+ * Crée un panneau latéral pour afficher les informations des joueurs et des unités.
+ *
+ * @param nomJoueur1  Nom du joueur 1 (affichage personnalisé)
+ * @param nomJoueur2  Nom du joueur 2 (affichage personnalisé)
+ * @param plateau     Plateau de jeu contenant les unités et le terrain
+ * @param gothicFont  Police personnalisée utilisée pour le style gothique
+ */
     public InfoPanel(String nomJoueur1, String nomJoueur2, PlateauDeJeu plateau, Font gothicFont) {
         this.nomJoueur1 = nomJoueur1;
         this.nomJoueur2 = nomJoueur2;
@@ -232,7 +239,12 @@ public class InfoPanel extends JPanel {
 
         majJoueurActif(new Joueur(nomJoueur1, false, ""));
     }
-
+/**
+ * Met à jour toutes les informations affichées dans le panneau
+ * en fonction de l’unité sélectionnée ou null si aucune sélection.
+ *
+ * @param u Unité sélectionnée ou null
+ */
     public void majInfos(Unite u) {
         if (u == null) {
             uniteImageLabel.setIcon(null);
@@ -291,11 +303,19 @@ public class InfoPanel extends JPanel {
     public MiniMapPanel getMiniMapPanel() {
         return miniMapPanel;
     }
-
+/**
+ * Met à jour le texte indiquant les points de déplacement restants.
+ *
+ * @param val Nombre de points de déplacement restants
+ */
     public void majDeplacement(int val) {
         deplacementLabel.setText("Deplacement : " + val);
     }
-
+/**
+ * Met à jour le label indiquant quel joueur est actuellement actif.
+ *
+ * @param j Joueur actif
+ */
     public void majJoueurActif(Joueur j) {
         String affichage;
 
@@ -311,7 +331,7 @@ public class InfoPanel extends JPanel {
 
         joueurActifLabel.setText("Joueur actif : " + affichage);
     }
-    
+
     public JButton getZoomInButton() {
         return zoomInButton;
     }
@@ -356,6 +376,12 @@ public class InfoPanel extends JPanel {
         return finPartieButton;
     }
 
+    /**
+ * Affiche une boîte de dialogue de confirmation stylisée pour terminer la partie.
+ *
+ * @param parent Fenêtre parente
+ * @return true si l'utilisateur a confirmé, false sinon
+ */
     public static boolean showStyledConfirmDialog(JFrame parent) {
         JDialog d = new JDialog(parent, "Confirmation", true);
         d.setUndecorated(true);
@@ -404,6 +430,12 @@ public class InfoPanel extends JPanel {
 
     }
 
+    /**
+ * Affiche une boîte de dialogue personnalisée pour demander un nom de sauvegarde.
+ *
+ * @param parent Composant parent
+ * @return Nom entré par l’utilisateur ou null si annulé
+ */
     public static String showCustomInputDialog(Component parent) {
         JTextField input = new JTextField();
         input.setForeground(TEXT);
@@ -481,6 +513,12 @@ public class InfoPanel extends JPanel {
         return b;
     }
 
+    /**
+ * Affiche une boîte de dialogue temporaire indiquant le joueur dont c’est le tour.
+ *
+ * @param parent     Fenêtre parente
+ * @param joueurNom  Nom du joueur à afficher
+ */
     public static void showStyledTurnDialog(JFrame parent, String joueurNom) {
         JDialog dialog = new JDialog(parent, "Tour", false);
         dialog.setUndecorated(true);
@@ -505,7 +543,13 @@ public class InfoPanel extends JPanel {
         timer.setRepeats(false);
         timer.start();
     }
-
+/**
+ * Affiche une boîte de dialogue d’avertissement stylisée avec un bouton OK.
+ *
+ * @param parent  Fenêtre parente
+ * @param message Message à afficher
+ * @param titre   Titre de la boîte de dialogue
+ */
     public static void showStyledWarningDialog(JFrame parent, String message, String titre) {
         JDialog dialog = new JDialog(parent, titre, true);
         dialog.setUndecorated(true);
@@ -541,7 +585,13 @@ public class InfoPanel extends JPanel {
         dialog.setContentPane(content);
         dialog.setVisible(true);
     }
-
+/**
+ * Affiche une boîte de dialogue d’information simple stylisée.
+ *
+ * @param parent  Fenêtre parente
+ * @param message Message à afficher
+ * @param titre   Titre de la boîte de dialogue
+ */
     public static void showStyledInfoDialog(JFrame parent, String message, String titre) {
         JDialog dialog = new JDialog(parent, titre, true);
         dialog.setUndecorated(true);
@@ -575,9 +625,12 @@ public class InfoPanel extends JPanel {
         dialog.setVisible(true);
     }
 
-    /**
-     * Met à jour l’affichage des coordonnées survolées
-     */
+/**
+ * Met à jour l'affichage des coordonnées actuellement survolées par la souris.
+ *
+ * @param x Abscisse
+ * @param y Ordonnée
+ */
     public void majCoordonnees(int x, int y) {
         if (x >= 0 && y >= 0) {
             coordLabel.setText("coordonnees : " + x + " , " + y);

@@ -5,9 +5,13 @@ import model.Unite;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
-
 import java.awt.*;
 
+/**
+ * Boîte de dialogue affichée lors d’une tentative d’attaque. Présente les
+ * statistiques de l’attaquant et du défenseur, les dégâts estimés, les armes
+ * disponibles, et permet au joueur de confirmer ou annuler l’attaque.
+ */
 public class FicheCombatDialog extends JDialog {
 
     public static final int DECISION_ANNULER = 0;
@@ -15,6 +19,13 @@ public class FicheCombatDialog extends JDialog {
 
     private int decision = DECISION_ANNULER;
 
+    /**
+     * Construit la fenêtre de dialogue affichant les informations de combat.
+     *
+     * @param parent Fenêtre parente pour le positionnement du dialogue
+     * @param attaquant Unité effectuant l'attaque
+     * @param defenseur Unité ciblée par l’attaque
+     */
     public FicheCombatDialog(JFrame parent, Unite attaquant, Unite defenseur) {
         super(parent, "", true);
         setUndecorated(true);
@@ -95,6 +106,14 @@ public class FicheCombatDialog extends JDialog {
         add(buttons, BorderLayout.SOUTH);
     }
 
+    /**
+     * Crée un panneau affichant les informations d’une unité (nom, PV, attaque,
+     * défense, icône...).
+     *
+     * @param unite L’unité à afficher
+     * @param role Rôle de l’unité dans le combat (ex. "Attaquant", "Défenseur")
+     * @return JPanel contenant les informations formatées
+     */
     private JPanel createUnitePanel(Unite unite, String role) {
         JPanel panel = new JPanel(new BorderLayout());
         TitledBorder unitBorder = BorderFactory.createTitledBorder(role);
@@ -130,6 +149,11 @@ public class FicheCombatDialog extends JDialog {
         return panel;
     }
 
+    /**
+     * Retourne la décision de l’utilisateur après la fermeture du dialogue.
+     *
+     * @return DECISION_ATTAQUER ou DECISION_ANNULER
+     */
     public int getDecision() {
         return decision;
     }

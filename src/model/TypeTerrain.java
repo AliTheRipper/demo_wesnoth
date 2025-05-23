@@ -2,6 +2,12 @@ package model;
 
 import javax.swing.*;
 
+/**
+ * Enumération représentant les différents types de terrains dans le jeu. Chaque
+ * type de terrain possède une image, un coût de déplacement, et un bonus de
+ * défense. Certains terrains (comme REGULAR_TILE) sont utilisés comme villages
+ * pour la récupération.
+ */
 public enum TypeTerrain {
     BASIC("resources/terrain/basic-tile.png", 3, 60),
     BEACH("resources/terrain/beach.png", 1, 15),
@@ -28,6 +34,14 @@ public enum TypeTerrain {
     private final int bonusDefense;
     private transient ImageIcon icon;
 
+    /**
+     * Constructeur privé de l'enum.
+     *
+     * @param cheminImage Chemin d’accès à l’image du terrain
+     * @param coutDeplacement Coût de déplacement pour une unité traversant ce
+     * terrain
+     * @param bonusDefense Bonus défensif accordé à une unité sur ce terrain
+     */
     TypeTerrain(String cheminImage, int coutDeplacement, int bonusDefense) {
         this.cheminImage = cheminImage;
         this.coutDeplacement = coutDeplacement;
@@ -35,6 +49,12 @@ public enum TypeTerrain {
         this.icon = new ImageIcon(cheminImage);
     }
 
+    /**
+     * Retourne l’icône (image) associée à ce type de terrain. L’icône est
+     * chargée à la première demande si elle ne l’a pas déjà été.
+     *
+     * @return ImageIcon représentant le terrain
+     */
     public ImageIcon getIcon() {
         if (icon == null) {
             icon = new ImageIcon(cheminImage);
@@ -42,14 +62,31 @@ public enum TypeTerrain {
         return icon;
     }
 
+    /**
+     * Retourne le coût de déplacement pour ce terrain. Une valeur élevée (comme
+     * 999) signifie que le terrain est infranchissable.
+     *
+     * @return Coût en points de déplacement
+     */
     public int getCoutDeplacement() {
         return coutDeplacement;
     }
 
+    /**
+     * Retourne le bonus de défense accordé à une unité présente sur ce terrain.
+     *
+     * @return Pourcentage de bonus défensif
+     */
     public int getBonusDefense() {
         return bonusDefense;
     }
 
+    /**
+     * Indique si ce type de terrain est considéré comme un village. Les
+     * villages permettent aux unités de se soigner.
+     *
+     * @return true si ce terrain est un village, false sinon
+     */
     public boolean estVillage() {
         return this == REGULAR_TILE;
     }

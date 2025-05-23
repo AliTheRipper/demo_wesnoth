@@ -21,11 +21,11 @@ public class Joueur implements Serializable {
     private boolean estIA;
     private List<Unite> unites;
     private String couleur;
-    private List<Joueur> tousLesJoueurs;
+    private static transient List<Joueur> tousLesJoueurs = new ArrayList<>();
     private PlateauDeJeu plateau;
 
-    public void setTousLesJoueurs(List<Joueur> joueurs) {
-        this.tousLesJoueurs = joueurs;
+    public static void setTousLesJoueurs(List<Joueur> joueurs) {
+        Joueur.tousLesJoueurs = joueurs;
     }
 
     private List<Joueur> getAutresJoueurs() {

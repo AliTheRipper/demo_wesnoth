@@ -89,8 +89,6 @@ public class GameWindow extends JPanel {
             boardPanel.passerAuTourSuivant();
 
             if (boardPanel.getJoueurActif().estIA()) {
-                System.out.println("🤖 L’IA réfléchit...");
-
                 Timer t = new Timer(500, ev -> {
                     boardPanel.getJoueurActif().jouerTour(boardPanel);
                     boardPanel.passerAuTourSuivant();
@@ -101,15 +99,6 @@ public class GameWindow extends JPanel {
         });
 
         infoPanel.getAnnulerMouvementButton().addActionListener(e -> boardPanel.annulerDernierDeplacement());
-
-        infoPanel.getSauvegarderButton().addActionListener(e -> {
-
-            String nom = InfoPanel.showCustomInputDialog(this);
-            if (nom != null && !nom.isEmpty()) {
-                PlateauManager.sauvegarderDansFichier(manager, nom);
-                JOptionPane.showMessageDialog(this, "Partie sauvegardée avec succès !");
-            }
-        });
 
         add(splitPane, BorderLayout.CENTER);
 

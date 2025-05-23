@@ -207,8 +207,6 @@ public class PlateauManager implements Serializable {
     public void passerAuJoueurSuivant(BoardPanel board) {
         joueurActif = (joueurActif == joueur1) ? joueur2 : joueur1;
 
-        System.out.println("🔄 Nouveau joueur actif : " + joueurActif.getNom());
-
         if (joueurActif.estIA()) {
             joueurActif.jouerTour(board);
         }

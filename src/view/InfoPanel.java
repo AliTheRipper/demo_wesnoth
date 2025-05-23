@@ -299,19 +299,19 @@ public class InfoPanel extends JPanel {
     public void majJoueurActif(Joueur j) {
         String affichage;
 
-        if (j.equals(plateau.getJoueur1())) {
+        if (j.estIA()) {
+            affichage = "Robot";
+        } else if (j.equals(plateau.getJoueur1())) {
             affichage = nomJoueur1;
         } else if (j.equals(plateau.getJoueur2())) {
             affichage = nomJoueur2;
-        } else if (j.estIA()) {
-            affichage = "Robot";
         } else {
             affichage = j.getNom();
         }
 
         joueurActifLabel.setText("Joueur actif : " + affichage);
     }
-
+    
     public JButton getZoomInButton() {
         return zoomInButton;
     }

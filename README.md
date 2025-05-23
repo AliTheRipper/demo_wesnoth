@@ -30,11 +30,16 @@ Ce jeu vise à offrir une expérience tactique immersive sur une grille hexagona
 ## Structure du projet
 
 ```
-src/
-├── model/          # Logique du jeu : unités, terrain, 
-├── view/           # Interface graphique et panneaux de jeu
+demo_wesnoth/
+├── map/   
+├── sauvegardes/ 
 ├── resources/      # Ressources : polices, icônes, cartes, 
-└── Main.java       # Point d’entrée de l’application
+├── bin/  
+├── src/      # Ressources : polices, icônes, cartes, 
+│   ├── model/      # Logique du jeu : unités, terrain, 
+│   ├── view/       # Interface graphique et panneaux de jeu
+│   └── Main.java       # Point d’entrée de l’application
+└── EmpireInWar.jar      # Fichier exécutable compilé
 ```
 
 ## Lancer le projet
@@ -52,6 +57,10 @@ Un éditeur de carte intégré permet à l’utilisateur de :
 - Sélectionner différents types de tuiles (herbe, forêt, village, océan, etc.)
 - Sauvegarder des cartes personnalisées
 - Charger et modifier des cartes existantes
+
+## Compiler et générer le fichier `.jar`
+
+Double-cliquez sur le fichier nommé EmpireInWar.jar pour lancer le jeu.
 
 ## Comportement de l’IA
 

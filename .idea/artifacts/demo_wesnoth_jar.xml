@@ -1,0 +1,14 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="demo_wesnoth:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/demo_wesnoth_jar</output-path>
+    <root id="archive" name="demo_wesnoth.jar">
+      <element id="module-output" name="demo_wesnoth" />
+      <element id="dir-copy" path="$PROJECT_DIR$" />
+      <element id="dir-copy" path="$PROJECT_DIR$/src" />
+      <element id="dir-copy" path="$PROJECT_DIR$/sauvegardes" />
+      <element id="dir-copy" path="$PROJECT_DIR$/resources" />
+      <element id="dir-copy" path="$PROJECT_DIR$/out" />
+      <element id="dir-copy" path="$PROJECT_DIR$/map" />
+    </root>
+  </artifact>
+</component>
